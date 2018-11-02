@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	https://developer.apple.com/library/ios/#documentation/General/Reference/InfoPlistKeyReference/Introduction/Introduction.html
+	https://developer.apple.com/library/ios/#documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+-->
+<plist version="1.0">
+<dict>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleIdentifier</key>
+	<string>edu.Arizona.LPL.HiRISE.HiView</string>
+	<key>CFBundleName</key>
+	<string>@EXECUTABLE@</string>
+	<key>CFBundleExecutable</key>
+	<string>@EXECUTABLE@</string>
+	<key>CFBundleGetInfoString</key>
+	<string>HiView v@VERSION@</string>
+	<key>CFBundleVersion</key>
+	<string>@VERSION@</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@VERSION@</string>
+	<key>CFBundleSignature</key>
+	<string>@TYPEINFO@</string>
+	<key>CFBundleIconFile</key>
+	<string>@ICON@</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleTypeName</key>
+			<string>public.jpeg-2000</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>JP2</string>
+				<string>jp2</string>
+				<string>JPL</string>
+				<string>jpl</string>
+		    </array>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>image/jp2</string>
+				<string>application/hiview</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>@ICON@</string>
+		</dict>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>jpip</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>jpip</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
+<!-- CVS ID $Id: Info.plist.template,v 1.6 2012/12/20 19:28:55 guym Exp $ -->

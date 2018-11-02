@@ -1,0 +1,9 @@
+CVS/
+.qmake.stash
+HiView.app/
+release/
+tests/
+debug/
+Makefile
+Makefile.Debug
+Makefile.Release

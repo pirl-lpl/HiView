@@ -1,0 +1,52 @@
+# -*- mode: sh -*- ################################################
+# Qwt Widget Library
+# Copyright (C) 1997   Josef Wilgen
+# Copyright (C) 2002   Uwe Rathmann
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the Qwt License, Version 1.0
+###################################################################
+
+QwtBuild = dll
+QwtVersion = 5.2.3
+
+unix:!macx { 
+
+    QwtBase = $$(QWT_BASE)
+
+    !isEmpty(QwtBase) {
+    # Custom compiled
+    INCLUDEPATH += $${QwtBase}/include
+    LIBS        += -L$${QwtBase}/lib -lqwt
+
+    !build_pass:message("Using Qwt from "$${QwtBase})
+    }
+
+    isEmpty(QwtBase) {
+    # Matches Debian/Ubuntu packages libqwt5-qt4 libqwt5-qt4-dev
+    INCLUDEPATH += /usr/include/qwt-qt4
+    LIBS        += -lqwt-qt4
+
+    !build_pass:message("Using Qwt from Debian")
+    }
+}
+
+win32 {
+    QwtBase    = C:/Qwt-$${QwtVersion}
+
+    contains(QwtBuild, dll) {
+        DEFINES    += QWT_DLL
+
+       LIBS  += $${QwtBase}/lib/qwt5.lib
+    } else {
+        LIBS  += $${QwtBase}/lib/qwt.lib
+    }
+
+    INCLUDEPATH += $${QwtBase}/include
+}
+
+macx {
+    QwtBase = /usr/local/qwt-$${QwtVersion}
+    INCLUDEPATH += $${QwtBase}/include
+    LIBS        += $${QwtBase}/lib/libqwt.a
+}

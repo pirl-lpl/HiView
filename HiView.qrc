@@ -1,0 +1,62 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>Images/HiView_Splash.png</file>
+    <file>Images/HiView_Icon.png</file>
+	<file>Images/X_button.png</file>
+	<file>Images/OK.png</file>
+	<file>Images/defaults_button.png</file>
+	<file>Images/reset_button.png</file>
+	<file>Images/reticule_cursor.png</file>
+	<file>Images/reticule_cursor_mask.png</file>
+	<file>Images/shift_cursor.png</file>
+	<file>Images/shift_cursor_mask.png</file>
+	<file>Images/shift_region_cursor.png</file>
+	<file>Images/shift_vertical_cursor.png</file>
+	<file>Images/shift_vertical_cursor_mask.png</file>
+	<file>Images/shift_horizontal_cursor.png</file>
+	<file>Images/shift_horizontal_cursor_mask.png</file>
+	<file>Images/shift_region_vertical_cursor.png</file>
+	<file>Images/shift_region_horizontal_cursor.png</file>
+	<file>Images/shift_region_FDiag_cursor.png</file>
+	<file>Images/shift_region_FDiag_cursor_mask.png</file>
+	<file>Images/shift_region_BDiag_cursor.png</file>
+	<file>Images/shift_region_BDiag_cursor_mask.png</file>
+	<file>Images/scale_cursor.png</file>
+	<file>Images/scale_cursor_mask.png</file>
+	<file>Images/Blank_Bead_Red-32.png</file>
+	<file>Images/Blank_Bead_Green-32.png</file>
+	<file>Images/Blank_Bead_Blue-32.png</file>
+	<file>Images/Blank_Bead_White-32.png</file>
+	<file>Images/Blank_Bead_Grey-32.png</file>
+	<file>Images/BW-32.png</file>
+	<file>Images/Contrast_Stretch.png</file>
+	<file>Images/redo_button.png</file>
+	<file>Images/crosshair_cursor.png</file>
+	<file>Images/crosshair_cursor_mask.png</file>
+	<file>Images/greater_than_cursor_white.png</file>
+	<file>Images/greater_than_cursor_red.png</file>
+	<file>Images/greater_than_cursor_green.png</file>
+	<file>Images/greater_than_cursor_blue.png</file>
+	<file>Images/greater_than_cursor_yellow.png</file>
+	<file>Images/greater_than_cursor_cyan.png</file>
+	<file>Images/greater_than_cursor_magenta.png</file>
+	<file>Images/greater_than_cursor_mask.png</file>
+	<file>Images/less_than_cursor_white.png</file>
+	<file>Images/less_than_cursor_red.png</file>
+	<file>Images/less_than_cursor_green.png</file>
+	<file>Images/less_than_cursor_blue.png</file>
+	<file>Images/less_than_cursor_yellow.png</file>
+	<file>Images/less_than_cursor_cyan.png</file>
+	<file>Images/less_than_cursor_magenta.png</file>
+	<file>Images/less_than_cursor_mask.png</file>
+	<file>Images/About_Background.png</file>
+	<file>Images/Expand_Down_Icon.png</file>
+	<file>Images/Expand_Up_Icon.png</file>
+	<file>Images/HiRISE_Logo.png</file>
+	<file>Images/PIRL_Logo.png</file>
+	<file>Images/LPL_Logo.png</file>
+	<file>Images/UofA_Logo.png</file>
+	<file>Images/NASA_Logo.png</file>
+</qresource>
+</RCC>
+<!-- CVS ID $Id: HiView.qrc,v 1.26 2011/10/03 08:25:19 castalia Exp $ -->
