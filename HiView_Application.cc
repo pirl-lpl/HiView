@@ -1,6 +1,6 @@
 /*	HiView_Application
 
-HiROC CVS ID: $Id: HiView_Application.cc,v 1.8 2014/05/27 17:13:51 guym Exp $
+HiROC CVS ID: $Id: HiView_Application.cc,v 1.9 2018/11/05 18:40:31 guym Exp $
 
 Copyright (C) 2011  Arizona Board of Regents on behalf of the
 Planetary Image Research Laboratory, Lunar and Planetary Laboratory at
@@ -52,12 +52,8 @@ using namespace UA::HiRISE;
 #define DEBUG_SECTION DEBUG_OFF
 #endif
 
-<<<<<<< HiView_Application.cc
-#include<QDebug>
-=======
 #include        <QDebug>
 
->>>>>>> 1.7
 #include	<iostream>
 #include	<iomanip>
 using std::clog;
@@ -74,7 +70,7 @@ namespace HiRISE
 */
 const char* const
 	HiView_Application::ID =
-		"UA::HiRISE::HiView_Application ($Revision: 1.8 $ $Date: 2014/05/27 17:13:51 $)";
+		"UA::HiRISE::HiView_Application ($Revision: 1.9 $ $Date: 2018/11/05 18:40:31 $)";
 
 /*==============================================================================
 	Constructor
