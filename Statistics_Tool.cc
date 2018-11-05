@@ -604,7 +604,7 @@ text.setText (tr ("Count"));
 Graph->setAxisTitle (QwtPlot::yLeft, text);
 
 //	Cursor tracking.
-Tracker = new Graph_Tracker ((QwtPlotCanvas*)Graph->canvas ());
+Tracker = new Graph_Tracker(new QwtPlotCanvas(Graph));// (Graph->canvas ());
 Tracker->setRubberBandPen (QColor (Qt::yellow));
 Tracker->setRubberBand (QwtPicker::CrossRubberBand);
 Tracker->setTrackerPen (QColor (Qt::black));
