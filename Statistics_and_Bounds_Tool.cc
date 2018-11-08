@@ -34,7 +34,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 //	Qwt
 #include	<qwt_plot_marker.h>
 #include	<qwt_symbol.h>
-#include <qwt_picker_machine.h>
+#include  <qwt_picker_machine.h>
 
 #if defined (DEBUG_SECTION)
 /*	DEBUG_SECTION controls
@@ -223,14 +223,14 @@ connect (Tracker,
 	SIGNAL (position (const QPoint&)),
 	SLOT   (graph_position (const QPoint&)));
 connect (Tracker,
-	SIGNAL (appended (const QwtDoublePoint&)),
-	SLOT   (mouse_down (const QwtDoublePoint&)));
+	SIGNAL (appended (const QPointF&)),
+	SLOT   (mouse_down (const QPointF&)));
 connect (Tracker,
-	SIGNAL (moved (const QwtDoublePoint&)),
-	SLOT   (mouse_drag (const QwtDoublePoint&)));
+	SIGNAL (moved (const QPointF&)),
+	SLOT   (mouse_drag (const QPointF&)));
 connect (Tracker,
-	SIGNAL (selected (const QwtDoublePoint&)),
-	SLOT   (mouse_up (const QwtDoublePoint&)));
+	SIGNAL (selected (const QPointF&)),
+	SLOT   (mouse_up (const QPointF&)));
 connect (Tracker,
 	SIGNAL (leave_widget ()),
 	SLOT (leave_graph ()));
@@ -844,7 +844,7 @@ clog << "<<< Statistics_and_Bounds_Tool::graph_position" << endl;
 void
 Statistics_and_Bounds_Tool::mouse_down
 	(
-	const QwtDoublePoint&
+	const QPointF&
 		#if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
 		point
 		#endif
@@ -868,7 +868,7 @@ clog << "<<< Statistics_and_Bounds_Tool::mouse_down" << endl;
 void
 Statistics_and_Bounds_Tool::mouse_drag
 	(
-	const QwtDoublePoint&	point
+	const QPointF&	point
 	)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
@@ -914,7 +914,7 @@ if (Selected_Bounds &&
 		while (++band < 3)
 			if (! (Selected_Bounds & (1 << band)))
 				values[band] = -1.0;
-		
+
 		//	Move the bound.
 		#if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
 		clog << "    move selection bounds to "
@@ -941,7 +941,7 @@ clog << "<<< Statistics_and_Bounds_Tool::mouse_drag" << endl;
 void
 Statistics_and_Bounds_Tool::mouse_up
 	(
-	const QwtDoublePoint&
+	const QPointF&
 	)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
