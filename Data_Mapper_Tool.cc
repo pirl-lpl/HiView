@@ -3611,14 +3611,14 @@ connect (Tracker,
 	SIGNAL (position (const QPoint&)),
 	SLOT   (graph_position (const QPoint&)));
 connect (Tracker,
-	SIGNAL (appended (const QwtDoublePoint&)),
-	SLOT   (mouse_down (const QwtDoublePoint&)));
+	SIGNAL (appended (const QPointF&)),
+	SLOT   (mouse_down (const QPointF&)));
 connect (Tracker,
-	SIGNAL (moved (const QwtDoublePoint&)),
-	SLOT   (mouse_drag (const QwtDoublePoint&)));
+	SIGNAL (moved (const QPointF&)),
+	SLOT   (mouse_drag (const QPointF&)));
 connect (Tracker,
-	SIGNAL (selected (const QwtDoublePoint&)),
-	SLOT   (mouse_up (const QwtDoublePoint&)));
+	SIGNAL (selected (const QPointF&)),
+	SLOT   (mouse_up (const QPointF&)));
 connect (Tracker,
 	SIGNAL (leave_widget ()),
 	SLOT (leave_graph ()));
@@ -3846,7 +3846,7 @@ clog << "<<< Data_Mapper_Tool::graph_position" << endl;
 void
 Data_Mapper_Tool::mouse_down
 	(
-	const QwtDoublePoint& point
+	const QPointF& point
 	)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
@@ -3952,7 +3952,7 @@ clog << "<<< Data_Mapper_Tool::mouse_down" << endl;
 void
 Data_Mapper_Tool::mouse_drag
 	(
-	const QwtDoublePoint&	point
+	const QPointF&	point
 	)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
@@ -4271,7 +4271,7 @@ clog << "<<< Data_Mapper_Tool::mouse_drag" << endl;
 void
 Data_Mapper_Tool::mouse_up
 	(
-	const QwtDoublePoint&
+	const QPointF&
 	)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))

@@ -618,7 +618,7 @@ void apply_bound_percents ();
 void default_contrast_stretch ();
 
 /** Restore the Original contrast strech saturation bound percents
-	
+
 	Original Upper Bound Values = [0.0,0.0,0.0]
 	Original Lower Bound Values = [0.0,0.0,0.0]
 */
@@ -710,7 +710,7 @@ void graph_position (const QPoint& point);
 		coordinate is guaranteed to be within the bounds of the graph
 		display but may be outside the bounds of the graph data.
 */
-void mouse_down (const QwtDoublePoint& point);
+void mouse_down (const QPointF& point);
 
 /**	Reports dragging the mouse.
 
@@ -724,7 +724,7 @@ void mouse_down (const QwtDoublePoint& point);
 	@param	point	A QPoint containing a graph data coordinate. The
 		coordinate values are unbounded.
 */
-void mouse_drag (const QwtDoublePoint&);
+void mouse_drag (const QPointF&);
 
 /**	Reports releasing of the mouse button.
 
@@ -738,7 +738,7 @@ void mouse_drag (const QwtDoublePoint&);
 	@param	point	A QPoint containing a graph data coordinate. The
 		coordinate values are unbounded.
 */
-void mouse_up (const QwtDoublePoint& point);
+void mouse_up (const QPointF& point);
 
 void leave_graph ();
 
