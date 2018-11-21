@@ -139,7 +139,7 @@ QStringList
 QUrl
 HiView_Utilities::PDS_metadata_URL
 	(
-	const QString& Source_Name,    
+	const QString& Source_Name,
 	const QUrl&	model_URL
 	)
 {
@@ -336,7 +336,7 @@ if (! format.isEmpty ())
 	if (upper == "JPG")
 		upper = "JPEG";
 	if (upper == "TIF")
-		upper == "TIFF";
+		upper = "TIFF";
 	QString
 		lower (upper.toLower ());
 	filter = upper + " (*." + lower + " *." + upper;
