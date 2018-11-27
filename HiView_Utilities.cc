@@ -336,7 +336,7 @@ if (! format.isEmpty ())
 	if (upper == "JPG")
 		upper = "JPEG";
 	if (upper == "TIF")
-		upper == "TIFF";
+		upper = "TIFF";
 	QString
 		lower (upper.toLower ());
 	filter = upper + " (*." + lower + " *." + upper;
