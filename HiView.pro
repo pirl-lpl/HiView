@@ -12,7 +12,8 @@ QT				+=	core \
 					script
 
 CONFIG			+=	qt \
-					thread
+					thread \
+               c++1z
 
 #	Include support for large files.
 unix:CONFIG		+=	largefile
@@ -75,6 +76,8 @@ defineTest(addDef) {
 addDef(DOCUMENTATION_SEARCH_LOCATIONS, $$(DOCUMENTATION_SEARCH_LOCATIONS))
 addDef(DEFAULT_DOCUMENTATION_FILENAME, $$(DEFAULT_DOCUMENTATION_FILENAME))
 
+macx: addDef(EXPORT_QMAKE_MAC_SDK, macosx)
+
 PIRL_ROOT = $$(PIRL_ROOT)
 IDAEIM_ROOT = $$(IDAEIM_ROOT)
 KAKADU_ROOT = $$(KAKADU_ROOT)
@@ -89,6 +92,7 @@ isEmpty(QWT_ROOT) {
 
    macx {
       QWT_ROOT = /opt/qwt
+      DYLD_FRAMEWORK_PATH += $(QWT_ROOT)/lib
    }
 
    win32 {
@@ -183,6 +187,7 @@ CONFIG(debug, debug|release) {
 #	Disable MSVC "Function call with parameters that may be unsafe" warning.
 win32: DEFINES		+= _SCL_SECURE_NO_WARNINGS
 
+#macx:QMAKE_CXXFLAGS += -std=c++17
 
 #	Mac application bundle assembly.
 macx {
