@@ -153,9 +153,7 @@ using std::dec;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -5799,5 +5797,4 @@ return QMainWindow::eventFilter (object, event);
 
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
