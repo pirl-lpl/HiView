@@ -25,6 +25,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #define HiView_Application_hh
 
 #include	<QApplication>
+#include	<QStringRef>
+#include	<QString>
 
 //	Meta-command filename suffix.
 #ifndef JPIP_PASSTHRU_LINK_SUFFIX
@@ -39,9 +41,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #endif
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 
 /**	The <i>HiView_Application</i> extends the QApplication with HiView
@@ -93,7 +93,7 @@ parse_jpip_passthru_link
 	(
 	const QString& input
 	);
-	
+
 /*==============================================================================
 	Qt events:
 */
@@ -134,10 +134,10 @@ QString
 
 };
 
-class NullEventFilter : public QObject 
+class NullEventFilter : public QObject
 {
     Q_OBJECT
-    
+
 protected:
 inline bool eventFilter(QObject*, QEvent*)
 {
@@ -145,6 +145,5 @@ inline bool eventFilter(QObject*, QEvent*)
 }
 };
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif
