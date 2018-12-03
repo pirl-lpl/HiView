@@ -134,9 +134,7 @@ using std::setw;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -210,7 +208,7 @@ enum
 	};
 }
 #endif
-	
+
 /*==============================================================================
 	Class data members
 */
@@ -972,7 +970,7 @@ if (color != Plastic_Image::default_background_color ())
 				}
 			}
 		}
-	
+
 	update ();
 
 	//	Restart rendering.
@@ -2042,7 +2040,7 @@ else
 	else
 		tile_origin.rx () = 0;
 	if (tile_origin.ry () < 0)
-		tile_origin.ry () = 
+		tile_origin.ry () =
 			-tile_origin.ry ();
 	else
 	if (tile_region.top () > tile_origin.ry ())
@@ -2345,7 +2343,7 @@ if (new_rows != old_rows ||
 	//	Increase the maximum tile image pool size if needed.
 	if (Tile_Image_Pool_Max < (new_rows * new_cols))
 		Tile_Image_Pool_Max =  new_rows * new_cols;
-		
+
 	QList<Plastic_Image*>
 		*tiles;
 	Plastic_Image
@@ -3215,7 +3213,7 @@ while (true)
 					if (Tile_Image_Pool.isEmpty ())
 						{
 						tile_image =
-							Renderer->image_clone 
+							Renderer->image_clone
 								(Tile_Display_Size,
 								//	Mappings shared with the Reference_Image.
 								Plastic_Image::BAND_MAP |
@@ -3311,7 +3309,7 @@ while (true)
 					(origin_changed ||
 					 scaling_changed))
 					//	The change is intially presumed to be for a margin tile.
-					changed = BACKGROUND_TILES_RESET;	
+					changed = BACKGROUND_TILES_RESET;
 				#if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
 				LOCKED_LOGGING ((
 				clog << "        post " << *tile_image << endl
@@ -4027,7 +4025,7 @@ if (changed)
 		#endif
 		//	Reset the band map in the Source_Image.
 		Source_Image->source_band_map (band_map);
-		
+
 		if (Source_Image_Rendering)
 			//	Queue the Source_Image for low priority uncancelable rendering.
 			Renderer->queue (Source_Image,
@@ -5101,7 +5099,7 @@ while (true)
 				painter.drawLine
 					(tile_region.bottomLeft (),
 					 tile_region.topRight ());
-				label += 
+				label +=
 					QString ("gc %1, %2; so %3, %4; to %5, %6")
 					.arg (tile_grid.rx ())
 					.arg (tile_grid.ry ())
@@ -5236,7 +5234,7 @@ clog << ">>> Tiled_Image_Display::mouseMoveEvent: " << endl
 #endif
 if (rect ().contains (event->pos ()))
 	{
-        
+
 	QPoint
 		point (round_down (map_display_to_image (event->pos ())));
 	#if ((DEBUG_SECTION) & DEBUG_MOUSE_MOVE_EVENTS)
@@ -5266,7 +5264,7 @@ clog << "<<< Tiled_Image_Display::mouseMoveEvent" << endl));
 #endif
 
 }
-    
+
     void Tiled_Image_Display::mousePressEvent (QMouseEvent* event) {
         if(event->buttons() == Qt::LeftButton || event->buttons() == Qt::RightButton) {
             QPoint image_position(round_down(map_display_to_image(event->pos())));
@@ -5353,7 +5351,7 @@ clog << "    displayed_image_region = " << display_region << endl
 	 << "<<< Tiled_Image_Display::resizeEvent" << endl));
 #endif
 }
-    
+
     const QPoint Tiled_Image_Display::Get_Saved_Coordinate() {
         return Last_Clicked_Coord;
     }
@@ -5371,5 +5369,4 @@ Tiled_Image_Display::sizeHint () const
 {return const_cast<Tiled_Image_Display*>(this)->scaled_image_size ();}
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

@@ -44,9 +44,7 @@ class Aggregate;
 }}
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class	Image_Renderer;
@@ -91,7 +89,7 @@ class	Image_Renderer;
 	tile grid} in image space does not include the margin tiles; i.e. the
 	tile grid at location 1,1 has its initial origin (upper left corner)
 	at image location 0,0; the tile grid at location 0,0 has its initial
-	origin at -Tile_Image_Size.width,-Tile_Image_Size.height. 
+	origin at -Tile_Image_Size.width,-Tile_Image_Size.height.
 
 	The {@link image() source image}, whether generated locally or
 	provided from an external source, can be shared elsewhere (e.g. with
@@ -284,7 +282,7 @@ virtual ~Tiled_Image_Display ();
     @return A QPoint containing the last valid coordate clicked.
 */
     const QPoint Get_Saved_Coordinate();
-    
+
 /**	Get the name of the image source.
 
 	@return	A QString providing the name of the image source. This may be
@@ -840,7 +838,7 @@ bool display_data_histograms (QVector<Histogram*> histograms,
 	<b>N.B.</b>: The effective tile size will depend on the image being
 	displayed: For a QImage based source image the entire image size is
 	the effective tile size. Otherwise the effective size is the lesser
-	of the image size or the default size. 
+	of the image size or the default size.
 
 	@param	size	The default display size of an image rendering tile.
 		When no size is specified, or an invalid size (dimensions less
@@ -1782,7 +1780,7 @@ void renderer_status (int status);
 	The Image_Renderer is expected to emit the signal when it has
 	completed a rendering operation. The type of rendering operation is
 	indicated by the tile_coordinate argument:
-	
+
 	When the tile_coordinate isNull all tiles queued for rendering that
 	overlap the display viewport have been rendered. In this case the
 	entire Tiled_Image_Display is queued for an update which will result
@@ -1980,7 +1978,7 @@ bool reset_tiled_image_region ();
 	<b>N.B.</b>: If the tile_region is empty its origin is
 	unconditionally set to 0,0.
 
-	@param	tile_region	A QRect specifying a tile region with 
+	@param	tile_region	A QRect specifying a tile region with
 		viewport-relative origin.
 	@param	tile_origin	A QPoint giving the viewport-relative origin of
 		the entirie tile of which tile_region is a part.
@@ -2076,7 +2074,7 @@ void state_change_completed (int qualifiers = RENDERING_COMPLETED_STATE);
 	Data
 */
 private:
-    
+
 QPoint Last_Clicked_Coord;
 
 //!	Tile image rendering.
@@ -2113,7 +2111,7 @@ Plastic_Image
 //!	Flag that image loading is in progress.
 bool
 	Image_Loading;
-	
+
 //!	The scaling to apply to an image when first loaded.
 QSizeF
 	Initial_Scaling;
@@ -2199,6 +2197,5 @@ static QErrorMessage
 };
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

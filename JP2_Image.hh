@@ -33,15 +33,12 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 //	Forward references.
 template<typename T> class QVector;
 
-namespace idaeim {
-namespace PVL {
+namespace idaeim::PVL {
 class Aggregate;
-}}
+}
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class JP2_Reader;
@@ -117,7 +114,7 @@ explicit JP2_Image (JP2_Reader* reader = NULL,
 	update() updated}.
 
 	@param	reader	A JP2_Reader. The JP2_Reader is cloned to become
-		the {@link source() source} of image data. 
+		the {@link source() source} of image data.
 	@param	size	The size of the new JP2_Image. If the size is not
 		valid the rendered size from the JP2_Reader dividied by its
 		resolution level will be used.
@@ -196,7 +193,7 @@ JP2_Image (const QString& source_name, const QSize& size);
 
 /**	Destroy this JP2_Image.
 
-	All data buffers and the JP2_Image_Rendering_Monitor are deleted. 
+	All data buffers and the JP2_Image_Rendering_Monitor are deleted.
 */
 virtual ~JP2_Image ();
 
@@ -756,6 +753,5 @@ void
 };	//	Class JP2_Image
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

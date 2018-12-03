@@ -32,7 +32,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	<QPointF>
 #include	<QVector>
 #include	<QTransform>
-
+#include  <QDebug>
 #include	<QMutex>
 #include	<QMutexLocker>
 #include	<QThread>
@@ -118,9 +118,7 @@ using std::boolalpha;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -1682,7 +1680,7 @@ bool
 Plastic_Image::source_data_maps
 	(
 	const Data_Map**	data_maps,
-	bool				shared 
+	bool				shared
 	)
 {
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
@@ -2272,7 +2270,7 @@ Plastic_Image::refresh_source_histogram
 	QVector<Histogram*>&	histograms,
 	int						band
 	) const
-{	
+{
 #if ((DEBUG_SECTION) & (DEBUG_HISTOGRAMS | DEBUG_PRINT_HISTOGRAMS))
 clog << ">>> Plastic_Image::refresh_source_histogram: " << band << endl;
 #endif
@@ -2990,6 +2988,7 @@ is_rendering (false);
 clog << "<<< Plastic_Image::render_image: " << completed << endl;
 #endif
 return completed;
+
 }
 
 
@@ -3096,7 +3095,7 @@ mark_image (this, QString::fromStdString (label.str ()),
 bool
 	cancel = Cancel_Update;
 
-for (int entry = 0 ; entry < Rendering_Monitors.size () ; entry++) 
+for (int entry = 0 ; entry < Rendering_Monitors.size () ; entry++)
     if (Rendering_Monitors[entry] != NULL)
 	cancel |= ! Rendering_Monitors[entry]->notification
 					(*this, status, message, region);
@@ -3744,5 +3743,4 @@ clog << "<<< mark_image" << endl;
 #endif
 }
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

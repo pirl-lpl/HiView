@@ -28,6 +28,7 @@ using namespace UA::HiRISE;
 
 #include	<QSizeF>
 #include	<QString>
+#include	<QStringRef>
 #include	<QStyleFactory>
 #include <QImageReader>
 #include <QDesktopWidget>
@@ -136,20 +137,6 @@ extern const char* const
 extern const char* const
 	HOST_OS						= HOST_OS_STRING;
 
-
-//	Meta-command filename suffix.
-#ifndef META_COMMAND_FILENAME_SUFFIX
-#define META_COMMAND_FILENAME_EXT	"." APP_NAME_STRING "_meta_command"
-#else
-#define META_COMMAND_FILENAME_EXT	AS_STRING(META_COMMAND_FILENAME_SUFFIX)
-#endif
-
-//	Meta-command maximum command line size.
-#ifndef MAX_META_COMMAND_SIZE
-#define MAX_META_COMMAND_SIZE		4095
-#endif
-
-
 //!	The runtime command name.
 char
 	*Command_Name;
@@ -159,10 +146,7 @@ const int
 	SUCCESS						= 0,
 
 	//	Command line syntax.
-	BAD_SYNTAX					= 1,
-
-	//	Meta-command file failure.
-	META_COMMAND_FAILURE		= 2;
+	BAD_SYNTAX					= 1;
 
 /*==============================================================================
 	Usage
@@ -201,12 +185,6 @@ if (list_descriptions)
 	<< endl
 	<< "    Default: An internal application image is displayed, or the" << endl
 	<< "    last viewed image is displayed if session restoration is enabled." << endl
-	<< endl
-	<< "    Note: If the only command line argument, other than the command" << endl
-	<< "    name, is a local file that has the suffix \""
-		<< META_COMMAND_FILENAME_EXT << '"' << endl
-	<< "    this is a meta-command file containing command line arguments," << endl
-	<< "    without the initial command name argument, that will be used." << endl
 	<< endl;
 
 cout << "-SCale <horizontal>[,<vertical>]" << endl;
@@ -268,11 +246,6 @@ exit (exit_status);
 }
 
 /*==============================================================================
-	Local functions
-*/
-bool meta_command (int& arg_count, char**& arg_list);
-
-/*==============================================================================
 	Main
 */
 int
@@ -287,9 +260,6 @@ Command_Name = *arg_list;
 clog << Command_Name << ": " << APPLICATION_ID << endl
 	 << HOST_OS << ' ' << HOST_MACHINE << endl;
 #endif
-
-//	Apply a meta-command file, if specified on the command line.
-meta_command (arg_count, arg_list);
 
 //	Initialize application resources and Qt run-time environment.
 Q_INIT_RESOURCE (HiView);	//	Can't use APP_NAME in this macro.
@@ -327,7 +297,7 @@ for (int
 		switch (toupper (arg_list[count][1]))
 			{
 			case 'I':	//	-Image
-				if (++count == arg_count || 
+				if (++count == arg_count ||
 					arg_list[count][0] == '-')
 					{
 					cout << "Missing image source name." << endl
@@ -456,256 +426,4 @@ HiView_Window
 
 //	Run the application event loop.
 return application.exec ();
-}
-
-
-/**	Attempt to replace an argument list with a new list obtained from a
-	meta-command file.
-
-	A meta-command file must be the only argument on the command line,
-	have the META_COMMAND_FILENAME_EXT suffix, and not be a URL.
-
-	A meta-command file contains command line text. The entire contents
-	of the file, up to 4095 characters, is used as the command line. No
-	non-command comments are recognized.
-
-	The usual command line parsing is applied to the text that assembles
-	a new argument list from whitespace separated words. However, special
-	shell characters are not recognized. The exception is quoting and
-	escaping: Sections of text eclosed in single (') or double (") quotes
-	are a single argument word, without the enclosing quotes. Nested
-	quotes - double quotes inside a single quoted section, or single
-	quotes inside a double quoted section - protect quote characters of
-	the surrounding quoted section from ending the surrounding quoted
-	section (i.e. the "other" quote character is treated as a normal
-	character within a nested quoted section). An escaped character is
-	preceeded by a backslash ('\') character. The backslash is removed
-	and the escaped character is treated as a normal character; i.e. an
-	escaped whitespace, quote, or backslash character will not have a
-	special meaning.
-
-	<b>N.B.</b>: The new argument list and the argument words are
-	allocated in static memory.
-
-	The meta-command file command line must not contain the initial
-	command name argument. The first, command name, argument of the
-	existing argument list is used as the first argument of the new
-	argument list.
-
-	If the meta-command file can not be opened or its contents can not be
-	read the application will exit with the META_COMMAND_FAILURE status.
-
-	@param	arg_count	A reference to an int that is the count of
-		arguments in the existing argument list, This will be reset to
-		the new argument list word count.
-	@param	arg_list	A reference to an array of argument word strings
-		of the existing argument list. This will be reset to the new
-		argument list.  The first, command name, argument of the existing
-		argument list will be carried over to the new argument list.
-	@return	true if, and only if, a new argument list replaced the
-		existing list. false otherwise.
-*/
-bool
-meta_command
-	(
-	int&	arg_count,
-	char**&	arg_list
-	)
-{
-#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-clog << ">>> meta_command:" << endl
-	 << "    arg_count = " << arg_count << endl;
-if (arg_count > 1)
-	clog << "    arg_list[1] = " << arg_list[1] << endl;
-#endif
-
-if (arg_count != 2 ||
-   (
-	string (arg_list[1]).rfind (META_COMMAND_FILENAME_EXT) == string::npos &&
-	string (arg_list[1]).rfind (JPIP_PASSTHRU_LINK_EXT) == string::npos 
-   ) ||
-	HiView_Utilities::is_URL (arg_list[1]))
-	{
-	#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-	clog << "<<< meta_command: false" << endl;
-	#endif
-	return false;
-	}
-
-#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-clog << "    opening file" << endl;
-#endif
-ifstream
-	file (arg_list[1]);
-if (! file)
-	{
-	file.close ();
-	cout << "Couldn't open the meta-command file: " << arg_list[1] << endl;
-	exit (META_COMMAND_FAILURE);
-	}
-
-#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-clog << "    reading up to " << MAX_META_COMMAND_SIZE << " characters" << endl;
-#endif
-static char*
-	command_line = new char[MAX_META_COMMAND_SIZE + 1];
-std::streamsize
-	amount = file.readsome (command_line, MAX_META_COMMAND_SIZE);
-if (! file)
-	{
-	file.close ();
-	cout << "Couldn't read the meta-command file: " << arg_list[1] << endl;
-	exit (META_COMMAND_FAILURE);
-	}
-file.close ();
-command_line[amount] = 0;
-#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-clog << "    " << amount << " character command line: |"
-		<< command_line << '|' << endl;
-#endif
-
-static vector<char*>
-	arguments;
-arguments.clear ();
-string
-	delimiters (" \t\n\r");
-char
-	quote = 0,
-	nested_quote = 0;
-char
-	*argument = NULL,
-	*character = command_line;
-while (*character)
-	{
-	#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-	clog << "    -character: " << *character << endl;
-	#endif
-	//	Find the beginning of an argument.
-	if (delimiters.find (*character) != string::npos)
-		{
-		//	Skip delimiter character.
-		++character;
-		#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-		clog << "      delimiter" << endl;
-		#endif
-		continue;
-		}
-	if (*character == '\\')
-		{
-		//	Escaped character.
-		if (! *(character + 1))
-			//	Premature EOS.
-			break;
-		//	Remove the escape character.
-		memmove (character, (character + 1), strlen (character) - 1);
-		#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-		clog << "      escaped: " << *character << endl;
-		#endif
-		}
-	else
-	if (*character == '"' ||
-		*character == '\'')
-		{
-		quote = *character++;
-		#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-		clog << "      begin quote" << endl;
-		#endif
-		}
-	else
-		quote = 0;
-	argument = character;
-	#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-	clog << "      begin argument" << endl;
-	#endif
-
-	//	Search for the end of the argument.
-	while  (*character)
-		{
-		#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-		clog << "    +character: " << *character << endl;
-		#endif
-		if (*character == '\\')
-			{
-			//	Escaped character.
-			if (! *(character + 1))
-				//	Premature EOS.
-				break;
-			//	Remove the escape character.
-			memmove (character, (character + 1), strlen (character) - 1);
-			#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-			clog << "      escaped: " << *character << endl;
-			#endif
-			}
-		else
-		if (nested_quote)
-			{
-			if (*character == nested_quote)
-				{
-				//	End of nested quote.
-				nested_quote = 0;
-				#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-				clog << "      end of nested quote" << endl;
-				#endif
-				}
-			}
-		else
-		if (quote)
-			{
-			if (*character == quote)
-				{
-				#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-				clog << "      end of quote" << endl;
-				#endif
-				break;
-				}
-			if (*character == '"' ||
-				*character == '\'')
-				{
-				//	Nested quote.
-				nested_quote = *character;
-				#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-				clog << "      begin nested quote" << endl;
-				#endif
-				}
-			}
-		else
-		if (delimiters.find (*character) != string::npos)
-			{
-			#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-			clog << "      delimiter" << endl;
-			#endif
-			break;
-			}
-
-		++character;
-		}
-
-	//	End of argument.
-	*character++ = 0;
-	if (*argument)
-		{
-		arguments.push_back (argument);
-		#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-		clog << "    argument @ " << (void*)argument
-				<< ": |" << argument << '|' << endl;
-		#endif
-		}
-	}
-
-if (! arguments.empty ())
-	{
-	//	Prepend the command name argument.
-	arguments.insert (arguments.begin (), *arg_list);
-
-	//	Replace the argument vector.
-	arg_count = arguments.size ();
-	arg_list = &arguments[0];
-	#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-	clog << "    " << arguments.size () << " arguments" << endl;
-	#endif
-	}
-#if ((DEBUG_SECTION) & DEBUG_COMMAND_LINE)
-clog << "<<< meta_command_file: " << (! arguments.empty ()) << endl;
-#endif
-return ! arguments.empty ();
 }

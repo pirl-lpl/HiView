@@ -114,9 +114,7 @@ using std::setfill;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -137,7 +135,7 @@ Plastic_Image::Name_String
 #endif
 
 #ifndef JP2_RENDERING_INCREMENT_LINES
-#define JP2_RENDERING_INCREMENT_LINES	100
+#define JP2_RENDERING_INCREMENT_LINES	400
 #endif
 
 
@@ -1339,7 +1337,7 @@ if (Source &&
 	Display_Data_Buffers[band]->Rendered &&
 	band < 3)
 	{
-	//	Map the image coordinate to the source data location.	
+	//	Map the image coordinate to the source data location.
 	QPoint
 		origin (round_down (source_origin (band)));
 	#if ((DEBUG_SECTION) & DEBUG_PIXEL_DATUM)
@@ -1361,7 +1359,7 @@ if (Source &&
 		clog << "    Rendered_Resolution = " << (resolution + 1) << endl
 			 << "                 offset = "
 			 	<< x << "x, " << y << 'y' << endl
-			 << "          Rendered_Size = " 
+			 << "          Rendered_Size = "
 			 	<< Display_Data_Buffers[band]->Rendered_Size << endl;
 		#endif
 		if (x < static_cast<unsigned int>
@@ -2449,20 +2447,23 @@ double
 	scale = qMax (scaling.rwidth (), scaling.rheight ());
 unsigned int
 resolution = nearest_resolution_level (scale);
+
 Rendering_Display_Data_Buffers[image_band]->Rendered_Resolution = resolution;
 
 //	Determine the image region to be obtained from the JP2_Reader.
 QPoint
 	origin (round_down (source_origin (image_band)));
+
 Rectangle
 	region (origin.x (), origin.y (),
 		//	The region is relative to the full resolution grid.
 		width ()  << (resolution - 1),
 		height () << (resolution - 1));
-if (scale < 1.0)
+
+if (scale < 1.0) {
 	//	Get double region to allow for scale down to the next resolution level.
-	region *= 2;
-	
+	region *= 2; }
+
 //	Set the resolution and region of the JP2_Reader.
 rendering_needed |=
 	Source->resolution_and_region (resolution, region);
@@ -2849,5 +2850,4 @@ return was_rendering;
 }
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

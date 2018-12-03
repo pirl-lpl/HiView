@@ -153,9 +153,7 @@ using std::dec;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -655,20 +653,20 @@ if (application)
 	}
 
 #ifdef __APPLE__
-if (View_SpeechRecog_Action->isChecked ())
-{
+//if (View_SpeechRecog_Action->isChecked ())
+//{
     adapter = new Mac_Voice_Adapter
     (
         Image_View,
         Statistics,
         Data_Mapper
      );
-    adapter->toggle(true);
-}
-else
-{
-    adapter = NULL;
-}
+    adapter->toggle(View_SpeechRecog_Action->isChecked ());
+//}
+//else
+//{
+//    adapter = NULL;
+//
 /*connect (SpeechRecog_Action,
 			SIGNAL (toggle()),
 		 	SLOT (load_image (QNetworkReply*)));*/
@@ -1302,10 +1300,10 @@ View_Menu->addAction (View_Tooltips_Action);
 #ifdef __APPLE__
 View_SpeechRecog_Action = new QAction (tr ("Speech Recognizer"), this);
 View_SpeechRecog_Action->setCheckable (true);
-View_SpeechRecog_Action->setChecked (true);
+View_SpeechRecog_Action->setChecked (false);
 View_Menu->addAction (View_SpeechRecog_Action);
-connect (View_SpeechRecog_Action, 
-            SIGNAL (triggered (bool)), 
+connect (View_SpeechRecog_Action,
+            SIGNAL (triggered (bool)),
             SLOT (recognizer_toggled(bool)) );
 
 #endif
@@ -2785,7 +2783,7 @@ clog << ">>> HiView_Window::refresh_source_statistics" << endl;
 #endif
 bool
 	refreshed = false;
-	
+
 if (Statistics)
 {
 	QRect selected_region (selected_source_region ());
@@ -2806,7 +2804,7 @@ if (Statistics)
 		#endif
 		refreshed = Statistics->source_statistics ()->refresh (selected_region);
 	}
-	
+
 	if(refreshed) {
 		//send data to engine
 		if(!Selected_Image_Region.isEmpty()) {
@@ -2824,7 +2822,7 @@ if (Statistics)
 		Image_Info->evaluate_script();
 	}
 }
-	
+
 
 #if ((DEBUG_SECTION) & DEBUG_STATISTICS)
 clog << "<<< HiView_Window::refresh_source_statistics: " << refreshed << endl;
@@ -2981,7 +2979,7 @@ connect (Data_Mapper,
 connect (Data_Mapper,
 			SIGNAL (topLevelChanged (bool)),
 			SLOT (tool_location_changed ()));
-			
+
 if (Navigator)
 	//	Navigator band mapping.
 	connect (Navigator,
@@ -3184,7 +3182,7 @@ for (index = 0;
 	 index < actions.size ();
 	 index++)
 	menu->addAction (actions.at (index));
-	
+
 Data_Map_Menu->addAction (Data_Mapper->default_contrast_stretch_action ());
 Data_Map_Menu->addAction (Data_Mapper->restore_original_contrast_stretch_action());
 Data_Map_Menu->addAction (Data_Mapper->apply_percents_action ());
@@ -3318,7 +3316,7 @@ clog << "    add scale menu items from Image_Viewer" << endl;
 //	Add the scale menu actions from the Image_Viewer to the main View menu.
 QList<QAction*>
 	scale_actions (Image_View->scale_menu_actions ());
-/*	
+/*
 // Add copy coordinates action from the Image_Viewer to the main File menu.
 File_Menu->addAction (Image_View->copy_coordinates_action());
 */
@@ -4147,7 +4145,7 @@ if (Startup_Stage)
 	qApp->flush ();
 	qApp->sendPostedEvents ();
 	qApp->processEvents ();
-	
+
 	if (Initial_Source.isEmpty ())
 	{
 		//	No source specified on the command line.
@@ -5064,7 +5062,7 @@ if (event->buttons () == Qt::LeftButton &&
 	/* && statistics_are_visible ()*/)
 {
 	QPoint position (Image_View->image_display ()->mapFromGlobal (event->globalPos ()));
-	
+
 	#if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
 	clog << "    display position = " << position << endl;
 	#endif
@@ -5090,7 +5088,7 @@ if (event->buttons () == Qt::LeftButton &&
 		}
 		else {
 		//	Possible selection modification.
-		
+
 			Selection_Modification = selection_modification (position);
 			if (! Selection_Modification)
 			{
@@ -5131,7 +5129,7 @@ clog << "<<< HiView_Window::mousePressEvent" << endl;
 /*	N.B.: Mouse tracking is not enabled for the HiView_Window,
 	so the HiView_Window::mouseMoveEvent is only called when a mouse
 	button is being pressed and the mouse has been moved.
-	
+
 	The exception is when the distance tool is in use, then mouse tracking
 	is enabled until the distance tool is turned off.
 
@@ -5154,26 +5152,26 @@ bool
 
 if(Image_View->control_mode () == Image_Viewer::NO_CONTROL_MODE) {
 	QPoint display_position (Image_View->image_display ()->mapFromGlobal (event->globalPos ()));
-			
+
 	if (Image_View->image_display_region ().contains (display_position))
 	{
 		QPoint image_position (round_down(Image_View->map_display_to_image (display_position)));
-		
+
 		if(Distance_Tool && P1_Set)
 		{
 			Image_Line.setP2(image_position);
 			update_line();
 		}
-	
+
 		if (event->buttons () == Qt::LeftButton)
 		{
-	
+
 		#if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
 		clog << "        display position = " << display_position << endl
 		 << "    image_display_region = "
 			<< Image_View->image_display_region () << endl;
 		#endif
-	
+
 		if (! Selection_Modification)
 			{
 			//	Drag started outside the image area.
@@ -5492,7 +5490,7 @@ HiView_Window::mouseReleaseEvent
 clog << ">>> HiView_Window::mouseReleaseEvent" << endl
 	 << "    mouse position = " << event->pos () << endl;
 #endif
-Selection_Start.rx () = 
+Selection_Start.rx () =
 Selection_Start.ry () = -1;
 Selection_Modification = 0;
 set_selection_cursor (selection_modification
@@ -5547,17 +5545,17 @@ void HiView_Window::update_line() {
 		//draw the line on the image, done this way so when the image is moved, the same point on the image is shown
 		Line->setP1(Image_View->map_image_to_display (Image_Line.p1()));
 		Line->setP2(Image_View->map_image_to_display (Image_Line.p2()));
-		
+
 		//length of line in pixels
 		double length = qSqrt(Image_Line.dx()*Image_Line.dx() + Image_Line.dy()*Image_Line.dy());
-		
+
 		Image_Info->set_property_f("distance_length_px", length);
-			
+
 		if(Location != NULL && Location->projection() != NULL && !Location->projection()->is_identity()) {
 			double projected_length = length*Location->projection()->pixel_size();
 			Line->setText(QString("%1 m")
 				.arg(projected_length));
-				
+
 			Image_Info->set_property_f("distance_length_m", projected_length);
 		}
 		//if it cant map project, use pixel value
@@ -5569,7 +5567,7 @@ void HiView_Window::update_line() {
 			Line->setVisible(true);
 		else
 			Line->update();
-			
+
 		Image_Info->evaluate_script();
 	}
 }
@@ -5592,7 +5590,7 @@ if (Selected_Image_Region.isEmpty ())
 		double pixel_size = Location->projection()->pixel_size();
 		double projected_width = source_region.width()*pixel_size;
 		double projected_height = source_region.height()*pixel_size;
-		
+
 		Image_Info->set_property_qsreal("region_area_m", projected_width*projected_height);
 		Image_Info->set_property_f("region_width_m", projected_width);
 		Image_Info->set_property_f("region_height_m", projected_height);
@@ -5638,7 +5636,7 @@ if (Region_Overlay)
 		color_palette.setColor(QPalette::WindowText, QColor(255,255,255));
 	else
 		color_palette.setColor(QPalette::WindowText, QColor(0,0,0));
-	
+
 	//check to see if the QLabel has been allocated
 	if(Selected_Area == NULL) {
 		Selected_Area = new QLabel(Image_View->image_display ());
@@ -5651,11 +5649,11 @@ if (Region_Overlay)
 		double pixel_size = Location->projection()->pixel_size();
 		double projected_width = (bottomRightCoord.X-topLeftCoord.X)*pixel_size;
 		double projected_height = (bottomRightCoord.Y-topLeftCoord.Y)*pixel_size;
-		
+
 		Selected_Area_Text = QString("%1 x %2 m")
 			.arg(projected_width)
 			.arg(projected_height);
-		
+
 		//this should occur before the avg RGB values are updated from the histogram so
 		// we don't need to evaluate the script at this point
 		Image_Info->set_property_qsreal("region_area_m", projected_width*projected_height);
@@ -5671,11 +5669,11 @@ if (Region_Overlay)
 	//Set text in label
 	Selected_Area->setText(Selected_Area_Text);
 	//set location of QLabel (pay attention to edges of the window)
-	if(topLeft.y() - Selected_Area->sizeHint().height() < 0) 
+	if(topLeft.y() - Selected_Area->sizeHint().height() < 0)
 		Selected_Area->setGeometry(topLeft.x(), topLeft.y(), Selected_Area->sizeHint().width(), Selected_Area->sizeHint().height());
 	else
 		Selected_Area->setGeometry(topLeft.x(), topLeft.y() - Selected_Area->sizeHint().height(), Selected_Area->sizeHint().width(), Selected_Area->sizeHint().height());
-	
+
 	Selected_Area->setVisible(true);
 	}
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
@@ -5695,7 +5693,7 @@ HiView_Window::reset_selected_region ()
 {
 bool region_was_selected = has_selected_region ();
 Selected_Image_Region = QRectF/*.setRect*/(0, 0, 0, 0);
-Selection_Start.rx () = 
+Selection_Start.rx () =
 Selection_Start.ry () = -1;
 Selection_Modification = 0;
 reset_region_overlay ();
@@ -5799,5 +5797,4 @@ return QMainWindow::eventFilter (object, event);
 
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
