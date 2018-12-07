@@ -1702,7 +1702,7 @@ if (Closed)
 	}
 
 if (data_maps &&
-	data_maps == Data_Maps)
+	data_maps == const_cast<const Data_Map**>(Data_Maps))
 	{
 	//	Identical maps.
 	Update.end ();
@@ -2099,7 +2099,7 @@ int
 	band = 3;
 if (Data_Maps &&
 	data_maps &&
-	Data_Maps != data_maps)
+	const_cast<const Data_Map**>(Data_Maps) != data_maps)
 	while (band--)
 		{
 		#if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
