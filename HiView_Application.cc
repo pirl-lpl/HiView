@@ -25,15 +25,18 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 using namespace UA::HiRISE;
 
 #include	"HiView_Application.hh"
-#include  <QApplication>
-#include  <QDesktopWidget>
+#include <QApplication>
 #include	<QFile>
 #include	<QFileOpenEvent>
-#include  <QResizeEvent>
+#include <QResizeEvent>
 #include	<QTextStream>
 #include	<QUrl>
 #include	<QStringRef>
 #include	<QString>
+#ifdef __APPLE__
+#include <QPalette>
+#include <QStyleFactory>
+#endif
 
 #if defined (DEBUG_SECTION)
 /*	DEBUG_SECTION controls
@@ -82,6 +85,18 @@ HiView_Application::HiView_Application
 	)
 	:	QApplication (argc, argv)
 {
+#ifdef __APPLE__
+QApplication::setStyle(QStyleFactory::create("Fusion"));
+QPalette p;
+p = qApp->palette();
+/*p.setColor(QPalette::Window, QColor(53,53,53));
+p.setColor(QPalette::Button, QColor(53,53,53));
+p.setColor(QPalette::Highlight, QColor(142,45,197));
+p.setColor(QPalette::ButtonText, QColor(255,255,255));
+p.setColor(QPalette::WindowText, QColor(255,255,255));
+*/
+setPalette(p);
+#endif
 setObjectName ("HiView_Application");
 //QDesktopWidget* widget = this->desktop();
 //widget->installEventFilter(new NullEventFilter());
