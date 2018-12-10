@@ -61,9 +61,7 @@ using std::boolalpha;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -91,9 +89,9 @@ clog << ">>> Save_Image_Thread" << endl;
 connect (this,
 	SIGNAL (finished ()),
 	SLOT (thread_finished ()));
-connect (this,
+/*connect (this,
 	SIGNAL (terminated ()),
-	SLOT (thread_terminated ()));
+	SLOT (thread_terminated ()));*/
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
 clog << ">>> Save_Image_Thread" << endl;
 #endif
@@ -539,5 +537,4 @@ if (! completed &&
 }
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
