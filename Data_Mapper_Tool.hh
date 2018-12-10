@@ -60,9 +60,7 @@ class QwtPlotMarker;
 #include	<iosfwd>
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class Icon_Button;
@@ -1036,6 +1034,5 @@ static QErrorMessage
 };
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif
