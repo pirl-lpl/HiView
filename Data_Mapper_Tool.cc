@@ -125,9 +125,7 @@ using std::setfill;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -1669,7 +1667,8 @@ Upper_Bound_Percent_Slider->setToolTip
 Upper_Bound_Percent_Slider->setFixedHeight (slider_height);
 //	Reversed range.
 Upper_Bound_Percent_Slider->setScale(100, 0);
-Upper_Bound_Percent_Slider->setScaleStepSize(0.01);
+//Upper_Bound_Percent_Slider->setScaleStepSize(0.01);
+Upper_Bound_Percent_Slider->setSingleSteps(1);
 Upper_Bound_Percent_Slider->setPageSteps(10);
 Upper_Bound_Percent_Slider->setValue (0);
 Upper_Bound_Percent_Slider->setHandleSize (QSize(15,7));
@@ -1718,8 +1717,9 @@ Lower_Bound_Percent_Slider->setToolTip
 	(tr ("Change all lower bounds percentages"));
 Lower_Bound_Percent_Slider->setFixedHeight (slider_height);
 Lower_Bound_Percent_Slider->setScale (0, 100);
-Upper_Bound_Percent_Slider->setScaleStepSize(0.01);
-Upper_Bound_Percent_Slider->setPageSteps(10);
+//Upper_Bound_Percent_Slider->setScaleStepSize(0.01);
+Lower_Bound_Percent_Slider->setSingleSteps(1);
+Lower_Bound_Percent_Slider->setPageSteps(10);
 Lower_Bound_Percent_Slider->setValue (0);
 Lower_Bound_Percent_Slider->setHandleSize (QSize(15,7));
 Lower_Bound_Percent_Slider->setTracking (true);
@@ -5137,5 +5137,4 @@ if (Data_Maps)
 
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
