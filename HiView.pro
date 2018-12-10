@@ -236,13 +236,13 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 unix:INCLUDEPATH += \
-	../JP2 \
+	../libjp2 \
 	$$KAKADU_ROOT/include \
 	$$PIRL_ROOT/include \
 	$$IDAEIM_ROOT/include
 
 win32:INCLUDEPATH += \
-	../JP2 \
+	../libjp2 \
 	$$KAKADU_ROOT/include \
 	$$PIRL_ROOT/include \
 	$$IDAEIM_ROOT/include 
@@ -252,9 +252,9 @@ win32:INCLUDEPATH += \
 
 unix:LIBS += \
    $$QWT_ROOT/lib/libqwt.a \
-	../JP2/libJP2.a \
-	../JP2/libJP2_Reader.a \
-	../JP2/Kakadu/libKakadu_JP2.a \
+	../libjp2/libJP2.a \
+	../libjp2/libJP2_Reader.a \
+	../libjp2/Kakadu/libKDU.a \
 	$$KAKADU_ROOT/lib/libkdu_aux.a \
 	$$KAKADU_ROOT/lib/libkdu.a \
 	$$PIRL_ROOT/lib/libPIRL++.a \
@@ -265,9 +265,9 @@ unix:LIBS += \
 
 win32:LIBS += \
    $$QWT_ROOT/lib/qwt.dll \
-	../JP2/libJP2.lib \
-	../JP2/libJP2_Reader.lib \
-	../JP2/Kakadu/libKakadu_JP2.lib \
+	../libjp2/libJP2.lib \
+	../libjp2/libJP2_Reader.lib \
+	../libjp2/Kakadu/libKDU.lib \
 	$$KAKADU_ROOT/lib/libkdu_a.lib \ 
 	$$KAKADU_ROOT/lib/libkdu.lib \
 	$$PIRL_ROOT/lib/libPIRL++.lib \ 
