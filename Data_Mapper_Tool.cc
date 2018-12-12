@@ -125,9 +125,7 @@ using std::setfill;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -1669,7 +1667,8 @@ Upper_Bound_Percent_Slider->setToolTip
 Upper_Bound_Percent_Slider->setFixedHeight (slider_height);
 //	Reversed range.
 Upper_Bound_Percent_Slider->setScale(100, 0);
-Upper_Bound_Percent_Slider->setScaleStepSize(0.01);
+//Upper_Bound_Percent_Slider->setScaleStepSize(0.01);
+Upper_Bound_Percent_Slider->setSingleSteps(1);
 Upper_Bound_Percent_Slider->setPageSteps(10);
 Upper_Bound_Percent_Slider->setValue (0);
 Upper_Bound_Percent_Slider->setHandleSize (QSize(15,7));
@@ -1718,8 +1717,9 @@ Lower_Bound_Percent_Slider->setToolTip
 	(tr ("Change all lower bounds percentages"));
 Lower_Bound_Percent_Slider->setFixedHeight (slider_height);
 Lower_Bound_Percent_Slider->setScale (0, 100);
-Upper_Bound_Percent_Slider->setScaleStepSize(0.01);
-Upper_Bound_Percent_Slider->setPageSteps(10);
+//Upper_Bound_Percent_Slider->setScaleStepSize(0.01);
+Lower_Bound_Percent_Slider->setSingleSteps(1);
+Lower_Bound_Percent_Slider->setPageSteps(10);
 Lower_Bound_Percent_Slider->setValue (0);
 Lower_Bound_Percent_Slider->setHandleSize (QSize(15,7));
 Lower_Bound_Percent_Slider->setTracking (true);
@@ -3611,14 +3611,14 @@ connect (Tracker,
 	SIGNAL (position (const QPoint&)),
 	SLOT   (graph_position (const QPoint&)));
 connect (Tracker,
-	SIGNAL (appended (const QwtDoublePoint&)),
-	SLOT   (mouse_down (const QwtDoublePoint&)));
+	SIGNAL (appended (const QPointF&)),
+	SLOT   (mouse_down (const QPointF&)));
 connect (Tracker,
-	SIGNAL (moved (const QwtDoublePoint&)),
-	SLOT   (mouse_drag (const QwtDoublePoint&)));
+	SIGNAL (moved (const QPointF&)),
+	SLOT   (mouse_drag (const QPointF&)));
 connect (Tracker,
-	SIGNAL (selected (const QwtDoublePoint&)),
-	SLOT   (mouse_up (const QwtDoublePoint&)));
+	SIGNAL (selected (const QPointF&)),
+	SLOT   (mouse_up (const QPointF&)));
 connect (Tracker,
 	SIGNAL (leave_widget ()),
 	SLOT (leave_graph ()));
@@ -3846,7 +3846,7 @@ clog << "<<< Data_Mapper_Tool::graph_position" << endl;
 void
 Data_Mapper_Tool::mouse_down
 	(
-	const QwtDoublePoint& point
+	const QPointF& point
 	)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
@@ -3952,7 +3952,7 @@ clog << "<<< Data_Mapper_Tool::mouse_down" << endl;
 void
 Data_Mapper_Tool::mouse_drag
 	(
-	const QwtDoublePoint&	point
+	const QPointF&	point
 	)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
@@ -4271,7 +4271,7 @@ clog << "<<< Data_Mapper_Tool::mouse_drag" << endl;
 void
 Data_Mapper_Tool::mouse_up
 	(
-	const QwtDoublePoint&
+	const QPointF&
 	)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DRAGGING))
@@ -5137,5 +5137,4 @@ if (Data_Maps)
 
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

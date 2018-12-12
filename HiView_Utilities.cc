@@ -139,7 +139,7 @@ QStringList
 QUrl
 HiView_Utilities::PDS_metadata_URL
 	(
-	const QString& Source_Name,    
+	const QString& Source_Name,
 	const QUrl&	model_URL
 	)
 {

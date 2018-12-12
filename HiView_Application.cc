@@ -25,13 +25,18 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 using namespace UA::HiRISE;
 
 #include	"HiView_Application.hh"
-#include<QApplication>
-#include<QDesktopWidget>
+#include <QApplication>
 #include	<QFile>
 #include	<QFileOpenEvent>
-#include<QResizeEvent>
+#include <QResizeEvent>
 #include	<QTextStream>
 #include	<QUrl>
+#include	<QStringRef>
+#include	<QString>
+#ifdef __APPLE__
+#include <QPalette>
+#include <QStyleFactory>
+#endif
 
 #if defined (DEBUG_SECTION)
 /*	DEBUG_SECTION controls
@@ -61,9 +66,7 @@ using std::endl;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -82,6 +85,18 @@ HiView_Application::HiView_Application
 	)
 	:	QApplication (argc, argv)
 {
+#ifdef __APPLE__
+QApplication::setStyle(QStyleFactory::create("Fusion"));
+QPalette p;
+p = qApp->palette();
+/*p.setColor(QPalette::Window, QColor(53,53,53));
+p.setColor(QPalette::Button, QColor(53,53,53));
+p.setColor(QPalette::Highlight, QColor(142,45,197));
+p.setColor(QPalette::ButtonText, QColor(255,255,255));
+p.setColor(QPalette::WindowText, QColor(255,255,255));
+*/
+setPalette(p);
+#endif
 setObjectName ("HiView_Application");
 //QDesktopWidget* widget = this->desktop();
 //widget->installEventFilter(new NullEventFilter());
@@ -112,13 +127,13 @@ if (!input.isEmpty() && ! HiView_Utilities::is_URL (input) &&
 	    clog << "<<< jpip_passthru_link: true" << endl;
 	    #endif
 	    return true;
-	}    
+	}
 	#if ((DEBUG_SECTION) & DEBUG_HELPERS)
 	clog << "<<< jpip_passthru_link: false" << endl;
 	#endif
 	return false;
 }
-	
+
 QString
 HiView_Application::parse_jpip_passthru_link
 	(
@@ -132,31 +147,31 @@ HiView_Application::parse_jpip_passthru_link
 
             return stream.readLine(MAX_JPIP_PASSTHRU_LINK_SIZE);
         }
-        
-    return QString ();    
-}	    
-	
+
+    return QString ();
+}
+
 /*==============================================================================
 	Qt events:
 */
 
 #ifdef DEBUG_SECTION
-bool HiView_Application::notify(QObject* receiver, QEvent* event) 
+bool HiView_Application::notify(QObject* receiver, QEvent* event)
 {
-     try 
+     try
      {
          return QApplication::notify(receiver, event);
-     } 
-     catch(std::exception& e) 
+     }
+     catch(std::exception& e)
      {
         qDebug() << "Exception thrown:" << e.what() << " on " << receiver->objectName() << " from event type " << event->type();
         receiver->dumpObjectInfo();
         exit(-1);
      }
-     
+
      return true;
 }
-#endif 
+#endif
 
 bool
 HiView_Application::event
@@ -177,20 +192,20 @@ if (event->type () == QEvent::FileOpen)
 		 << "^^^ HiView_Application::event: emit file_open_request "
 			<< file_open_event->file () << endl;
 	#endif
-        
+
     if (!file_open_event->file().isEmpty())
         Requested_Pathname = file_open_event->file();
     else if (!file_open_event->url().isEmpty())
         Requested_Pathname = file_open_event->url().toString();
     else
         return false;
-	
+
 	if (is_jpip_passthru_link(Requested_Pathname))
 	{
 	    QString Requested_Link = parse_jpip_passthru_link(Requested_Pathname);
 	    if (! Requested_Link.isEmpty() ) Requested_Pathname = Requested_Link;
 	}
-	
+
     emit file_open_request (Requested_Pathname);
     return true;
 	}
@@ -198,5 +213,4 @@ return QApplication::event (event);
 }
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

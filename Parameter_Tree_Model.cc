@@ -137,7 +137,7 @@ role_names.insert (10, "CheckState");
 role_names.insert (11, "AccessibleText");
 role_names.insert (12, "AccesibleDescription");
 role_names.insert (13, "SizeHint");
-setRoleNames (role_names);
+//TODO QT4 OBSOLETE setRoleNames (role_names);
 #endif
 }
 
@@ -173,7 +173,7 @@ role_names.insert (10, "CheckState");
 role_names.insert (11, "AccessibleText");
 role_names.insert (12, "AccesibleDescription");
 role_names.insert (13, "SizeHint");
-setRoleNames (role_names);
+//TODO QT4 OBSOLETE setRoleNames (role_names);
 #endif
 }
 
@@ -564,4 +564,3 @@ return stream;
 
 }	// end namespace HiRISE
 }	// end namespace UA
-

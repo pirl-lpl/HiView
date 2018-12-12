@@ -104,6 +104,14 @@ isEmpty(QWT_ROOT) {
 
 include ( $(QWT_ROOT)/features/qwt.prf )
 
+      mac {
+#         QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
+
+          ! build_pass:message(Using qwt statically from $$QWT_ROOT)
+          QWT_CONFIG -= QwtFramework
+          LIBS -= -framework qwt
+      }
+
 isEmpty(IDAEIM_ROOT) {
    ! build_pass:warning("IDAEIM_ROOT undefined, using")
 
@@ -181,7 +189,6 @@ CONFIG(debug, debug|release) {
 		}
 	}
 
-
 #	Special compiler flags.
 
 #	Disable MSVC "Function call with parameters that may be unsafe" warning.
@@ -202,24 +209,16 @@ macx {
 	Info_plist.depends	=	Info.plist.template $${TARGET}.app/Contents/Info.plist
 	Info_plist.commands	=	@$(DEL_FILE) $${TARGET}.app/Contents/Info.plist$$escape_expand(\\n\\t) \
 							@sed -e "s,@EXECUTABLE@,$$TARGET,g" -e "s,@VERSION@,$$MODULE_VERSION,g" -e "s,@TYPEINFO@,$$HiView_SIGNATURE,g" -e "s,@ICON@,$$basename(ICON),g" Info.plist.template > $${TARGET}.app/Contents/Info.plist
-	QMAKE_EXTRA_TARGETS +=	Info_plist
-	PRE_TARGETDEPS		+=	$$Info_plist.target
+#	QMAKE_EXTRA_TARGETS +=	Info_plist
+#	PRE_TARGETDEPS		+=	$$Info_plist.target
 
 	PkgInfo.target		=	PkgInfo
 	PkgInfo.depends		=	$${TARGET}.app/Contents/PkgInfo
 	PkgInfo.commands	=	@$(DEL_FILE) $$PkgInfo.depends$$escape_expand(\\n\\t) \
 							@echo "APPL$$HiView_SIGNATURE" > $$PkgInfo.depends
-	QMAKE_EXTRA_TARGETS +=	PkgInfo
-	PRE_TARGETDEPS		+=	$$PkgInfo.target
+#	QMAKE_EXTRA_TARGETS +=	PkgInfo
+#	PRE_TARGETDEPS		+=	$$PkgInfo.target
 
-	#	Adds the Users Guide files to the application bundle Resources.
-	user_docs.target	=	user_docs
-	user_docs.depends	=	../Users_Guide
-	user_docs.commands	=	@echo$$escape_expand(\\n\\t) \
-							@echo "HiView Users Guide documents"$$escape_expand(\\n\\t) \
-							@$(CHK_DIR_EXISTS) HiView.app/Contents/Resources || $(MKDIR) HiView.app/Contents/Resources$$escape_expand(\\n\\t) \
-							rsync -avC ../Users_Guide/ $${TARGET}.app/Contents/Resources
-	QMAKE_EXTRA_TARGETS	+=	user_docs
 	}
 
 
@@ -237,13 +236,13 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 unix:INCLUDEPATH += \
-	../JP2 \
+	../libjp2 \
 	$$KAKADU_ROOT/include \
 	$$PIRL_ROOT/include \
 	$$IDAEIM_ROOT/include
 
 win32:INCLUDEPATH += \
-	../JP2 \
+	../libjp2 \
 	$$KAKADU_ROOT/include \
 	$$PIRL_ROOT/include \
 	$$IDAEIM_ROOT/include 
@@ -252,21 +251,23 @@ win32:INCLUDEPATH += \
 #  N.B. per Qwt License, static linking of Qwt is permitted
 
 unix:LIBS += \
-	../JP2/libJP2.a \
-	../JP2/libJP2_Reader.a \
-	../JP2/Kakadu/libKakadu_JP2.a \
+   $$QWT_ROOT/lib/libqwt.a \
+	../libjp2/libJP2.a \
+	../libjp2/libJP2_Reader.a \
+	../libjp2/Kakadu/libKDU.a \
 	$$KAKADU_ROOT/lib/libkdu_aux.a \
 	$$KAKADU_ROOT/lib/libkdu.a \
 	$$PIRL_ROOT/lib/libPIRL++.a \
-   $$IDAEIM_ROOT/lib/libQt_Utility.a \
 	$$IDAEIM_ROOT/lib/libPVL.a \
 	$$IDAEIM_ROOT/lib/libString.a \
-	$$IDAEIM_ROOT/lib/libidaeim.a
+	$$IDAEIM_ROOT/lib/libidaeim.a \
+#  $$IDAEIM_ROOT/lib/libQt_Utility.a
 
 win32:LIBS += \
-	../JP2/libJP2.lib \
-	../JP2/libJP2_Reader.lib \
-	../JP2/Kakadu/libKakadu_JP2.lib \
+   $$QWT_ROOT/lib/qwt.dll \
+	../libjp2/libJP2.lib \
+	../libjp2/libJP2_Reader.lib \
+	../libjp2/Kakadu/libKDU.lib \
 	$$KAKADU_ROOT/lib/libkdu_a.lib \ 
 	$$KAKADU_ROOT/lib/libkdu.lib \
 	$$PIRL_ROOT/lib/libPIRL++.lib \ 

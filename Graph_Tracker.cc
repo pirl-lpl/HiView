@@ -60,9 +60,7 @@ using std::endl;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -92,7 +90,7 @@ Graph_Tracker::Graph_Tracker
 			//	RubberBand
     		QwtPlotPicker::NoRubberBand,
 			//	DisplayMode
-			QwtPicker::AlwaysOn, 
+			QwtPicker::AlwaysOn,
     		canvas)
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
@@ -140,7 +138,7 @@ if (coordinate.x () < plot ()->axisScaleDiv (xAxis ()).lowerBound () ||
 	return QwtText ();
 
 //QPoint point (coordinate);
-   
+
 QString
 	text;
 switch (rubberBand ())
@@ -214,5 +212,4 @@ emit leave_widget ();
 }
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

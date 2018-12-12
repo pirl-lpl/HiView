@@ -50,15 +50,12 @@ class QPaintEvent;
 class QCloseEvent;
 //class QPainter;
 
-namespace idaeim {
-namespace PVL {
+namespace idaeim::PVL {
 class Aggregate;
-}}
+}
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class About_HiView_Dialog;
@@ -606,7 +603,7 @@ QRubberBand
 	*Region_Overlay;
 QLabel
 	*Selected_Area;
-QString 
+QString
 	Selected_Area_Text;
 
 //	Image metadata dialog.
@@ -668,6 +665,5 @@ static QErrorMessage
 	*Error_Message;
 };
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

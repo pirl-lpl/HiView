@@ -38,10 +38,9 @@ class QPoint;
 class QPointF;
 class QTransform;
 
-namespace idaeim {
-namespace PVL {
+namespace idaeim::PVL {
 class Aggregate;
-}}
+}
 
 #include	<iosfwd>
 #include	<string>
@@ -57,9 +56,7 @@ class Aggregate;
 #endif
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /**	A <i>Plastic_Image</i> is a QImage that appears to be geometrically
 	and photometrically plastic.
@@ -1643,7 +1640,7 @@ virtual void initialize ();
 	that resulted from the rendering in the Rendering variables. Then the
 	Rendering configuration variables are deleted and Rendering is set to
 	NULL.
-	
+
 	<b>N.B.</b>: Rendering is used as the indication that {@link
 	is_rendering() rendering is in progress}; i.e. when Rendering is NULL
 	rendering is not in progress.
@@ -1671,7 +1668,7 @@ virtual bool is_rendering (bool rendering);
 	operator, a shallow copy is made that only increments the shared data
 	reference counter (the reference counter is decremented when a QImage
 	is destroyed). Normally, when the shared image data storage is to be
-	changed the the non-const image data address is obtained using a 
+	changed the the non-const image data address is obtained using a
 	QImage method  (scanLine or bits) that will detatch the shared data
 	storage if its reference counter is greater than 1. Detatching the
 	shared data storage involves making a copy of the data storage that
@@ -2013,6 +2010,5 @@ void mark_image (Plastic_Image* image, const QString& label,
 	int top, const QColor& text_color, const QColor& field_color = QColor ());
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

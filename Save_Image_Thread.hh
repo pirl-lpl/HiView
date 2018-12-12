@@ -34,9 +34,7 @@ class QHBoxLayout;
 class QLabel;
 class QMessageBox;
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class Plastic_Image;
@@ -207,7 +205,7 @@ protected:
 <dt>SAVE_IMAGE_RENDER
 The image is
 	first updated which causes all rendering operations pending for
-	the image to be applied. If this succeeds 
+	the image to be applied. If this succeeds
 */
 virtual void run ();
 
@@ -309,6 +307,5 @@ QString
 };
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

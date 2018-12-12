@@ -32,9 +32,7 @@ class QCursor;
 class QMouseEvent;
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /**	A <i>Graph_Tracker</i> tracks the position of the cursor on a Graph.
 
@@ -59,7 +57,7 @@ namespace HiRISE
 	<b>ClickSelection -</b>
 
 	Mouse down (button 1) emits an appended signal and a selected signal.
-	No other signals are emitted during dragging or mouse button up. 
+	No other signals are emitted during dragging or mouse button up.
 
 	<b>DragSelection -</b>
 
@@ -178,6 +176,5 @@ virtual void widgetLeaveEvent (QEvent* event);
 };
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

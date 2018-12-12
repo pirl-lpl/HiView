@@ -29,8 +29,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	"JP2_Image.hh"
 #include	"Tiled_Image_Display.hh"
 #include	"HiView_Utilities.hh"
-#include    "Projection.hh"
-#include    "Coordinate.hh"
+#include "Projection.hh"
+#include "Coordinate.hh"
 
 //	UA::HiRISE::JP2_Reader.
 #include	"JP2.hh"
@@ -54,7 +54,7 @@ using UA::HiRISE::JP2_Exception;
 #include	<QErrorMessage>
 #include	<QCursor>
 #include	<QBitmap>
-#include    <QClipboard>
+#include <QClipboard>
 
 #include	<algorithm>
 using std::min;
@@ -69,6 +69,8 @@ using std::endl;
 
 
 #if defined (DEBUG_SECTION)
+
+#include <QDebug>
 /*******************************************************************************
 	DEBUG_SECTION controls
 
@@ -225,7 +227,7 @@ Image_Viewer::Image_Viewer
 		Control_Mode (NO_CONTROL_MODE),
 		Mouse_Drag_Image_Position (-1, -1),
 		Default_Cursor (NULL),
-        Projector(NULL),
+      Projector(NULL),
 		Block_Image_Updates (true)
 {
 setObjectName ("Image_Viewer");
@@ -268,49 +270,60 @@ connect (Vertical_Scrollbar,
 
 //	Sliding_Scale.
 Sliding_Scale = new QSlider (Qt::Vertical, this);
+Sliding_Scale->setInvertedControls(true);
+
+// this has no effect on mouse drag
+Sliding_Scale->setInvertedControls(true);
 Sliding_Scale->setToolTip (tr ("Image scaling"));
 Sliding_Scale->setTickPosition (QSlider::NoTicks);
 Sliding_Scale->setRange
 	(scale_to_slider (Tiled_Image_Display::min_scale ()),
-	 scale_to_slider (Tiled_Image_Display::max_scale ()));
+	scale_to_slider (Tiled_Image_Display::max_scale ()));
 Sliding_Scale->setSingleStep
 	(Sliding_Scale->maximum () * Scaling_Minor_Increment);
 if (! Sliding_Scale->singleStep ())
 	Sliding_Scale->setSingleStep (1);	//	Minimum increment.
 Sliding_Scale->setPageStep
 	(Sliding_Scale->maximum () * Scaling_Major_Increment);
-#if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_LAYOUT))
-OBJECT_CONDITIONAL (
-clog << "    Sliding_Scale range: "
+  Sliding_Scale->setTracking (default_scaling_immediate ());
+
+  Sliding_Scale->setValue (0);
+
+#if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_LAYOUT | DEBUG_SCALE))
+//OBJECT_CONDITIONAL (
+qDebug() << "    Sliding_Scale range: "
 		<< slider_to_scale (Sliding_Scale->minimum ())
 		<< '/' << Sliding_Scale->minimum () << " - "
 		<< slider_to_scale (Sliding_Scale->maximum ())
 		<< '/' << Sliding_Scale->maximum () << endl
-	 << "    Sliding_Scale increments: "
+	  << "    Sliding_Scale increments: "
 		<< "minor - " << Scaling_Minor_Increment
 		<< '/' << Sliding_Scale->singleStep ()
 		<< ", major - " << Scaling_Major_Increment
-		<< '/' << Sliding_Scale->pageStep () << endl;)
+		<< '/' << Sliding_Scale->pageStep () << endl
+    << "    Sliding_Scale tracking: "
+ 		<< Sliding_Scale->hasTracking () << endl
+    << "    Sliding_Scale position: "
+ 		<< Sliding_Scale->sliderPosition ()
+ 		<< " [" << Sliding_Scale->value () << "]" << endl;//)
 #endif
-Sliding_Scale->setTracking (default_scaling_immediate ());
-Sliding_Scale->setValue (scale_to_slider (1.0));
 Sliding_Scale_Width = (Sliding_Scale->sizeHint ()).rwidth ();
 
-connect (Sliding_Scale,
+/*connect (Sliding_Scale,
 	SIGNAL (sliderMoved (int)),
-	SLOT (sliding_scale_value (int)));
+	SLOT (sliding_scale_value (int)));*/
 connect (Sliding_Scale,
 	SIGNAL (valueChanged (int)),
 	SLOT (sliding_scale_value_changed (int)));
 
 Sliding_Scale_Value = new QLabel (this);
+sliding_scale_value (1.0);
 QFont
 	scale_font (Sliding_Scale_Value->font ());
 scale_font.setStyleHint (QFont::SansSerif);
 scale_font.setStretch (QFont::Condensed);
 scale_font.setPointSize (9);
 Sliding_Scale_Value->setFont (scale_font);
-sliding_scale_value (1.0);
 Sliding_Scale_Width = qMax (Sliding_Scale_Width,
 	(Sliding_Scale_Value->sizeHint ()).width ());
 Sliding_Scale_Value->setFixedSize
@@ -1249,7 +1262,7 @@ Horizontal_Scrollbar->setPageStep (display_size.rwidth ());
 Vertical_Scrollbar->setPageStep (display_size.rheight ());
 
 /*	The maximum range corresponds to that part of the scroll bar
-	not including the thumb, which is logically equivalent to 
+	not including the thumb, which is logically equivalent to
 	the image size minus the scaled display size.
 	The maximum range is never less than zero.
 */
@@ -1809,16 +1822,16 @@ return scaled;
 
 bool Image_Viewer::copy_coordinates()
 {
-    if(Image_Display == NULL) 
+    if(Image_Display == NULL)
     {
         return false;
     }
-    
+
     QClipboard *cb = QApplication::clipboard();
-    
+
     const QPoint coord = Image_Display->Get_Saved_Coordinate();
 
-    if (Projector && !Projector->is_identity()) 
+    if (Projector && !Projector->is_identity())
     { //this check will ensure that there is a latitude/longitude coordinate, if not then only x,y can be used.
         char str[90]; //string is going to take up at least ~53 characters
         Coordinate coordinate_XY(coord.x(), coord.y());
@@ -1827,11 +1840,11 @@ bool Image_Viewer::copy_coordinates()
         {
             sprintf
             (
-                str, 
-                "x,y,longitude,latitude\n%.0f,%.0f,%.11f,%.11f", 
-                coordinate_XY.X, 
-                coordinate_XY.Y, 
-                coordinate_degree.X, 
+                str,
+                "x,y,longitude,latitude\n%.0f,%.0f,%.11f,%.11f",
+                coordinate_XY.X,
+                coordinate_XY.Y,
+                coordinate_degree.X,
                 coordinate_degree.Y
             );
         }
@@ -1839,22 +1852,22 @@ bool Image_Viewer::copy_coordinates()
         {
             sprintf
             (
-                str, 
-                "%.0f,%.0f,%.11f,%.11f", 
-                coordinate_XY.X, 
-                coordinate_XY.Y, 
-                coordinate_degree.X, 
+                str,
+                "%.0f,%.0f,%.11f,%.11f",
+                coordinate_XY.X,
+                coordinate_XY.Y,
+                coordinate_degree.X,
                 coordinate_degree.Y
             );
         }
-        
+
         cb->setText(str, QClipboard::Clipboard);
         ++Times_Copied;
     }
-    else 
+    else
     {
         char str[30]; //string is going to take up at least ~8 characters
-        
+
         if(!Times_Copied)
             sprintf(str, "x\t%d,y\t%d", coord.x(), coord.y());
         else
@@ -1906,7 +1919,7 @@ Image_Viewer::sliding_scale_value
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SCALE))
 OBJECT_CONDITIONAL (
 clog << ">-< Image_Viewer::sliding_scale_value: " << value << " -> "
-		<< QString ("%1").arg (value, 5, 'f', 2) << endl;)
+		 << QString ("%1").arg (value, 5, 'f', 2) << endl;)
 #endif
 Sliding_Scale_Value->setText (QString ("%1").arg (value, 5, 'f', 2));
 }
@@ -2116,13 +2129,13 @@ connect (Fit_to_Height_Action,
 	SIGNAL (triggered ()),
 	SLOT (fit_to_height ()));
 View_Menu->addAction (Fit_to_Height_Action);
-    
+
     Copy_Action = new QAction (tr ("&Copy Coordinates"), this);
     Copy_Action->setEnabled(false);
     Copy_Action->setShortcut (tr ("Ctrl+C"));
     connect (Copy_Action, SIGNAL (triggered()), SLOT (copy_coordinates()));
     View_Menu->addAction (Copy_Action);
-    
+
     #if ((DEBUG_SECTION) & DEBUG_MENUS)
         OBJECT_CONDITIONAL (clog << "<<< Image_Viewer::create_menus" << endl;)
     #endif
@@ -3066,7 +3079,7 @@ Image_Viewer::error_message
 //	Share the Error_Message dialog with the Tiled_Image_Display.
 Tiled_Image_Display::error_message (Error_Message = dialog);
 }
-    
+
 /*==============================================================================
     World Information
  */
