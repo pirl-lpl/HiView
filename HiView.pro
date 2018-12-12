@@ -76,7 +76,8 @@ defineTest(addDef) {
 addDef(DOCUMENTATION_SEARCH_LOCATIONS, $$(DOCUMENTATION_SEARCH_LOCATIONS))
 addDef(DEFAULT_DOCUMENTATION_FILENAME, $$(DEFAULT_DOCUMENTATION_FILENAME))
 
-macx: addDef(EXPORT_QMAKE_MAC_SDK, macosx)
+#macx: addDef(EXPORT_QMAKE_MAC_SDK, macosx)
+macx: !build_pass:message(QMAKE_MACOSX_DEPLOYMENT_TARGET = $$QMAKE_MACOSX_DEPLOYMENT_TARGET)
 
 PIRL_ROOT = $$(PIRL_ROOT)
 IDAEIM_ROOT = $$(IDAEIM_ROOT)
@@ -105,8 +106,6 @@ isEmpty(QWT_ROOT) {
 include ( $(QWT_ROOT)/features/qwt.prf )
 
       mac {
-#         QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
-
           ! build_pass:message(Using qwt statically from $$QWT_ROOT)
           QWT_CONFIG -= QwtFramework
           LIBS -= -framework qwt
@@ -209,15 +208,15 @@ macx {
 	Info_plist.depends	=	Info.plist.template $${TARGET}.app/Contents/Info.plist
 	Info_plist.commands	=	@$(DEL_FILE) $${TARGET}.app/Contents/Info.plist$$escape_expand(\\n\\t) \
 							@sed -e "s,@EXECUTABLE@,$$TARGET,g" -e "s,@VERSION@,$$MODULE_VERSION,g" -e "s,@TYPEINFO@,$$HiView_SIGNATURE,g" -e "s,@ICON@,$$basename(ICON),g" Info.plist.template > $${TARGET}.app/Contents/Info.plist
-#	QMAKE_EXTRA_TARGETS +=	Info_plist
-#	PRE_TARGETDEPS		+=	$$Info_plist.target
+	QMAKE_EXTRA_TARGETS +=	Info_plist
+	PRE_TARGETDEPS		+=	$$Info_plist.target
 
 	PkgInfo.target		=	PkgInfo
 	PkgInfo.depends		=	$${TARGET}.app/Contents/PkgInfo
 	PkgInfo.commands	=	@$(DEL_FILE) $$PkgInfo.depends$$escape_expand(\\n\\t) \
 							@echo "APPL$$HiView_SIGNATURE" > $$PkgInfo.depends
-#	QMAKE_EXTRA_TARGETS +=	PkgInfo
-#	PRE_TARGETDEPS		+=	$$PkgInfo.target
+	QMAKE_EXTRA_TARGETS +=	PkgInfo
+	PRE_TARGETDEPS		+=	$$PkgInfo.target
 
 	}
 
