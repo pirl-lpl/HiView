@@ -26,7 +26,6 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include	<qwt.h>
 #include <qwt_series_store.h>
-#include <qwt_compat.h>
 #include	<QPolygon>
 #include	<QPoint>
 
@@ -37,9 +36,7 @@ template<typename T> class QVector;
 
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /**	<i>Function_Nodes</i> contains the node points of a function that
 	defines the contents of a Data_Map.
@@ -432,14 +429,14 @@ virtual QPointF sample(size_t index) const;
 
 /**	The bounding rectangle of all function nodes.
 
-	@return	A QwtDoubleRect (this is a typedef for a QRectF) rectangle in
+	@return	A QRectF (this is a typedef for a QRectF) rectangle in
 		which the left side is 0, the top is the {@link max_y() maximum
 		Data_Map entry value}, the width is the {@link max_x() maximum
 		Data_Map index value}, and the height is the maximum Data_Map
 		entry value. The is the area of the function graph that
 		encompasses the entire data map.
 */
-virtual QwtDoubleRect boundingRect () const;
+virtual QRectF boundingRect () const;
 
 /*==============================================================================
 	Utilities
@@ -494,6 +491,5 @@ Data_Map
 };	//	Function_Nodes class.
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

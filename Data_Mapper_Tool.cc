@@ -484,9 +484,9 @@ virtual QPointF sample(size_t index) const
 
 virtual void dataChanged() {}
 
-virtual QwtDoubleRect boundingRect () const
+virtual QRectF boundingRect () const
 {
-return QwtDoubleRect
+return QRectF
 	(
 	0,			//	Left.
 	max_y (),	//	Top.

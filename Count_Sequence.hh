@@ -28,11 +28,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 //	Qwt
 #include	"qwt_series_data.h"
-#include "qwt_compat.h"
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /**	A <i>Count_Sequence</i> is a sequence of integer data in the form of
 	QwtData suitible for plotting on a graph.
@@ -282,10 +279,10 @@ virtual QPointF sample (size_t index) const;
 	value. The width will be the data content {@link size () size}
 	times the {@link increment() increment}.
 
-	@return	A QwtDoubleRect that describes the bounding box of the
+	@return	A QRectF that describes the bounding box of the
 		data content.
 */
-virtual QwtDoubleRect boundingRect () const;
+virtual QRectF boundingRect () const;
 
 /*==============================================================================
 	Data
@@ -304,6 +301,5 @@ double
 
 };
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

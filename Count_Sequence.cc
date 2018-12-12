@@ -54,9 +54,7 @@ using std::boolalpha;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constructors
@@ -259,16 +257,16 @@ Count_Sequence::y
 	) const
 {return (index < (size_t)Data.size ()) ? Data.at (index) : -1.0;}
 
-QPointF 
+QPointF
 Count_Sequence::sample (size_t index) const
 {
    return QPointF(x(index), y(index));
 }
 
-QwtDoubleRect
+QRectF
 Count_Sequence::boundingRect () const
 {
-return QwtDoubleRect
+return QRectF
 	(
 	Base,						//	Left.
 	Max_Count,					//	Top.
@@ -282,5 +280,4 @@ unsigned long long
 Count_Sequence::calculate_max_count ()
 {return (Max_Count = max_count_value (Data));}
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

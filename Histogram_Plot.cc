@@ -65,9 +65,7 @@ using std::boolalpha;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 
 /*==============================================================================
@@ -247,16 +245,16 @@ return Attributes & attribute;
 /*==============================================================================
 	QwtPlotItem virtual methods implementations
 */
-QwtDoubleRect
+QRectF
 Histogram_Plot::boundingRect () const
 {
-QwtDoubleRect
+QRectF
 	rectangle = Data->boundingRect ();
 if (rectangle.isValid () &&
 	attribute_is_set (HORIZONTAL_BARS))
 	//	Horizontal values, increasing upwards.
     rectangle.setRect
-		(0.0, rectangle.height (), 
+		(0.0, rectangle.height (),
 		 rectangle.height (), rectangle.width ());
 return rectangle;
 }
@@ -271,7 +269,7 @@ void
 Histogram_Plot::draw
 	(
 	QPainter*			painter,
-	const QwtScaleMap&	xMap, 
+	const QwtScaleMap&	xMap,
     const QwtScaleMap&	yMap,
 	const QRectF&
 	) const
@@ -324,7 +322,7 @@ clog << "         base = " << base << endl
 		The position of the "top" edge - as opposed to the bottom edge -
 		of the bar pending painting. For a vertical bar this is the y
 		position of the edge; for a horizontal bar this is the x position
-		of the edge. 
+		of the edge.
 
 	next_edge -
 
@@ -361,7 +359,7 @@ clog << "         base = " << base << endl
 	bar is inclusive of the leading edge but exclusive of the trailing;
 	i.e. when transitioning from the last bar painted to the next bar for
 	consideration the next_edge becomes the last_edge, which relies on
-	the bottom right edge being excluded from bar rectangle painting. 
+	the bottom right edge being excluded from bar rectangle painting.
 */
 QRect
 	bar_rect;
@@ -477,5 +475,4 @@ clog << "<<< Histogram_Plot::draw" << endl;
 #endif
 }
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

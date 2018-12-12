@@ -57,9 +57,7 @@ using std::setw;
 #endif	//	DEBUG_SECTION
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
 	Constants
@@ -280,7 +278,7 @@ if (x >= 0 &&
 	x <= max_x () &&
 	y >= 0 &&
 	y <= max_y ())
-	{	
+	{
 	int
 		index = Nodes.size ();
 	while (index--)
@@ -534,7 +532,7 @@ if (Nodes.size () != 2 ||
 	Nodes.clear ();
 	Nodes
 		<< lower_anchor
-		<< upper_anchor;	
+		<< upper_anchor;
 	interpolate ();
 	return true;
 	}
@@ -607,10 +605,10 @@ QPointF Function_Nodes::sample (size_t node_index) const
    return Nodes.at((int)node_index);
 }
 
-QwtDoubleRect
+QRectF
 Function_Nodes::boundingRect () const
 {
-return QwtDoubleRect
+return QRectF
 	(
 	0,			//	Left.
 	max_y (),	//	Top.
@@ -715,5 +713,4 @@ clog << "<<< Function_Nodes::linear_interpolation" << endl;
 }
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE

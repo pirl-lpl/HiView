@@ -32,13 +32,10 @@ template<typename T> class QVector;
 class QWidget;
 
 //	Qwt
-#include <qwt_compat.h>
 class QwtPlotMarker;
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward References:
 class Graph_Tracker;
@@ -267,6 +264,5 @@ static int
 };
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif

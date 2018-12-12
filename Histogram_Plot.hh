@@ -25,8 +25,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #define HiView_Histogram_Plot_hh
 
 //	Qwt
-#include	"qwt_plot_item.h" 
-#include "qwt_compat.h"
+#include	"qwt_plot_item.h"
 
 //	Qt
 #include	<QColor>
@@ -36,9 +35,7 @@ class QString;
 template<typename T> class QVector;
 
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward reference.
 class Count_Sequence;
@@ -249,10 +246,10 @@ virtual int rtti () const;
 	The data content {@link Count_Sequence::boundingRect() bounding box}
 	is reoriented if the {@link #HORIZONTAL_BARS} attribute is set.
 
-	@return	A QwtDoubleRect that describes the bounding box of the
+	@return	A QRectF that describes the bounding box of the
 		data content.
 */
-virtual QwtDoubleRect boundingRect () const;
+virtual QRectF boundingRect () const;
 
 /**	Paints the histogram bars on a canvas region using horizontal
 	and vertical scaling maps.
@@ -291,6 +288,5 @@ QColor
 };
 
 
-}	//	namespace HiRISE
-}	//	namespace UA
+}	//	namespace UA::HiRISE
 #endif	//	HISTOGRAM_PLOT_HH
