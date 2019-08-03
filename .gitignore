@@ -1,4 +1,6 @@
 CVS/
+.vs/
+out/
 .qmake.stash
 HiView.app/
 release/
