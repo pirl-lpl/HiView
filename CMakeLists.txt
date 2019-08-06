@@ -38,56 +38,58 @@ find_library(kdu_lib NAMES "kdu_a7AR" PATHS "${Kak_DIR}/lib_x64" NO_DEFAULT_PATH
 set_target_properties(KDU_AUX PROPERTIES IMPORTED_LOCATION ${kdu_lib})
 
 set(HEADERS
-	HiView_Application.hh
-	HiView_Config.hh
-	HiView_Utilities.hh
-	HiView_Window.hh
-	About_HiView_Dialog.hh
-	Image_Tile.hh
-	Synchronized_Event.hh
-	Image_Renderer.hh
-	Image_Renderer_Thread.hh
-	Plastic_Image.hh
-	Plastic_QImage.hh
-	JP2_Image.hh
-	Plastic_Image_Factory.hh
-	Tiled_Image_Display.hh
-	Image_Viewer.hh
-	Drawn_Line.hh
-	Navigator_Tool.hh
-	Count_Sequence.hh
-	Histogram_Plot.hh
-	Stats.hh
-	Statistics_Tool.hh
-	Statistics_and_Bounds_Tool.hh
-	Statistics_Tools.hh
-	Graph_Tracker.hh
-	Data_Mapper_Tool.hh
-	Function_Nodes.hh
-	Rotated_Label.hh
-	Activity_Indicator.hh
-	Icon_Button.hh
-	Image_Info_Panel.hh
-	Parameter_Tree_Model.hh
-	Value_Tree_Model.hh
-	Parameter_Tree_View.hh
-	Metadata_Dialog.hh
-	PDS_Metadata.hh
-	Qstream.hh
-	Save_Image_Dialog.hh
-	Save_Image_Thread.hh
-	URL_Checker.hh
-	Help_Docs.hh
-	Preferences_Dialog.hh
-	Coordinate.hh
-	Location_Mapper.hh
-	Projection.hh
-	Equirectangular_Projection.hh
-	Polar_Stereographic_Elliptical_Projection.hh
-	SpeechHandler.hh
-   FunctionEvaluator.hh
-	Voice_Adapter.hh
-	Distance_Line.hh
+About_HiView_Dialog.hh
+Activity_Indicator.hh
+Coordinate.hh
+Count_Sequence.hh
+Data_Mapper_Tool.hh
+Distance_Line.hh
+Drawn_Line.hh
+Equirectangular_Projection.hh
+FunctionEvaluator.hh
+Function_Nodes.hh
+Graph_Tracker.hh
+Help_Docs.hh
+HiView_Application.hh
+HiView_Config.hh
+HiView_Utilities.hh
+HiView_Window.hh
+Histogram_Plot.hh
+Icon_Button.hh
+Image_Info_Panel.hh
+Image_Renderer.hh
+Image_Renderer_Thread.hh
+Image_Tile.hh
+Image_Viewer.hh
+JP2_Image.hh
+Location_Mapper.hh
+Mac_Voice_Adapter.hh
+Metadata_Dialog.hh
+Navigator_Tool.hh
+Network_Status.hh
+PDS_Metadata.hh
+Parameter_Tree_Model.hh
+Parameter_Tree_View.hh
+Plastic_Image.hh
+Plastic_Image_Factory.hh
+Plastic_QImage.hh
+Polar_Stereographic_Elliptical_Projection.hh
+Preferences_Dialog.hh
+Projection.hh
+Qstream.hh
+Rotated_Label.hh
+Save_Image_Dialog.hh
+Save_Image_Thread.hh
+SpeechHandler.hh
+Statistics_Tool.hh
+Statistics_Tools.hh
+Statistics_and_Bounds_Tool.hh
+Stats.hh
+Synchronized_Event.hh
+Tiled_Image_Display.hh
+URL_Checker.hh
+Value_Tree_Model.hh
+Voice_Adapter.hh
 )
 
 set(SOURCES
@@ -145,6 +147,12 @@ set(SOURCES
 	Distance_Line.cc
 )
 
-add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+list(LENGTH HEADERS HeaderCount)
+list(LENGTH SOURCES SourceCount)
+message("Compiling ${HeaderCount} headers and ${SourceCount} Sources")
+
+add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} "HiView.qrc")
+
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
-target_link_libraries(${PROJECT_NAME} Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Script Qwt idaeim::PVL PIRL::PIRL++ UA::HiRISE::KakaduReaders KDU KDU_AUX)
+
+target_link_libraries(${PROJECT_NAME} Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Script Qwt idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::KakaduReaders)
