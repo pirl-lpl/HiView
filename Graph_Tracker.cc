@@ -29,7 +29,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include	<qwt_plot.h>
 #include	<qwt_scale_div.h>
-#include <qwt_compat.h>
+
 
 #if defined (DEBUG_SECTION)
 /*	DEBUG_SECTION controls
@@ -116,7 +116,7 @@ Graph_Tracker::set_cursor_position
 	)
 {
 QCursor::setPos (parentWidget ()->mapToGlobal
-	(transform (QwtDoublePoint (graph_position))));
+	(transform (QPointF(graph_position))));
 }
 
 /*==============================================================================
@@ -208,7 +208,7 @@ QwtPlotPicker::widgetLeaveEvent (event);
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
 clog << "^^^ Graph_Tracker::widgetLeaveEvent " << endl;
 #endif
-emit leave_widget ();
+//emit leave_widget ();
 }
 
 
