@@ -1,6 +1,7 @@
 CVS/
 .vs/
 out/
+CMakeSettings.json
 .qmake.stash
 HiView.app/
 release/
