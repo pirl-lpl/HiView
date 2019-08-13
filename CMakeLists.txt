@@ -160,8 +160,16 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
 
+#
+# TODO try and understand why the linker says that QwtSeriesStore<QPointF> is defined twice, once
+# in Function_Nodes.cc and once in Qwt, probably some inheritence issue
+#
 if (MSVC)
 	target_link_options(${PROJECT_NAME} PRIVATE "/FORCE")
 endif()
 
 target_link_libraries(${PROJECT_NAME} Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Script Qwt idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
+
+#
+# TODO run windeployqt or macdeployqt
+# see https://riptutorial.com/qt/example/24133/integrating-with-cmake
