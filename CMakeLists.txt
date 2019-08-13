@@ -22,9 +22,10 @@ find_package(JP2 REQUIRED)
 #
 # Qwt
 #
-find_library(qwt_lib NAMES qwt PATHS "${Qwt_DIR}/lib" NO_DEFAULT_PATH)
 find_path(qwt_inc qwt.h PATHS "${Qwt_DIR}/include")
+find_library(qwt_lib NAMES qwt PATHS "${Qwt_DIR}/lib" NO_DEFAULT_PATH)
 add_library(Qwt STATIC IMPORTED)
+message("Qwt = ${qwt_lib}")
 set_target_properties(Qwt PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${qwt_inc} IMPORTED_LOCATION ${qwt_lib})
 
 #
@@ -154,5 +155,13 @@ message("Compiling ${HeaderCount} headers and ${SourceCount} Sources")
 add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} "HiView.qrc")
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}
+#    ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-target_link_libraries(${PROJECT_NAME} Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Script Qwt idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::KakaduReaders)
+target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
+
+if (MSVC)
+	target_link_options(${PROJECT_NAME} PRIVATE "/FORCE")
+endif()
+
+target_link_libraries(${PROJECT_NAME} Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Script Qwt idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
