@@ -35,8 +35,8 @@ add_library(KDU STATIC IMPORTED)
 add_library(KDU_AUX STATIC IMPORTED)
 find_library(kdu_lib NAMES "kdu_v7AR" PATHS "${Kak_DIR}/lib_x64" NO_DEFAULT_PATH)
 set_target_properties(KDU PROPERTIES IMPORTED_LOCATION ${kdu_lib})
-find_library(kdu_lib NAMES "kdu_a7AR" PATHS "${Kak_DIR}/lib_x64" NO_DEFAULT_PATH)
-set_target_properties(KDU_AUX PROPERTIES IMPORTED_LOCATION ${kdu_lib})
+find_library(kdu_aux_lib NAMES "kdu_a7AR" PATHS "${Kak_DIR}/lib_x64" NO_DEFAULT_PATH)
+set_target_properties(KDU_AUX PROPERTIES IMPORTED_LOCATION ${kdu_aux_lib})
 
 set(HEADERS
 About_HiView_Dialog.hh
@@ -168,8 +168,9 @@ if (MSVC)
 	target_link_options(${PROJECT_NAME} PRIVATE "/FORCE")
 endif()
 
-target_link_libraries(${PROJECT_NAME} Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Script Qwt idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
+target_link_libraries(${PROJECT_NAME} Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Script Qwt KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
 
 #
 # TODO run windeployqt or macdeployqt
 # see https://riptutorial.com/qt/example/24133/integrating-with-cmake
+# windeployqt --no-translations HiView.exe
