@@ -1666,8 +1666,8 @@ if (event->buttons () == Qt::LeftButton &&
 	Image_View->control_mode () == Image_Viewer::NO_CONTROL_MODE)
 	{
 	QPoint
-		display_position
-			(Image_View->image_display ()->mapFromGlobal (event->globalPos ()));
+		display_position =
+			(Image_View->image_display ()->mapFromGlobal (event->globalPosition ())).toPoint();
 	#if ((DEBUG_SECTION) & DEBUG_EVENTS)
 	clog << "     image display position = " << display_position << endl
 		 << "    Region_Overlay geometry = "
@@ -1729,7 +1729,7 @@ if (Region_Drag_Offset.rx () >= 0 &&
 		position (round_down
 			(Image_View->map_display_to_image
 			(Image_View->image_display ()
-				->mapFromGlobal (event->globalPos ()))));
+				->mapFromGlobal (event->globalPosition ()).toPoint())));
 	#if ((DEBUG_SECTION) & DEBUG_EVENTS)
 	clog << "      image position = " << position << endl;
 	#endif
@@ -1768,8 +1768,8 @@ Region_Drag_Offset.ry () = -1;
 QCursor
 	*cursor = NULL;
 QPoint
-	display_position
-		(Image_View->image_display ()->mapFromGlobal (event->globalPos ()));
+	display_position =
+		(Image_View->image_display ()->mapFromGlobal (event->globalPosition ())).toPoint();
 if (Image_View->control_mode () == Image_Viewer::NO_CONTROL_MODE &&
 	Region_Overlay->geometry ().contains (display_position))
 	cursor = Shift_Region_Cursor;
@@ -1793,8 +1793,8 @@ if (event->buttons () == Qt::LeftButton &&
 	Image_View->control_mode () == Image_Viewer::NO_CONTROL_MODE)
 	{
 	QPoint
-		position
-			(Image_View->image_display ()->mapFromGlobal (event->globalPos ()));
+		position =
+			(Image_View->image_display ()->mapFromGlobal (event->globalPosition ())).toPoint();
 	#if ((DEBUG_SECTION) & DEBUG_EVENTS)
 	clog << "    image display position = " << position << endl
 		 << "    image display region = "

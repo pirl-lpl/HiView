@@ -24,7 +24,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	"Network_Status.hh"
 
 #include	<QApplication>
-#include	<QMutex>
+#include	<QRecursiveMutex>
 #include	<QMutexLocker>
 #include	<QNetworkAccessManager>
 #include	<QNetworkReply>
@@ -116,7 +116,7 @@ Network_Status::Network_Status ()
 	HTTP_Status (NO_STATUS),
 	HTTP_Status_Description (),
 	Wait_Time (Default_Wait_Time),
-	Status_Lock (new QMutex (QMutex::Recursive)),
+	Status_Lock (new QRecursiveMutex ()),
 	//	N.B.: The Network_Access_Manager must be constructed on the thread.
 	Network_Access_Manager (NULL),
 	Network_Reply (NULL)

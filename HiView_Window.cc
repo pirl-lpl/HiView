@@ -52,7 +52,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #define QT_USE_FAST_OPERATOR_PLUS
 #include	<QString>
 
-#include	<QDesktopWidget>
+#include	<QGuiApplication>
 #include	<QSettings>
 #include	<QAction>
 #include	<QMenu>
@@ -1364,25 +1364,25 @@ connect (Floating_Position,
 			SIGNAL (triggered ()),
 			SLOT (tool_position ()));
 Left_Position = new QAction (tr ("Left"), this);
-Left_Position->setShortcut (Qt::CTRL + Qt::Key_Left);
+Left_Position->setShortcut (Qt::CTRL | Qt::Key_Left);
 Tool_Position_Menu->addAction (Left_Position);
 connect (Left_Position,
 			SIGNAL (triggered ()),
 			SLOT (tool_position ()));
 Right_Position = new QAction (tr ("Right"), this);
-Right_Position->setShortcut (Qt::CTRL + Qt::Key_Right);
+Right_Position->setShortcut (Qt::CTRL | Qt::Key_Right);
 Tool_Position_Menu->addAction (Right_Position);
 connect (Right_Position,
 			SIGNAL (triggered ()),
 			SLOT (tool_position ()));
 Top_Position = new QAction (tr ("Top"), this);
-Top_Position->setShortcut (Qt::CTRL + Qt::Key_Up);
+Top_Position->setShortcut (Qt::CTRL | Qt::Key_Up);
 Tool_Position_Menu->addAction (Top_Position);
 connect (Top_Position,
 			SIGNAL (triggered ()),
 			SLOT (tool_position ()));
 Bottom_Position = new QAction (tr ("Bottom"), this);
-Bottom_Position->setShortcut (Qt::CTRL + Qt::Key_Down);
+Bottom_Position->setShortcut (Qt::CTRL | Qt::Key_Down);
 Tool_Position_Menu->addAction (Bottom_Position);
 connect (Bottom_Position,
 			SIGNAL (triggered ()),
@@ -1414,9 +1414,9 @@ void HiView_Window::toggle_distance_tool (bool enabled) {
 			setMouseTracking(false);
 			centralWidget()->setMouseTracking(false);
 			Image_View->setMouseTracking(false);
-			Image_Info->set_property_f("distance_length_px", 0);
-			Image_Info->set_property_f("distance_length_m", 0);
-			Image_Info->evaluate_script();
+			//Image_Info->set_property_f("distance_length_px", 0);
+			//Image_Info->set_property_f("distance_length_m", 0);
+			//Image_Info->evaluate_script();
 		}
 	}
 }
@@ -2053,7 +2053,7 @@ if (! tool->isWindow ())
 			system deems reserved (OS X dock and menu bar or task bar on
 			MS/Windows).
 		*/
-		screen_height = (qApp->desktop ()->availableGeometry (this)).height (),
+		screen_height = QGuiApplication::primaryScreen()->availableGeometry().height(),
 		current_height = height (),
 		max_height = frameSize ().height ();
 	if (max_height > screen_height ||
@@ -2341,7 +2341,7 @@ if (tool->isVisible () &&
 		*/
 		qApp->processEvents ();
 		qApp->sendPostedEvents ();
-		qApp->flush ();		//	This may not be necessary.
+		//qApp->flush ();		//	This may not be necessary.
 		//	Release the tool to expand into the available space.
 		tool->setMaximumSize (QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 		}
@@ -2816,10 +2816,10 @@ if (Statistics)
 //			Image_Info->set_property_f("green", Statistics->source_statistics()->stats().mean_value_excluding_exceptions(1));
 //			Image_Info->set_property_f("blue", Statistics->source_statistics()->stats().mean_value_excluding_exceptions(2));
 		}
-		Image_Info->set_property("region_area_px", (unsigned long long)selected_region.width()*selected_region.height());
-		Image_Info->set_property("region_width_px", (unsigned int)selected_region.width());
-		Image_Info->set_property("region_height_px", (unsigned int)selected_region.height());
-		Image_Info->evaluate_script();
+		//Image_Info->set_property("region_area_px", (unsigned long long)selected_region.width()*selected_region.height());
+		//Image_Info->set_property("region_width_px", (unsigned int)selected_region.width());
+		//Image_Info->set_property("region_height_px", (unsigned int)selected_region.height());
+		//Image_Info->evaluate_script();
 	}
 }
 
@@ -2919,7 +2919,7 @@ Qt::DockWidgetArea
 	dock_area = Qt::LeftDockWidgetArea;
 if (Navigator &&
 	(Navigator->sizeHint ().height () + Data_Mapper->sizeHint ().height () + 20)
-		> qApp->desktop ()->availableGeometry ().height ())
+		> QGuiApplication::primaryScreen()->availableGeometry ().height ())
 	{
 	dock_area = Qt::RightDockWidgetArea;
 	//	Fit Statistics below and to right of Data_Mapper.
@@ -4142,7 +4142,7 @@ if (Startup_Stage)
 	HiView_Application
 		*application = dynamic_cast<HiView_Application*>(qApp);
 
-	qApp->flush ();
+	//qApp->flush ();
 	qApp->sendPostedEvents ();
 	qApp->processEvents ();
 
@@ -4177,7 +4177,7 @@ if (Startup_Stage)
 		{
 			qApp->processEvents ();
 			qApp->sendPostedEvents ();
-			qApp->flush ();		//	This may not be necessary.
+			//qApp->flush ();		//	This may not be necessary.
 			Image_Activity_Indicator->start_delay (2);
 			Image_Activity_Indicator->state_color
 				(ACTIVITY_VISIBLE_RENDERING, Qt::yellow);
@@ -5061,7 +5061,7 @@ if (event->buttons () == Qt::LeftButton &&
 	Image_View->control_mode () == Image_Viewer::NO_CONTROL_MODE
 	/* && statistics_are_visible ()*/)
 {
-	QPoint position (Image_View->image_display ()->mapFromGlobal (event->globalPos ()));
+	QPoint position = (Image_View->image_display ()->mapFromGlobal (event->globalPosition ())).toPoint();
 
 	#if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
 	clog << "    display position = " << position << endl;
@@ -5151,7 +5151,7 @@ bool
 	accepted = false;
 
 if(Image_View->control_mode () == Image_Viewer::NO_CONTROL_MODE) {
-	QPoint display_position (Image_View->image_display ()->mapFromGlobal (event->globalPos ()));
+	QPoint display_position = (Image_View->image_display ()->mapFromGlobal (event->globalPosition ())).toPoint();
 
 	if (Image_View->image_display_region ().contains (display_position))
 	{
@@ -5495,7 +5495,7 @@ Selection_Start.ry () = -1;
 Selection_Modification = 0;
 set_selection_cursor (selection_modification
 	(round_down (Image_View->map_display_to_image
-		(Image_View->image_display ()->mapFromGlobal (event->globalPos ())))));
+		(Image_View->image_display ()->mapFromGlobal (event->globalPosition ()).toPoint()))));
 event->ignore ();
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
 clog << "<<< HiView_Window::mouseReleaseEvent" << endl;
@@ -5519,8 +5519,8 @@ bool
 if (event->buttons () == Qt::LeftButton)
 	{
 	QPoint
-		display_position
-			(Image_View->image_display ()->mapFromGlobal (event->globalPos ()));
+		display_position =
+			(Image_View->image_display ()->mapFromGlobal (event->globalPosition ())).toPoint();
 	#if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
 	clog << "        image display position = " << display_position << endl
 		 << "          image_display_region = "
@@ -5549,14 +5549,14 @@ void HiView_Window::update_line() {
 		//length of line in pixels
 		double length = qSqrt(Image_Line.dx()*Image_Line.dx() + Image_Line.dy()*Image_Line.dy());
 
-		Image_Info->set_property_f("distance_length_px", length);
+		//Image_Info->set_property_f("distance_length_px", length);
 
 		if(Location != NULL && Location->projection() != NULL && !Location->projection()->is_identity()) {
 			double projected_length = length*Location->projection()->pixel_size();
 			Line->setText(QString("%1 m")
 				.arg(projected_length));
 
-			Image_Info->set_property_f("distance_length_m", projected_length);
+			//Image_Info->set_property_f("distance_length_m", projected_length);
 		}
 		//if it cant map project, use pixel value
 		else {
@@ -5568,7 +5568,7 @@ void HiView_Window::update_line() {
 		else
 			Line->update();
 
-		Image_Info->evaluate_script();
+		//Image_Info->evaluate_script();
 	}
 }
 
@@ -5591,9 +5591,9 @@ if (Selected_Image_Region.isEmpty ())
 		double projected_width = source_region.width()*pixel_size;
 		double projected_height = source_region.height()*pixel_size;
 
-		Image_Info->set_property_qsreal("region_area_m", projected_width*projected_height);
-		Image_Info->set_property_f("region_width_m", projected_width);
-		Image_Info->set_property_f("region_height_m", projected_height);
+		//Image_Info->set_property_qsreal("region_area_m", projected_width*projected_height);
+		//Image_Info->set_property_f("region_width_m", projected_width);
+		//Image_Info->set_property_f("region_height_m", projected_height);
 	}
 	#if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
 	clog << "    no selected region" << endl
@@ -5656,9 +5656,9 @@ if (Region_Overlay)
 
 		//this should occur before the avg RGB values are updated from the histogram so
 		// we don't need to evaluate the script at this point
-		Image_Info->set_property_qsreal("region_area_m", projected_width*projected_height);
-		Image_Info->set_property_f("region_width_m", projected_width);
-		Image_Info->set_property_f("region_height_m", projected_height);
+		//Image_Info->set_property_qsreal("region_area_m", projected_width*projected_height);
+		//Image_Info->set_property_f("region_width_m", projected_width);
+		//Image_Info->set_property_f("region_height_m", projected_height);
 	}
 	//if it cant map project, set to x,y values
 	else {

@@ -41,7 +41,7 @@ using UA::HiRISE::JP2_Reader;
 using UA::HiRISE::JP2_Exception;
 
 #include	<QApplication>
-#include	<QDesktopWidget>
+#include	<QGuiApplication>
 #include	<QScrollBar>
 #include	<QSlider>
 #include	<QLabel>
@@ -2249,7 +2249,7 @@ if (Image_Display)
 		display_size (image_display_size ()),
 		scaled_size (scaled_image_size ()),
 		max_size
-			(qApp->desktop ()->availableGeometry ().size ()
+			(QGuiApplication::primaryScreen()->availableGeometry ().size ()
 				- window ()->size () + size ());
 	fit =
 		(scaled_size.rwidth ()  == display_size.rwidth () &&
@@ -2352,8 +2352,8 @@ if (Control_Mode == SHIFT_MODE &&
 	event->buttons () == Qt::LeftButton)
 	{
 	QPoint
-		display_position
-			(Image_Display->mapFromGlobal (event->globalPos ()));
+		display_position =
+			(Image_Display->mapFromGlobal (event->globalPosition ())).toPoint();
 	#if ((DEBUG_SECTION) & DEBUG_EVENTS)
 	OBJECT_CONDITIONAL (
 	clog << "     image display position = " << display_position << endl;)
@@ -2401,7 +2401,7 @@ if (Control_Mode == SHIFT_MODE &&
 	#endif
 	QPoint
 		position (round_down (map_display_to_image
-			(Image_Display->mapFromGlobal (event->globalPos ()))));
+			(Image_Display->mapFromGlobal (event->globalPosition ()).toPoint())));
 	#if ((DEBUG_SECTION) & DEBUG_EVENTS)
 	OBJECT_CONDITIONAL (
 	clog << "      image position = " << position << endl;)
@@ -2462,7 +2462,7 @@ if (Control_Mode == SCALE_MODE)
 			scale_down ();
 		}
 	else
-	if (event->button () == Qt::MidButton)
+	if (event->button () == Qt::MiddleButton)
 		{
 		if (Scale_Up_Action->isEnabled ())
 			scale_up ();
@@ -2496,7 +2496,7 @@ clog << ">>> Image_Viewer::wheelEvent:" << endl
 bool
 	accepted = false;
 int
-	delta = event->delta () / 8;
+	delta = event->angleDelta ().x() / 8; // TODO should be sqrt(x*x + y*y)?
 if (delta)
 	{
 	if (Control_Mode == SCALE_MODE)
@@ -2532,7 +2532,7 @@ if (delta)
 
 			QPoint
 				center (round_down (map_display_to_image
-					(Image_Display->mapFromGlobal (event->globalPos ()))));
+					(Image_Display->mapFromGlobal (event->globalPosition ()).toPoint())));
 			#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_MOUSE_EVENTS))
 			OBJECT_CONDITIONAL (
 			clog << "      mouse image position = " << center << endl;)
@@ -2548,12 +2548,15 @@ if (delta)
 		clog << "    SHIFT_MODE - offset = " << delta << endl;)
 		#endif
 		accepted = true;
-		if (event->orientation () == Qt::Horizontal)
+		//if (event->orientation () == Qt::Horizontal) TODO test this
+                if (event->pixelDelta().x() > event->pixelDelta().y())
 //			shift_display (QSize (delta, 0));
 			shift_image (QSize (delta, 0));
-		else
+		else if (event->pixelDelta().x() < event->pixelDelta().y())
 //			shift_display (QSize (0, delta));
 			shift_image (QSize (0, delta));
+		else
+			shift_image(QSize (delta, delta));
 		}
 	}
 event->setAccepted (accepted);

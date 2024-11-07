@@ -471,7 +471,7 @@ if (metadata)
 		Save_Dialog->setOptions
 			(QFileDialog::DontUseNativeDialog |
 			 QFileDialog::DontResolveSymlinks);
-		Save_Dialog->setConfirmOverwrite (true);
+		// default is true Save_Dialog->setConfirmOverwrite (true);
 		}
 	if (! title.isEmpty ())
 		Save_Dialog->setWindowTitle (title);

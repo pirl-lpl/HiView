@@ -28,7 +28,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 //	Qt
 #include	<QPoint>
-template<typename T> class QVector;
+//template<typename T> class QVector;
 class QWidget;
 
 //	Qwt
@@ -67,7 +67,7 @@ static const char* const
 	Constructors
 */
 Statistics_and_Bounds_Tool (const QString& title,
-	QWidget* parent = NULL, Qt::WindowFlags flags = 0);
+	QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
 
 virtual ~Statistics_and_Bounds_Tool ();
 

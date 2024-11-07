@@ -147,7 +147,7 @@ setFileMode (QFileDialog::AnyFile);
 setOptions
 	(QFileDialog::DontUseNativeDialog |
 	 QFileDialog::DontResolveSymlinks);
-setConfirmOverwrite (true);
+// default is true setConfirmOverwrite (true);
 
 if (! image_format (Default_Image_Format))
 	image_format (HiView_Utilities::image_writer_formats ().first ());

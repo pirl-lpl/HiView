@@ -2630,7 +2630,7 @@ catch (...)
 if (! report.isEmpty ())
 	{
 	Error_Report:
-   QStringList lines = report.split("\n",  QString::SkipEmptyParts);
+   QStringList lines = report.split("\n",  Qt::SkipEmptyParts);
 	QString
 		error_message (lines.size() > 1 ? lines.at(lines.size()-1) : report);
 	error_message += '\n';

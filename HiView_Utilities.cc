@@ -506,7 +506,7 @@ if (wrap_length < 50)
 QFontMetrics
 	font_metrics (font);
 int
-	length = font_metrics.width (path);
+	length = font_metrics.boundingRect(path).width();
 if (length > wrap_length)
 	{
 	QChar
@@ -524,7 +524,7 @@ if (length > wrap_length)
 		if (index)
 			section += separator;
 		section += segments.at (index);
-		length = font_metrics.width (section);
+		length = font_metrics.boundingRect(section).width();
 		if (length > wrap_length)
 			{
 			section += '\n';

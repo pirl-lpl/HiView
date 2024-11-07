@@ -31,7 +31,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	"Dimensions.hh"
 
 //	Forward references.
-template<typename T> class QVector;
+//template<typename T> class QVector;
 
 namespace idaeim::PVL {
 class Aggregate;
@@ -314,11 +314,11 @@ virtual unsigned long long source_histograms (QVector<Histogram*> histograms,
 /*==============================================================================
 	Image Rendering
 */
-virtual bool needs_update (Mapping_Type changed)
-	throw (Render_Exception, std::bad_exception);
+virtual bool needs_update (Mapping_Type changed) noexcept (false);
+	//throw (Render_Exception, std::bad_exception);
 
-virtual bool render_image ()
-	throw (Render_Exception, std::bad_exception);
+virtual bool render_image () noexcept (false);
+	//throw (Render_Exception, std::bad_exception);
 
 /*==============================================================================
 	Helpers

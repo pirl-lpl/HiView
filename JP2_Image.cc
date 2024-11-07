@@ -1703,8 +1703,8 @@ bool
 JP2_Image::needs_update
 	(
 	Mapping_Type	changed
-	)
-	throw (Render_Exception, std::bad_exception)
+	) noexcept(false)
+	//throw (Render_Exception, std::bad_exception)
 {
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_MANIPULATORS))
 clog << ">>> JP2_Image::needs_update: " << changed
@@ -1729,8 +1729,8 @@ return updated;
 
 
 bool
-JP2_Image::render_image ()
-	throw (Render_Exception, std::bad_exception)
+JP2_Image::render_image () noexcept(false)
+	//throw (Render_Exception, std::bad_exception)
 {
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_LOCATION))
 LOCKED_LOGGING ((

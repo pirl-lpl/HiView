@@ -84,7 +84,7 @@ static const double
 	Constructors
 */
 Statistics_Tool (const QString& title,
-	QWidget* parent = NULL, Qt::WindowFlags flags = 0);
+	QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
 
 virtual ~Statistics_Tool ();
 

@@ -31,7 +31,7 @@ using namespace UA::HiRISE;
 #include	<QStringRef>
 #include	<QStyleFactory>
 #include <QImageReader>
-#include <QDesktopWidget>
+//#include <QDesktopWidget>
 
 #include	<string>
 using std::string;

@@ -37,12 +37,14 @@ void FunctionEvaluator::error()
 
 void FunctionEvaluator::run()
 {
-    qDebug() << function;
+    //qDebug() << function;
 
     /* Passing an invalid QScriptValue as the this argument to QScriptValue::call()
      * indicates that the Global Object should be used as the this object;
      * in other words, that the function should be invoked as a global function.
      */
+
+/* TODO removed in qt6
     QScriptValue val = engine.evaluate(function), inv = QScriptValue();
 
     QScriptValue fun = engine.globalObject().property(JS_FUNC_NAME);
@@ -64,7 +66,7 @@ void FunctionEvaluator::run()
         if (val.isError())
         {
             // SHOULD report error and use undefined stats
-            qDebug() << val.toString();
+            //qDebug() << val.toString();
             error();
             break;
         }
@@ -72,7 +74,7 @@ void FunctionEvaluator::run()
         if (!val.isNumber())
         {
             // SHOULD report error and use undefined stats
-            qDebug() << val.toString() << " is not an number";
+            //qDebug() << val.toString() << " is not an number";
             error();
             break;
         }
@@ -96,6 +98,7 @@ void FunctionEvaluator::run()
     }
 
     avg = sum / cnt;
+*/
 /*
     cout << "*** Statistics ***" << endl;
     cout << " cnt = " << cnt << endl; // like number of pixels in region
@@ -115,5 +118,5 @@ void FunctionEvaluator::setData(QVector<unsigned long long> *data)
 
 void FunctionEvaluator::setProperty(const QString name, const double value)
 {
-    engine.globalObject().setProperty(name, value);
+    //engine.globalObject().setProperty(name, value);
 }

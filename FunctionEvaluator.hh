@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QString>
 #include <QVector>
-#include <QtScript>
+//#include <QtScript>
 
 class FunctionEvaluator : public QThread
 {
@@ -46,7 +46,7 @@ private:
     int min_at;
     int max_at;
 
-    QScriptEngine engine;
+    //QScriptEngine engine;
 
     QVector<unsigned long long> *data;
 };

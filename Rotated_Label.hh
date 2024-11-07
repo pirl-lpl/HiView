@@ -71,9 +71,9 @@ enum Text_Rotation
 	Constructors
 */
 explicit Rotated_Label
-	(QWidget* parent = NULL, Qt::WindowFlags flags = 0);
+	(QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
 explicit Rotated_Label
-	(const QString& text, QWidget* parent = NULL, Qt::WindowFlags flags = 0);
+	(const QString& text, QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
 
 virtual ~Rotated_Label ();
 

@@ -110,7 +110,7 @@ enum Layout_Restoration
 */
 HiView_Window (const QString& source_name, const QSizeF& scaling = QSizeF (),
 	Layout_Restoration restore_layout = PREFERENCES_RESTORE_LAYOUT,
-	QWidget* parent = NULL, Qt::WindowFlags flags = 0);
+	QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
 
 virtual ~HiView_Window ();
 

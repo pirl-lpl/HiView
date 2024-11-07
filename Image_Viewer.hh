@@ -38,8 +38,8 @@ class QMenu;
 class QContextMenuEvent;
 class QErrorMessage;
 class QCursor;
-template<typename T> class QVector;
-template<typename T> class QList;
+//template<typename T> class QVector;
+//template<typename T> class QList;
 
 namespace idaeim {
     namespace PVL {

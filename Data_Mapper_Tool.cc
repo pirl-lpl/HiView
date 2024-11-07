@@ -51,7 +51,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	<QTextStream>
 #include	<QString>
 #include	<QStringList>
-#include	<QRegExp>
+#include	<QRegularExpression>
 #include	<QImageWriter>
 #include	<QErrorMessage>
 #include	<QResizeEvent>
@@ -67,6 +67,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	<qwt_plot_marker.h>
 #include	<qwt_plot_zoomer.h>
 #include	<qwt_plot_panner.h>
+#include        <qwt_text.h>
 #include <qwt_series_store.h>
 
 #include	<iostream>
@@ -4580,7 +4581,7 @@ if (! Save_File_Dialog)
 		(QFileDialog::DontUseNativeDialog |
 		 QFileDialog::DontResolveSymlinks);
 	Save_File_Dialog->setDefaultSuffix (Graph_Data_Format);
-	Save_File_Dialog->setConfirmOverwrite (true);
+	// default is true Save_File_Dialog->setConfirmOverwrite (true);
 	connect (Save_File_Dialog,
 				SIGNAL (filterSelected (const QString&)),
 				SLOT (graph_data_format (const QString&)));
@@ -4871,7 +4872,7 @@ if (! pathname.isEmpty ())
 				continue;
 
 			words =
-				line.split (QRegExp ("[\\s,]"), QString::SkipEmptyParts);
+				line.split (QRegularExpression ("[\\s,]"), Qt::SkipEmptyParts);
 			if (! words.size ())
 				continue;
 

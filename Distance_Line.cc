@@ -103,7 +103,7 @@ namespace UA
 			
 			//need to get text width and height to make sure it is in geomerty
 			QFontMetrics metrics = painter.fontMetrics();
-			int text_width = metrics.width(Line_Text);
+			int text_width = metrics.boundingRect(Line_Text).width();
 			int text_height = metrics.height();
 			
 			int text_pos_x = (BottomRight_X - Dx/2 - text_width - 2 < 0) ? BottomRight_X - Dx/2 + 2 : BottomRight_X - Dx/2 - text_width - 2;

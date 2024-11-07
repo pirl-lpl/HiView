@@ -29,7 +29,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	"PDS_Metadata.hh"
 
 #include	<string>
-#include<QDateTime>
+#include        <QDateTime>
 #include	<QFrame>
 #include	<QHBoxLayout>
 #include	<QVBoxLayout>
@@ -37,7 +37,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	<QComboBox>
 #include	<QtCore/qmath.h>
 #include	<QSettings>
-#include	<QScriptEngine>
+//#include	<QScriptEngine>
 #include	<QStringList>
 
 using std::string;
@@ -138,7 +138,8 @@ Image_Info_Panel::Image_Info_Panel
 		Image_Data (tr (IMAGE_DATA_LABEL)),
 		Projector (NULL),
 		Statistics (NULL),
-		Exception_List (QList<int>())
+		Exception_List (QList<int>()),
+		Global_Object(new QObject())
 		
 		
 {
@@ -1035,10 +1036,10 @@ void Image_Info_Panel::unset_properties() {
 	QStringList::const_iterator end = Properties_List.end();
 	for(QStringList::const_iterator i = Properties_List.begin(); i != end; ++i) {
 		//to unset properties from last image, make them undefined
-		Global_Object.setProperty(*i, Engine->undefinedValue());
+		Global_Object.setProperty(qPrintable(*i), QVariant()); //Engine->undefinedValue());
 	}
 }
-
+/*
 void Image_Info_Panel::array_to_string(idaeim::PVL::Array &array, QScriptValue &engine_array) {
 	idaeim::PVL::Array::Depth_Iterator end = array.end_depth();
 	int index = 0;
@@ -1051,7 +1052,7 @@ void Image_Info_Panel::array_to_string(idaeim::PVL::Array &array, QScriptValue &
 		}
 	}
 }
-
+*/
 //recursively iterate through metadata to get properties for engine.
 void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate &metadata) {	
 	idaeim::PVL::Aggregate::Depth_Iterator end = metadata.end_depth();
@@ -1063,17 +1064,19 @@ void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate &metadata) {
 			get_properties(static_cast<idaeim::PVL::Aggregate &>(*parameters));
 		}
 		else {
-			QString name = QString::fromStdString(parameters->name()).remove(':');
+			QString qname = QString::fromStdString(parameters->name()).remove(':');
+			const char *name = qPrintable(name);
 			idaeim::PVL::Value &value = parameters->value();
 			//names containing '^' typically tell the location of a file, so they are unnecissary
-			if(name.contains('^'))
+			if(qname.contains('^'))
 				continue;
 			//if array representation is used, convert to QScriptValue array
 			else if(value.is_Array()) {
-				QScriptValue engine_array = Engine->newArray();
-				array_to_string(static_cast<idaeim::PVL::Array &>(value), engine_array);
-				Properties_List.push_back(name);
-				Global_Object.setProperty(name, engine_array);
+				// TODO removed in qt6
+				// QScriptValue engine_array = Engine->newArray();
+				// array_to_string(static_cast<idaeim::PVL::Array &>(value), engine_array);
+				// Properties_List.push_back(name);
+				// Global_Object.setProperty(name, engine_array);
 			}
 			//otherwise push name onto property list, and set property in engine
 			else {
@@ -1114,7 +1117,7 @@ void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate &metadata) {
 		}
 	}
 }
-
+/* TODO removed in qt6
 //if there is a decent way to check if a property is being used, make sure to insert it here.
 void Image_Info_Panel::set_property(const char * name, unsigned long long data) {
 	Global_Object.setProperty(name, qsreal(data));
@@ -1136,9 +1139,10 @@ void Image_Info_Panel::set_property_f(const char * name, double data){
 	if(Script.contains(name))
 		evaluate_script();
 }
-
+*/
 
 void Image_Info_Panel::evaluate_script() {
+/* TODO removed in qt6
 	if((Evaluate_R || Evaluate_G || Evaluate_B) && Use_Avg_Rgb && Statistics != NULL) {
 		QVector<Plastic_Image::Histogram*> &histograms = Statistics->histograms();
 		int lower_limit = Statistics->lower_limit();
@@ -1194,6 +1198,7 @@ void Image_Info_Panel::evaluate_script() {
 	else {
 		Script_Output->setText(Engine->evaluate(Script).toString());
 	}
+*/
 }
  
 void Image_Info_Panel::set_metadata(idaeim::PVL::Aggregate *metadata) {
@@ -1268,8 +1273,8 @@ void Image_Info_Panel::initialize_script_values() {
 
 QWidget* Image_Info_Panel::create_script_engine() {
 	//create the QScriptEngine
- 	Engine = new QScriptEngine(this);
- 	Global_Object = Engine->globalObject();
+ 	// TODO removed from Qt6 Engine = new QScriptEngine(this);
+ 	// Global_Object = QObject(); Engine->globalObject();
  	//set properties, which will act like variales in the script
  	initialize_script_values();
 
@@ -1433,16 +1438,16 @@ QList<bool> *Image_Info_Panel::parse_variable_names(QList<QString> *list) {
 }
 
 void Image_Info_Panel::script_changed(const QString& script) {
-	if(!Engine->toStringHandle(script).isValid()) {
-		Script_Output->setText("Invalid Script");
-	}
-	else {
+	// TODO if(!Engine->toStringHandle(script).isValid()) {
+        //		Script_Output->setText("Invalid Script");
+	//}
+	//else {
 		Script = script;
 		preparse_script(Script);
 		Script_Value->setText(Script);
 		check_names();
 		evaluate_script();
-	}
+	//}
 	//check if Script was changed to ""
 	Script_Panel->setVisible(Show_Script && (Script != ""));
 }

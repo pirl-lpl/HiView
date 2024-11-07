@@ -146,7 +146,7 @@ Rotated_Label::sizeHint () const
 const QFontMetrics&
 	font_metrics = fontMetrics ();
 QSize
-	size (font_metrics.width (Text), font_metrics.height ());
+	size = font_metrics.boundingRect (Text).size(); // TODO test//, font_metrics.height ());
 if (Rotation & IS_VERTICAL)
 	size.transpose ();
 return size;

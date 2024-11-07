@@ -26,11 +26,11 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include	<QImage>
 #include	<QColor>
-#include	<QMutex>
+#include	<QRecursiveMutex>
 
 //	Forward references.
-template<typename T> class QVector;
-template<typename T> class QList;
+//template<typename T> class QVector;
+//template<typename T> class QList;
 class QString;
 class QSize;
 class QSizeF;
@@ -1313,8 +1313,8 @@ virtual unsigned long long display_histograms (QVector<Histogram*> histograms,
 		other than Render_Exception.
 	@see	update()
 */
-virtual bool render_image ()
-	throw (Render_Exception, std::bad_exception);
+virtual bool render_image () noexcept (false);
+	//throw (Render_Exception, std::bad_exception);
 
 /**	Update the image from its source data if {@link needs_update() needed}.
 
@@ -1345,8 +1345,8 @@ virtual bool render_image ()
 	@see	render_image()
 	@see	needs_update(Mapping_Type)
 */
-virtual bool update ()
-	throw (Render_Exception, std::bad_exception);
+virtual bool update () noexcept (false);
+	//throw (Render_Exception, std::bad_exception);
 
 /**	Set the needs update condition.
 
@@ -1393,8 +1393,8 @@ virtual bool update ()
 		other than Render_Exception.
 	@see	needs_update()
 */
-virtual bool needs_update (Mapping_Type changed)
-	throw (Render_Exception, std::bad_exception);
+virtual bool needs_update (Mapping_Type changed) noexcept (false);
+	//throw (Render_Exception, std::bad_exception);
 
 /**	Get the needs update condition.
 
@@ -1808,7 +1808,7 @@ inline static const char* plural (unsigned int amount)
 protected:
 
 //!	Lock for all object data. Constructed as a recursive mutex.
-mutable QMutex
+mutable QRecursiveMutex
 	Object_Lock;
 
 //!	The image metadata parameters.

@@ -32,8 +32,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	<QWidget>
 
 //	Forward references.
-template<typename T> class QVector;
-template<typename T> class QList;
+//template<typename T> class QVector;
+//template<typename T> class QList;
 class QPaintEvent;
 class QMouseEvent;
 class QErrorMessage;

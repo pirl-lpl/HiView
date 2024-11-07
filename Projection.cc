@@ -939,7 +939,7 @@ Projection::decimal_degrees
 double
 	degrees (0.0);
 QStringList
-	words (representation.split (QRegExp ("\\s+"), QString::SkipEmptyParts));
+	words (representation.split (QRegularExpression ("\\s+"), Qt::SkipEmptyParts));
 if (words.isEmpty ())
 	{
 	ostringstream

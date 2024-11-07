@@ -26,13 +26,14 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 //	Qwt
 #include	"qwt_plot_item.h"
+#include        "qwt_text.h"
 
 //	Qt
 #include	<QColor>
 
 //	Forward references.
 class QString;
-template<typename T> class QVector;
+//template<typename T> class QVector;
 
 
 namespace UA::HiRISE
@@ -91,7 +92,7 @@ static double
 
 	@param	title	A QString providing the title of the plot.
 */
-explicit Histogram_Plot (const QString& title = QString::null);
+explicit Histogram_Plot (const QString& title = QString());
 
 /**	Construct a Histogram_Plot with a title.
 

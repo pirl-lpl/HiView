@@ -33,6 +33,7 @@ class Aggregate;
 }}
 
 #include	<QString>
+#include        <QRegularExpression>
 
 #include	<string>
 #include	<iosfwd>

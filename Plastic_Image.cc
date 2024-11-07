@@ -283,7 +283,7 @@ Plastic_Image::Plastic_Image
 	)
 	:	QImage ((image_size.isValid () ?
 			image_size : QSize (0, 0)), IMAGE_FORMAT),
-		Object_Lock (QMutex::Recursive),
+		Object_Lock (),
 		Metadata (NULL),
 		Image_Metadata (NULL),
 		Update (*this),
@@ -2537,8 +2537,8 @@ for (QRgb
 	Data update and rendering
 */
 bool
-Plastic_Image::update ()
-	throw (Render_Exception, std::bad_exception)
+Plastic_Image::update () noexcept(false)
+	//throw (Render_Exception, std::bad_exception)
 {
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_MANIPULATORS))
 clog << ">>> Plastic_Image::update:" << endl;
@@ -2575,8 +2575,8 @@ bool
 Plastic_Image::needs_update
 	(
 	Mapping_Type	changed
-	)
-	throw (Render_Exception, std::bad_exception)
+	) noexcept(false)
+	//throw (Render_Exception, std::bad_exception)
 {
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_MANIPULATORS))
 clog << ">>> Plastic_Image::needs_update: " << mapping_type_names (changed)
@@ -2637,8 +2637,8 @@ return Needs_Update | Needs_Update_Shadow;
 
 
 bool
-Plastic_Image::render_image ()
-	throw (Render_Exception, std::bad_exception)
+Plastic_Image::render_image () noexcept(false)
+	//throw (Render_Exception, std::bad_exception)
 {
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_LOCATION))
 clog << ">>> Plastic_Image::render_image" << endl
@@ -3338,7 +3338,7 @@ Plastic_Image::Update_Locker::Update_Locker
 	const Plastic_Image&	image
 	)
 	:
-	Object_Lock (&(image.Object_Lock)),
+	Object_Lock (/*&(image.Object_Lock)*/), // TODO possible bug!
 	Updating (false),
 	Initiator_Thread (NULL)
 {}

@@ -34,7 +34,7 @@ class QTabWidget;
 class QCheckBox;
 class QRadioButton;
 class QLabel;
-class QStringList;
+//class QStringList;
 class QListWidget;
 class QListWidgetItem;
 class QSpinBox;

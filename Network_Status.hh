@@ -26,7 +26,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include	<QUrl>
 #include	<QString>
-class QMutex;
+#include        <QRecursiveMutex>
+//class QMutex;
 class QNetworkAccessManager;
 class QNetworkReply;
 
@@ -403,7 +404,7 @@ unsigned long
 	Wait_Time;
 
 //!	Thread-safe status values lock. N.B.: A recursive mutex is used.
-QMutex
+QRecursiveMutex
 	*Status_Lock;
 
 QNetworkAccessManager

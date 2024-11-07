@@ -29,7 +29,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include	<qwt_plot.h>
 #include	<qwt_scale_div.h>
-
+#include        <qwt_text.h>
 
 #if defined (DEBUG_SECTION)
 /*	DEBUG_SECTION controls

@@ -33,7 +33,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 //	Qt
 #include	<QApplication>
-#include	<QDesktopWidget>
+#include	<QGuiApplication>
+#include        <QScreen>
 #include	<QWidget>
 #include	<QVBoxLayout>
 #include	<QHBoxLayout>
@@ -618,7 +619,7 @@ Count_Scale_Max->setToolTip
 	(tr ("Maximum Count axis scale value; zero for auto scaling"));
 Count_Scale_Max->setSpecialValueText (tr ("auto"));
 QSize
-	screen_size (qApp->desktop ()->screen ()->size ());
+	screen_size (QGuiApplication::primaryScreen ()->size ());
 Count_Scale_Max->setRange (0, screen_size.width () * screen_size.height ());
 Count_Scale_Max->setSingleStep (1);
 Count_Scale_Max->setValue (0);

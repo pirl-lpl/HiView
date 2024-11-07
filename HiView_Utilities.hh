@@ -37,7 +37,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	<QObject>
 #include <QUrl>
 
-class QStringList;
+//class QStringList;
 class QFont;
 
 #include	<ostream>

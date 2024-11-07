@@ -94,7 +94,7 @@ static const int
 		control the appearance of the dialog window.
 */
 explicit Metadata_Dialog (idaeim::PVL::Aggregate* parameters,
-	QWidget* parent = NULL, Qt::WindowFlags flags = 0);
+	QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
 
 /**	Constructs an empty Metadata_Dialog.
 
@@ -106,7 +106,7 @@ explicit Metadata_Dialog (idaeim::PVL::Aggregate* parameters,
 	@param	flags	A set of optional Qt::WindowFlags that can be used to
 		control the appearance of the dialog window.
 */
-explicit Metadata_Dialog (QWidget* parent = NULL, Qt::WindowFlags flags = 0);
+explicit Metadata_Dialog (QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
 
 /*==============================================================================
 	Accessors
