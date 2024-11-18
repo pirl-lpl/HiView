@@ -1036,8 +1036,8 @@ void Image_Info_Panel::unset_properties() {
 		Global_Object.deleteProperty(*i);
 	}
 }
-/*
-void Image_Info_Panel::array_to_string(idaeim::PVL::Array &array, QScriptValue &engine_array) {
+
+void Image_Info_Panel::array_to_string(idaeim::PVL::Array &array, QJSValue &engine_array) {
 	idaeim::PVL::Array::Depth_Iterator end = array.end_depth();
 	int index = 0;
 	for(idaeim::PVL::Array::Depth_Iterator i = array.begin_depth(); i != end; ++i) {
@@ -1049,7 +1049,7 @@ void Image_Info_Panel::array_to_string(idaeim::PVL::Array &array, QScriptValue &
 		}
 	}
 }
-*/
+
 //recursively iterate through metadata to get properties for engine.
 void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate &metadata) {	
 	idaeim::PVL::Aggregate::Depth_Iterator end = metadata.end_depth();
@@ -1070,10 +1070,10 @@ void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate &metadata) {
 			//if array representation is used, convert to QScriptValue array
 			else if(value.is_Array()) {
 				// TODO removed in qt6
-				// QScriptValue engine_array = Engine->newArray();
-				// array_to_string(static_cast<idaeim::PVL::Array &>(value), engine_array);
-				// Properties_List.push_back(name);
-				// Global_Object.setProperty(name, engine_array);
+				QJSValue engine_array = Engine.newArray();
+				array_to_string(static_cast<idaeim::PVL::Array &>(value), engine_array);
+				Properties_List.push_back(name);
+				Global_Object.setProperty(name, engine_array);
 			}
 			//otherwise push name onto property list, and set property in engine
 			else {
@@ -1114,10 +1114,10 @@ void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate &metadata) {
 		}
 	}
 }
-/* TODO removed in qt6
+/* TODO use templates */
 //if there is a decent way to check if a property is being used, make sure to insert it here.
 void Image_Info_Panel::set_property(const char * name, unsigned long long data) {
-	Global_Object.setProperty(name, qsreal(data));
+	Global_Object.setProperty(name, double(data));
 	if(Script.contains(name))
 		evaluate_script();
 }
@@ -1126,29 +1126,30 @@ void Image_Info_Panel::set_property(const char * name, unsigned int data){
 	if(Script.contains(name))
 		evaluate_script();
 }
+/*
 void Image_Info_Panel::set_property_qsreal(const char * name, qsreal data){
 	Global_Object.setProperty(name, data);
 	if(Script.contains(name))
 		evaluate_script();
-}
+}*/
 void Image_Info_Panel::set_property_f(const char * name, double data){
 	Global_Object.setProperty(name, data);
 	if(Script.contains(name))
 		evaluate_script();
 }
-*/
+
 
 void Image_Info_Panel::evaluate_script() {
-/* TODO removed in qt6
+/* TODO removed in qt6 */
 	if((Evaluate_R || Evaluate_G || Evaluate_B) && Use_Avg_Rgb && Statistics != NULL) {
 		QVector<Plastic_Image::Histogram*> &histograms = Statistics->histograms();
 		int lower_limit = Statistics->lower_limit();
 		int upper_limit = histograms[0]->size () - Statistics->upper_limit() - 1;
 		int count = 0;
-		qsreal result = 0;
+		double result;
 		
 		for(int i = lower_limit; i <= upper_limit; ++i) {
-			QScriptValue val;
+			QJSValue val;
 			bool skip = false;
 			int sum = 0;
 			for(int j = 0; j < Exception_List.size(); ++j) {
@@ -1181,7 +1182,7 @@ void Image_Info_Panel::evaluate_script() {
 					}
 				}
 				
-				val = Engine->evaluate(Script);
+				val = Engine.evaluate(Script);
 				if(!val.isNumber()) {
 					return;
 				}
@@ -1193,9 +1194,9 @@ void Image_Info_Panel::evaluate_script() {
 		Script_Output->setNum(result);
 	}
 	else {
-		Script_Output->setText(Engine->evaluate(Script).toString());
+		Script_Output->setText(Engine.evaluate(Script).toString());
 	}
-*/
+
 }
  
 void Image_Info_Panel::set_metadata(idaeim::PVL::Aggregate *metadata) {

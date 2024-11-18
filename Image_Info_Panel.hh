@@ -103,10 +103,10 @@ virtual ~Image_Info_Panel ();
 */
 void image_bands (int);
 void use_avg_pixel_value(bool use);
-//void set_property(const char * name, unsigned long long data);
-//void set_property(const char * name, unsigned int data);
+void set_property(const char * name, unsigned long long data);
+void set_property(const char * name, unsigned int data);
 //void set_property_qsreal(const char * name, qsreal data);
-//void set_property_f(const char * name, double data);
+void set_property_f(const char * name, double data);
 void add_exception(int exception);
 void clear_exceptions();
 void evaluate_script();
@@ -167,7 +167,7 @@ QWidget* create_script_engine();
 void longitude (double value);
 void latitude (double value);
 QString location_representation (double value, int units) const;
-//void array_to_string(idaeim::PVL::Array &array, QScriptValue &engine_array);
+void array_to_string(idaeim::PVL::Array &array, QJSValue &engine_array);
 void get_properties(idaeim::PVL::Aggregate &metadata);
 
 void preparse_script(QString &script);
