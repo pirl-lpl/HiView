@@ -1,11 +1,10 @@
-#ifndef FUNCTIONEVALUATOR_H
-#define FUNCTIONEVALUATOR_H
+#pragma once
 
 #include <QObject>
 #include <QThread>
 #include <QString>
 #include <QVector>
-//#include <QtScript>
+#include <QJSEngine>
 
 class FunctionEvaluator : public QThread
 {
@@ -46,9 +45,7 @@ private:
     int min_at;
     int max_at;
 
-    //QScriptEngine engine;
+    QJSEngine engine;
 
     QVector<unsigned long long> *data;
 };
-
-#endif // FUNCTIONEVALUATOR_H

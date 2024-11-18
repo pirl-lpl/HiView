@@ -138,12 +138,9 @@ Image_Info_Panel::Image_Info_Panel
 		Image_Data (tr (IMAGE_DATA_LABEL)),
 		Projector (NULL),
 		Statistics (NULL),
-		Exception_List (QList<int>()),
-		Global_Object(new QObject())
-		
-		
+		Exception_List (QList<int>())
 {
-    
+Global_Object = Engine.globalObject();    
 degree_precision = 6; // guess, VALGRIND
     Longitude_Location = Projection::INVALID_VALUE;
     Latitude_Location = Projection::INVALID_VALUE;
@@ -1009,14 +1006,14 @@ return representation;
  ***************************************************************/
 void Image_Info_Panel::update_statistics(Stats *stats) {
 	Statistics = stats;
-	Use_Avg_Rgb = Use_Avg_Rgb;
+//	Use_Avg_Rgb = Use_Avg_Rgb;
 }
 
 void Image_Info_Panel::update_region_stats() {
 	Pixel_Value[0]->setText (QString::number(Statistics->mean_value(0),'f',1));
 	Pixel_Value[1]->setText (QString::number(Statistics->mean_value(1),'f',1));
 	Pixel_Value[2]->setText (QString::number(Statistics->mean_value(2),'f',1));
-	if(Evaluate_R || Evaluate_G || Evaluate_B)
+	if (Evaluate_R || Evaluate_G || Evaluate_B)
 		evaluate_script();
 }
  
@@ -1035,8 +1032,8 @@ void Image_Info_Panel::unset_properties() {
 	initialize_script_values();
 	QStringList::const_iterator end = Properties_List.end();
 	for(QStringList::const_iterator i = Properties_List.begin(); i != end; ++i) {
-		//to unset properties from last image, make them undefined
-		Global_Object.setProperty(qPrintable(*i), QVariant()); //Engine->undefinedValue());
+		//unset properties from last image
+		Global_Object.deleteProperty(*i);
 	}
 }
 /*

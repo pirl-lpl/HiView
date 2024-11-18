@@ -28,7 +28,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include	"PVL.hh"
 #include    "Stats.hh"
 #include	<QFrame>
-//#include	<QScriptEngine>
+#include	<QJSEngine>
 #include	<QStringList>
 
 //	Forward references.
@@ -231,12 +231,12 @@ QLabel
 	*Longitude,
 	*Latitude;
 	
-//QScriptEngine *Engine;
+QJSEngine Engine;
 
 QStringList Properties_List;
 
 //QScriptValue 
-QObject
+QJSValue
 	Global_Object;
 
 bool

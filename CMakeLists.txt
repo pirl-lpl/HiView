@@ -17,7 +17,7 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 # TODO add other components, e.g. Network?
-find_package(Qt6 REQUIRED COMPONENTS Gui REQUIRED Widgets REQUIRED Network REQUIRED Core5Compat REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Gui Widgets Network Core5Compat Qml)
 find_package(PIRL 3.0.0 REQUIRED)
 find_package(idaeim 2.3.4 REQUIRED)
 find_package(JP2 REQUIRED)
@@ -31,18 +31,18 @@ message("QWT_INCLUDE_DIR = ${QWT_INCLUDE_DIR}")
 #
 #find_path(qwt_inc qwt.h PATHS "${Qwt_INCLUDEDIR}")
 #find_library(qwt_lib NAMES qwt PATHS "${Qwt_DIR}" NO_DEFAULT_PATH)
-#add_library(Qwt STATIC IMPORTED)
-#message("Qwt = ${qwt_lib}")
-#set_target_properties(Qwt PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${qwt_inc} IMPORTED_LOCATION ${qwt_lib})
+add_library(QWT SHARED IMPORTED)
+message("Qwt = ${QWT_LIBRARY}")
+set_target_properties(QWT PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${QWT_INCLUDE_DIR} IMPORTED_LOCATION ${QWT_LIBRARY})
 
 #
 # Kakadu
 #
 add_library(KDU STATIC IMPORTED)
 add_library(KDU_AUX STATIC IMPORTED)
-find_library(kdu_lib NAMES "kdu_v8AR" PATHS "${Kak_DIR}/lib_x64" NO_DEFAULT_PATH)
+find_library(kdu_lib NAMES "kdu" PATHS "${KAKADU_DIR}/lib" NO_DEFAULT_PATH)
 set_target_properties(KDU PROPERTIES IMPORTED_LOCATION ${kdu_lib})
-find_library(kdu_aux_lib NAMES "kdu_a8AR" PATHS "${Kak_DIR}/lib_x64" NO_DEFAULT_PATH)
+find_library(kdu_aux_lib NAMES "kdu_aux" PATHS "${KAKADU_DIR}/lib" NO_DEFAULT_PATH)
 set_target_properties(KDU_AUX PROPERTIES IMPORTED_LOCATION ${kdu_aux_lib})
 
 set(HEADERS
@@ -178,11 +178,12 @@ endif()
 
 if (APPLE)
 	target_include_directories(${PROJECT_NAME} PRIVATE "/usr/local/include")
+	target_compile_options(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${QWT_INCLUDE_DIR}")
 
-target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qwt KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
+target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
 
 #
 # TODO run windeployqt or macdeployqt

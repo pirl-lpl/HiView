@@ -44,10 +44,10 @@ void FunctionEvaluator::run()
      * in other words, that the function should be invoked as a global function.
      */
 
-/* TODO removed in qt6
-    QScriptValue val = engine.evaluate(function), inv = QScriptValue();
+/* TODO removed in qt6 */
+    QJSValue val = engine.evaluate(function), inv = QJSValue();
 
-    QScriptValue fun = engine.globalObject().property(JS_FUNC_NAME);
+    QJSValue fun = engine.globalObject().property(JS_FUNC_NAME);
 
     reset();
 
@@ -61,7 +61,7 @@ void FunctionEvaluator::run()
         // SKIP DN = 0 ?
         // SKIP DN = 1, 2, 1022, 1023
 
-        val = fun.call(inv, QScriptValueList() << dn);
+        val = fun.callWithInstance(inv, QJSValueList() << dn);
 
         if (val.isError())
         {
@@ -98,7 +98,7 @@ void FunctionEvaluator::run()
     }
 
     avg = sum / cnt;
-*/
+
 /*
     cout << "*** Statistics ***" << endl;
     cout << " cnt = " << cnt << endl; // like number of pixels in region
@@ -118,5 +118,5 @@ void FunctionEvaluator::setData(QVector<unsigned long long> *data)
 
 void FunctionEvaluator::setProperty(const QString name, const double value)
 {
-    //engine.globalObject().setProperty(name, value);
+    engine.globalObject().setProperty(name, value);
 }
