@@ -1069,7 +1069,7 @@ void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate &metadata) {
 				continue;
 			//if array representation is used, convert to QScriptValue array
 			else if(value.is_Array()) {
-				// TODO removed in qt6
+				// moved in qt6
 				QJSValue engine_array = Engine.newArray();
 				array_to_string(static_cast<idaeim::PVL::Array &>(value), engine_array);
 				Properties_List.push_back(name);
@@ -1140,7 +1140,7 @@ void Image_Info_Panel::set_property_f(const char * name, double data){
 
 
 void Image_Info_Panel::evaluate_script() {
-/* TODO removed in qt6 */
+/* moved in qt6 */
 	if((Evaluate_R || Evaluate_G || Evaluate_B) && Use_Avg_Rgb && Statistics != NULL) {
 		QVector<Plastic_Image::Histogram*> &histograms = Statistics->histograms();
 		int lower_limit = Statistics->lower_limit();
@@ -1271,7 +1271,7 @@ void Image_Info_Panel::initialize_script_values() {
 
 QWidget* Image_Info_Panel::create_script_engine() {
 	//create the QScriptEngine
- 	// TODO removed from Qt6 Engine = new QScriptEngine(this);
+ 	// moved from Qt6 Engine = new QScriptEngine(this);
  	// Global_Object = QObject(); Engine->globalObject();
  	//set properties, which will act like variales in the script
  	initialize_script_values();
