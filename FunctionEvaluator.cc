@@ -44,7 +44,7 @@ void FunctionEvaluator::run()
      * in other words, that the function should be invoked as a global function.
      */
 
-/* TODO removed in qt6 */
+/* moved in qt6 */
     QJSValue val = engine.evaluate(function), inv = QJSValue();
 
     QJSValue fun = engine.globalObject().property(JS_FUNC_NAME);
