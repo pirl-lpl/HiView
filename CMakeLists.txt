@@ -16,7 +16,6 @@ endif()
 # for FindQWT.cmake
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
-# TODO add other components, e.g. Network?
 find_package(Qt6 REQUIRED COMPONENTS Gui Widgets Network Core5Compat Qml)
 find_package(PIRL 3.0.0 REQUIRED)
 find_package(idaeim 2.3.4 REQUIRED)
@@ -183,7 +182,7 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${QWT_INCLUDE_DIR}")
 
-target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
+target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++_static UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
 
 #
 # TODO run windeployqt or macdeployqt
