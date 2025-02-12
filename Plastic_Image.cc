@@ -10,7 +10,7 @@ This library is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License, version 2.1,
 as published by the Free Software Foundation.
 
-This library is distributed in the hope that it will be useful, but
+This library is dxistributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
@@ -3338,7 +3338,7 @@ Plastic_Image::Update_Locker::Update_Locker
 	const Plastic_Image&	image
 	)
 	:
-	Object_Lock (/*&(image.Object_Lock)*/), // TODO possible bug!
+	Object_Lock (&(image.Object_Lock)), // TODO possible bug!
 	Updating (false),
 	Initiator_Thread (NULL)
 {}

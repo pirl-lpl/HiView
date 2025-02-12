@@ -1808,7 +1808,7 @@ inline static const char* plural (unsigned int amount)
 protected:
 
 //!	Lock for all object data. Constructed as a recursive mutex.
-mutable QRecursiveMutex
+mutable QMutex
 	Object_Lock;
 
 //!	The image metadata parameters.
