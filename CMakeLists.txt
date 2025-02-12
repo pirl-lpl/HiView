@@ -16,17 +16,11 @@ find_package(idaeim 2.3.4 REQUIRED)
 find_package(libJP2 REQUIRED)
 find_package(Qwt REQUIRED)
 
-message("QWT_LIBRARY     = ${QWT_LIBRARY}")
-message("QWT_INCLUDE_DIR = ${QWT_INCLUDE_DIR}")
-
 #
 # Qwt
 #
 #find_path(qwt_inc qwt.h PATHS "${Qwt_INCLUDEDIR}")
 #find_library(qwt_lib NAMES qwt PATHS "${Qwt_DIR}" NO_DEFAULT_PATH)
-add_library(QWT SHARED IMPORTED)
-message("Qwt = ${QWT_LIBRARY}")
-set_target_properties(QWT PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${QWT_INCLUDE_DIR} IMPORTED_LOCATION ${QWT_LIBRARY})
 
 #
 # Kakadu
@@ -155,7 +149,7 @@ endif()
 
 list(LENGTH HEADERS HeaderCount)
 list(LENGTH SOURCES SourceCount)
-message("Compiling ${HeaderCount} headers and ${SourceCount} Sources")
+message(VERBOSE "Compiling ${HeaderCount} headers and ${SourceCount} Sources")
 
 add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
