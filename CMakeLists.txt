@@ -1,25 +1,19 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.17)
 
 project(HiView)
 
-# TODO see https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
-# TODO put this in CMakeSettings.json
-if (MSVC)
-	set(Qt5_DIR "C:/Qt/5.11.2/msvc2017_64/lib/cmake/Qt5")
-	set(Qwt_DIR "C:/Qwt-6.1.4")
-	set(Kak_DIR "$ENV{USERPROFILE}\\kakadu\\kakadu-7.A.7")
-endif()
+# prevents a warning message
+cmake_policy(SET CMP0100 NEW)
 
 # for FindQWT.cmake
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Qt6 REQUIRED COMPONENTS Gui Widgets Network Core5Compat Qml)
+qt_standard_project_setup()
+
 find_package(PIRL 3.0.0 REQUIRED)
 find_package(idaeim 2.3.4 REQUIRED)
-find_package(JP2 REQUIRED)
+find_package(libJP2 REQUIRED)
 find_package(Qwt REQUIRED)
 
 message("QWT_LIBRARY     = ${QWT_LIBRARY}")
@@ -100,62 +94,59 @@ Voice_Adapter.hh
 )
 
 set(SOURCES
-	HiView.cc
-	HiView_Application.cc
-	HiView_Config.cc
-	HiView_Utilities.cc
-	HiView_Window.cc
-	About_HiView_Dialog.cc
-	Image_Tile.cc
-	Synchronized_Event.cc
-	Image_Renderer.cc
-	Image_Renderer_Thread.cc
-	Plastic_Image.cc
-	Plastic_QImage.cc
-	JP2_Image.cc
-	Plastic_Image_Factory.cc
-	Tiled_Image_Display.cc
-	Image_Viewer.cc
-	Drawn_Line.cc
-	Navigator_Tool.cc
-	Count_Sequence.cc
-	Histogram_Plot.cc
-	Stats.cc
-	Statistics_Tool.cc
-	Statistics_and_Bounds_Tool.cc
-	Statistics_Tools.cc
-	Graph_Tracker.cc
-	Data_Mapper_Tool.cc
-	Function_Nodes.cc
-	Rotated_Label.cc
-	Activity_Indicator.cc
-	Icon_Button.cc
-	Image_Info_Panel.cc
-	Parameter_Tree_Model.cc
-	Value_Tree_Model.cc
-	Parameter_Tree_View.cc
-	Metadata_Dialog.cc
-	PDS_Metadata.cc
-	Qstream.cc
-	Save_Image_Dialog.cc
-	Save_Image_Thread.cc
-	Network_Status.cc
-	URL_Checker.cc
-	Help_Docs.cc
-	Preferences_Dialog.cc
-	Coordinate.cc
-	Location_Mapper.cc
-	Projection.cc
-	Equirectangular_Projection.cc
-	Polar_Stereographic_Elliptical_Projection.cc
+ HiView.cc
+ HiView_Application.cc
+ HiView_Config.cc
+ HiView_Utilities.cc
+ HiView_Window.cc
+ About_HiView_Dialog.cc
+ Image_Tile.cc
+ Synchronized_Event.cc
+ Image_Renderer.cc
+ Image_Renderer_Thread.cc
+ Plastic_Image.cc
+ Plastic_QImage.cc
+ JP2_Image.cc
+ Plastic_Image_Factory.cc
+ Tiled_Image_Display.cc
+ Image_Viewer.cc
+ Drawn_Line.cc
+ Navigator_Tool.cc
+ Count_Sequence.cc
+ Histogram_Plot.cc
+ Stats.cc
+ Statistics_Tool.cc
+ Statistics_and_Bounds_Tool.cc
+ Statistics_Tools.cc
+ Graph_Tracker.cc
+ Data_Mapper_Tool.cc
+ Function_Nodes.cc
+ Rotated_Label.cc
+ Activity_Indicator.cc
+ Icon_Button.cc
+ Image_Info_Panel.cc
+ Parameter_Tree_Model.cc
+ Value_Tree_Model.cc
+ Parameter_Tree_View.cc
+ Metadata_Dialog.cc
+ PDS_Metadata.cc
+ Qstream.cc
+ Save_Image_Dialog.cc
+ Save_Image_Thread.cc
+ Network_Status.cc
+ URL_Checker.cc
+ Help_Docs.cc
+ Preferences_Dialog.cc
+ Coordinate.cc
+ Location_Mapper.cc
+ Projection.cc
+ Equirectangular_Projection.cc
+ Polar_Stereographic_Elliptical_Projection.cc
    SpeechHandler.cc
    FunctionEvaluator.cc
-	Voice_Adapter.cc
-	Distance_Line.cc
+ Voice_Adapter.cc
+ Distance_Line.cc
 )
-
-# prevents a warning message
-set_property(SOURCE ${HEADERS} PROPERTY SKIP_AUTOMOC ON)
 
 list(LENGTH HEADERS HeaderCount)
 list(LENGTH SOURCES SourceCount)
@@ -172,17 +163,18 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
 # in Function_Nodes.cc and once in Qwt, probably some inheritence issue
 #
 if (MSVC)
-	target_link_options(${PROJECT_NAME} PRIVATE "/FORCE")
+    target_link_options(${PROJECT_NAME} PRIVATE "/FORCE")
 endif()
 
 if (APPLE)
-	target_include_directories(${PROJECT_NAME} PRIVATE "/usr/local/include")
-	target_compile_options(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
+    target_include_directories(${PROJECT_NAME} PRIVATE "/usr/local/include")
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${QWT_INCLUDE_DIR}")
 
-target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++_static UA::HiRISE::JP2 UA::HiRISE::KakaduReaders)
+target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT
+ KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ libJP2::JP2 libJP2::KakaduReaders)
 
 #
 # TODO run windeployqt or macdeployqt
