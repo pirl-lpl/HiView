@@ -32,17 +32,17 @@ using namespace UA::HiRISE;
 
 class Voice_Adapter
 {
-    
-public:    
+
+public:
 /*==============================================================================
 	Constants
 */
 //!	Class identification name with source code version and date.
 static const char* const ID;
-	
+
     Voice_Adapter(UA::HiRISE::Image_Viewer* viewer, UA::HiRISE::Statistics_Tools* stattool, UA::HiRISE::Data_Mapper_Tool* mapper);
     void doFullSize();
-    void doFitImage(); 
+    void doFitImage();
     void doZoomIn();
     void doZoomOut();
     void doPanLeft();
@@ -50,8 +50,8 @@ static const char* const ID;
     void doPanUp();
     void doPanDown();
     void doEnhance();
-    void doRestore(); 
-    
+    void doRestore();
+
 private:
     Image_Viewer* viewer;
     Statistics_Tools* stattool;
