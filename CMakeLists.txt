@@ -15,22 +15,7 @@ find_package(PIRL 3.0.0 REQUIRED)
 find_package(idaeim 2.3.4 REQUIRED)
 find_package(libJP2 REQUIRED)
 find_package(Qwt REQUIRED)
-
-#
-# Qwt
-#
-#find_path(qwt_inc qwt.h PATHS "${Qwt_INCLUDEDIR}")
-#find_library(qwt_lib NAMES qwt PATHS "${Qwt_DIR}" NO_DEFAULT_PATH)
-
-#
-# Kakadu
-#
-add_library(KDU STATIC IMPORTED)
-add_library(KDU_AUX STATIC IMPORTED)
-find_library(kdu_lib NAMES "kdu" PATHS "${KAKADU_DIR}/lib" NO_DEFAULT_PATH)
-set_target_properties(KDU PROPERTIES IMPORTED_LOCATION ${kdu_lib})
-find_library(kdu_aux_lib NAMES "kdu_aux" PATHS "${KAKADU_DIR}/lib" NO_DEFAULT_PATH)
-set_target_properties(KDU_AUX PROPERTIES IMPORTED_LOCATION ${kdu_aux_lib})
+find_package(Kakadu REQUIRED)
 
 set(HEADERS
 About_HiView_Dialog.hh
