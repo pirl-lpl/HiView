@@ -10,12 +10,13 @@
 # QWT_LIBRARY     = full path to the QWT library
 # QWT_INCLUDE_DIR = where to find headers
 #
-
+set(CMAKE_FIND_LIBRARY_SUFFIXES .so .dll)
 set(QWT_LIBRARY_NAMES qwt-${QT_VERSION_BASE_LOWER} qwt qwt6 qwt6-${QT_VERSION_BASE_LOWER})
 
 find_library(QWT_LIBRARY
   NAMES ${QWT_LIBRARY_NAMES}
   PATHS
+    ${Qwt_DIR}/lib
     /usr/lib
     /usr/lib64
     /usr/local/lib
@@ -31,7 +32,8 @@ if(QWT_LIBRARY MATCHES "/qwt.*\\.framework")
 endif()
 
 find_path(QWT_INCLUDE_DIR NAMES qwt.h PATHS
-  "${_qwt_fw}/Headers/"
+${Qwt_DIR}/include
+"${_qwt_fw}/Headers/"
   /usr/include
   /usr/include/${QT_VERSION_BASE_LOWER}
   /usr/local/include
@@ -43,4 +45,19 @@ find_path(QWT_INCLUDE_DIR NAMES qwt.h PATHS
 
 if (QWT_INCLUDE_DIR AND QWT_LIBRARY)
   set(QWT_FOUND TRUE)
+  add_library(QWT SHARED IMPORTED)
+  set_target_properties(QWT PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${QWT_INCLUDE_DIR} IMPORTED_LOCATION ${QWT_LIBRARY})
+
+  message(STATUS "Qwt library = ${QWT_LIBRARY}")
+  message(STATUS "Qwt include = ${QWT_INCLUDE_DIR}")
+
+  if(WIN32)
+    set(_qwt_implib)
+    if(QWT_LIBRARY MATCHES "/qwt.*\\.dll")
+      string(REGEX REPLACE "^(.*/qwt.*)\\.dll" "\\1.lib" _qwt_implib "${QWT_LIBRARY}")
+      set_target_properties(QWT PROPERTIES IMPORTED_IMPLIB ${_qwt_implib})
+      message(STATUS "Qwt implib = ${_qwt_implib}")
+      endif()
+  endif()
+
 endif (QWT_INCLUDE_DIR AND QWT_LIBRARY)
