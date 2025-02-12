@@ -6,7 +6,7 @@ project(HiView)
 cmake_policy(SET CMP0100 NEW)
 
 # for FindQWT.cmake
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR})
 
 find_package(Qt6 REQUIRED COMPONENTS Gui Widgets Network Core5Compat Qml)
 qt_standard_project_setup()
@@ -148,11 +148,16 @@ set(SOURCES
  Distance_Line.cc
 )
 
+if(APPLE)
+    list(APPEND HEADERS MacSpeechHandler.h MacSpeechHandlerDelegate.h)
+    list(APPEND SOURCES MacSpeechHandler.mm MacSpeechHandlerDelegate.mm Mac_Voice_Adapter.mm)
+endif()
+
 list(LENGTH HEADERS HeaderCount)
 list(LENGTH SOURCES SourceCount)
 message("Compiling ${HeaderCount} headers and ${SourceCount} Sources")
 
-add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES} "HiView.qrc")
+add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
@@ -181,6 +186,65 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${QWT_INCLUDE_DIR}")
 target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT
  KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ libJP2::JP2 libJP2::KakaduReaders)
 
+qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}" PREFIX "/" FILES
+ Images/HiView_Splash.png
+ Images/HiView_Icon.png
+ Images/X_button.png
+ Images/OK.png
+ Images/defaults_button.png
+ Images/reset_button.png
+ Images/reticule_cursor.png
+ Images/reticule_cursor_mask.png
+ Images/shift_cursor.png
+ Images/shift_cursor_mask.png
+ Images/shift_region_cursor.png
+ Images/shift_vertical_cursor.png
+ Images/shift_vertical_cursor_mask.png
+ Images/shift_horizontal_cursor.png
+ Images/shift_horizontal_cursor_mask.png
+ Images/shift_region_vertical_cursor.png
+ Images/shift_region_horizontal_cursor.png
+ Images/shift_region_FDiag_cursor.png
+ Images/shift_region_FDiag_cursor_mask.png
+ Images/shift_region_BDiag_cursor.png
+ Images/shift_region_BDiag_cursor_mask.png
+ Images/scale_cursor.png
+ Images/scale_cursor_mask.png
+ Images/Blank_Bead_Red-32.png
+ Images/Blank_Bead_Green-32.png
+ Images/Blank_Bead_Blue-32.png
+ Images/Blank_Bead_White-32.png
+ Images/Blank_Bead_Grey-32.png
+ Images/BW-32.png
+ Images/Contrast_Stretch.png
+ Images/redo_button.png
+ Images/crosshair_cursor.png
+ Images/crosshair_cursor_mask.png
+ Images/greater_than_cursor_white.png
+ Images/greater_than_cursor_red.png
+ Images/greater_than_cursor_green.png
+ Images/greater_than_cursor_blue.png
+ Images/greater_than_cursor_yellow.png
+ Images/greater_than_cursor_cyan.png
+ Images/greater_than_cursor_magenta.png
+ Images/greater_than_cursor_mask.png
+ Images/less_than_cursor_white.png
+ Images/less_than_cursor_red.png
+ Images/less_than_cursor_green.png
+ Images/less_than_cursor_blue.png
+ Images/less_than_cursor_yellow.png
+ Images/less_than_cursor_cyan.png
+ Images/less_than_cursor_magenta.png
+ Images/less_than_cursor_mask.png
+ Images/About_Background.png
+ Images/Expand_Down_Icon.png
+ Images/Expand_Up_Icon.png
+ Images/HiRISE_Logo.png
+ Images/PIRL_Logo.png
+ Images/LPL_Logo.png
+ Images/UofA_Logo.png
+ Images/NASA_Logo.png
+)
 #
 # TODO run windeployqt or macdeployqt
 # see https://riptutorial.com/qt/example/24133/integrating-with-cmake
