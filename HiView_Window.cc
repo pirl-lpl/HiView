@@ -1623,7 +1623,7 @@ for (int
 			<< Source_Selections->itemText (index) << endl;
 #endif
 connect (Source_Selections,
-			SIGNAL (activated (const QString&)),
+			SIGNAL (currentTextChanged (const QString&)),
 			SLOT (open (const QString&)));
 #if ((DEBUG_SECTION) & (DEBUG_SOURCE_SELECTIONS | DEBUG_INITIALIZE))
 clog << "<<< HiView_Window::create_source_selections" << endl;
