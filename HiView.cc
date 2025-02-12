@@ -261,7 +261,7 @@ clog << Command_Name << ": " << APPLICATION_ID << endl
 	 << HOST_OS << ' ' << HOST_MACHINE << endl;
 #endif
 
-//	Initialize application resources and Qt run-time environment.
+/*	Initialize application resources and Qt run-time environment. */
 Q_INIT_RESOURCE (HiView);	//	Can't use APP_NAME in this macro.
 
 //	Application object.
