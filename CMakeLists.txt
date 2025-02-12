@@ -169,6 +169,11 @@ endif()
 if (APPLE)
     target_include_directories(${PROJECT_NAME} PRIVATE "/usr/local/include")
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
+
+    find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
+    if(COREFOUNDATION_FRAMEWORK)
+        target_link_libraries(${PROJECT_NAME} ${COREFOUNDATION_FRAMEWORK})
+    endif()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${QWT_INCLUDE_DIR}")
