@@ -253,9 +253,9 @@ connect (General, SIGNAL (band_numbers_indexed_changed (bool)),
 	SIGNAL (band_numbers_indexed_changed (bool)));
 connect (General, SIGNAL (documentation_location_changed (const QString&)),
 	SIGNAL (documentation_location_changed (const QString&)));
-connect (General, SIGNAL(longitude_direction_changed (int)), 
+connect (General, SIGNAL(longitude_direction_changed (int)),
 	SIGNAL(longitude_direction_changed (int)));
-connect (General, SIGNAL(longitude_units_changed (int)), 
+connect (General, SIGNAL(longitude_units_changed (int)),
 	SIGNAL(longitude_units_changed (int)));
 connect (General, SIGNAL(latitude_units_changed (int)),
 	SIGNAL(latitude_units_changed (int)));
@@ -303,9 +303,9 @@ connect (Graphs, SIGNAL (selection_sensitivity_changed (int)),
 	SIGNAL (selection_sensitivity_changed (int)));
 connect (Graphs, SIGNAL (canvas_color_changed (QRgb)),
 	SIGNAL (canvas_color_changed (QRgb)));
-	
-connect(Scripts, SIGNAL (script_changed(const QString&)), 
-	SIGNAL (script_changed(const QString&))); 
+
+connect(Scripts, SIGNAL (script_changed(const QString&)),
+	SIGNAL (script_changed(const QString&)));
 connect(Scripts, SIGNAL (show_script_changed(bool)),
 	SIGNAL (show_script_changed(bool)));
 connect(this, SIGNAL(variables_updated(QStringList&)),
@@ -492,13 +492,13 @@ const char
 bool
 	General_Section::Default_Get_PDS_Metadata
 		= DEFAULT_GET_PDS_LABEL;
-		
+
 const char
 	*General_Section::RESTORE_LONGITUDE_FORMAT_KEY				= "Restore_Longitude_Format";
 const char
 	*General_Section::RESTORE_LATITUDE_FORMAT_KEY				= "Restore_Latitude_Format";
 const char
-	*General_Section::RESTORE_LONGITUDE_DIRECTION_KEY			= "Restore_Longitude_Direction";	
+	*General_Section::RESTORE_LONGITUDE_DIRECTION_KEY			= "Restore_Longitude_Direction";
 #ifndef DEFAULT_COORDINATE_FORMAT
 #define DEFAULT_COORDINATE_FORMAT	0
 #endif
@@ -868,7 +868,7 @@ grid_layout->addWidget (line,
 ++row;
 grid_layout->addWidget (new QLabel (tr ("<b>Coordinate Display Format</b>")),
 	row, 0, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
-	
+
 //		Longitude Coordinate Display Format Options
 ++row;
 horizontal_layout = new QHBoxLayout;
@@ -881,7 +881,7 @@ Longitude_Units_ComboBox->addItem (tr ("degrees"));
 Longitude_Units_ComboBox->addItem (tr ("h/m/s"));
 Longitude_Units_ComboBox->addItem (tr ("radians"));
 Longitude_Units_ComboBox->setCurrentIndex (Longitude_Units);
-connect (Longitude_Units_ComboBox, 
+connect (Longitude_Units_ComboBox,
 	SIGNAL (currentIndexChanged (int)),
 	SLOT (longitude_format (int)));
 
@@ -915,7 +915,7 @@ horizontal_layout->addWidget (Longitude_Direction_ComboBox);
 
 grid_layout->addLayout (horizontal_layout,
 	row, 0, Qt::AlignLeft | Qt::AlignVCenter);
-	
+
 //		Latitude Coordinates Display Format Options
 ++row;
 horizontal_layout = new QHBoxLayout;
@@ -1051,7 +1051,7 @@ else
 }
 
 void
-General_Section::longitude_format 
+General_Section::longitude_format
 	(
 	int format
 	)
@@ -1336,7 +1336,7 @@ if (Restore_Last_Source != Restore_Last_Source_CheckBox->isChecked ())
 	Restore_Last_Source = Restore_Last_Source_CheckBox->isChecked ();
 	settings.setValue (RESTORE_LAST_SOURCE_KEY, Restore_Last_Source);
 	}
-settings.endGroup ();	
+settings.endGroup ();
 if (Band_Numbers_Indexed != Band_Numbers_Indexed_Button->isChecked ())
 	{
 	Band_Numbers_Indexed = Band_Numbers_Indexed_Button->isChecked ();
@@ -1751,7 +1751,7 @@ operator!=
 
 }	//	local namespace.
 #endif
-	
+
 
 void
 Sources_Section::source_list
@@ -1788,7 +1788,7 @@ if (*Source_List != list)
 	while (Source_List->count () > here)
 		Source_List->removeLast ();
 	}
-	
+
 if (*Source_List != *Source_List_Widget)
 	{
 	Source_List_Widget->clear ();
@@ -1916,7 +1916,7 @@ if (count)
 			if (Source_List_Widget->visualItemRect (top_item).top () >= 0)
 				break;
 			}
-			
+
 		if (selected_items.contains (top_item))
 			{
 			//	Find the next unselected item.
@@ -1966,7 +1966,7 @@ if (count)
 			(Source_List_Widget->row (selected_items.at (count)));
 		}
 	Entries->setNum (Source_List_Widget->count ());
-	
+
 	if (top_item)
 		//	Scroll the top item to the top of the viewport.
 		Source_List_Widget->scrollToItem
@@ -2161,7 +2161,7 @@ double
 
 const char
 	*Rendering_Section::BACKGROUND_COLOR_KEY		= "Background_Color";
-	
+
 const char
 	*Rendering_Section::LINE_COLOR_KEY 				= "Line_Color";
 
@@ -3085,7 +3085,7 @@ connect (Line_Color_Reset_Button, SIGNAL (clicked()), SLOT(line_color_reset()));
 horizontal_layout->addWidget (Line_Color_Reset_Button);
 horizontal_layout->addStretch(100);
 grid_layout->addLayout (horizontal_layout, row, col, 1, -1);
-	
+
 
 //		Tile Size.
 ++row;
@@ -4405,6 +4405,8 @@ clog << ">>> possible_abbreviated_home_path: " << name << endl;
 #endif
 bool
 	changed = false;
+if (name.size() > 1)
+{
 if (name[0] == '~' &&
 	name[1] == QDir::separator ())
 	{
@@ -4416,6 +4418,7 @@ if (name[0] == '~' &&
 		changed = true;
 		}
 	}
+}
 #if ((DEBUG_SECTION) & DEBUG_HELPERS)
 clog << "<<< possible_abbreviated_home_path: "
 		<< changed << " - " << name << endl;
@@ -5079,7 +5082,7 @@ if (! pathname.isEmpty ())
 				QMessageBox::Yes)
 			== QMessageBox::Yes)
 			{
-			QDir 
+			QDir
 				directory;
 			if (directory.mkpath (pathname))
 				accepted = true;
@@ -5888,7 +5891,7 @@ clog << "<<< Graphs_Section::apply" << endl;
 /******************************************************************
  *Scripts Section
  ******************************************************************/
- 
+
 /*=================================================================
   = Constants
   =================================================================*/
@@ -5905,7 +5908,7 @@ const char* Scripts_Section::SHOW_SCRIPT_KEY = "Scripts_Show_Script";
 /*=================================================================
   = Constructors
   =================================================================*/
-  
+
 Scripts_Section::Scripts_Section (QWidget* parent) {
 	#if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SCRIPTS))
 		clog << ">>> Graphs_Section" << endl;
@@ -5918,39 +5921,39 @@ Scripts_Section::Scripts_Section (QWidget* parent) {
 	#if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SCRIPTS))
 		clog << "    Title = \"" << Title << '"' << endl;
 	#endif
-	
+
 	//Restore Settings
 	QSettings settings;
-	
+
 	if(settings.contains(CURRENT_SCRIPT_KEY))
 		Script = settings.value(CURRENT_SCRIPT_KEY, "").toString();
-	else 
+	else
 		settings.setValue(CURRENT_SCRIPT_KEY, Script = "");
-	
+
 	if(settings.contains(SHOW_SCRIPT_KEY))
 		Show_Script = settings.value(SHOW_SCRIPT_KEY).toBool();
-	else 
+	else
 		settings.setValue(SHOW_SCRIPT_KEY, Show_Script = DEFAULT_SHOW_SCRIPT);
-		
-	//Layout Variables	
+
+	//Layout Variables
 	QGridLayout *grid_layout = new QGridLayout (this);
 	int row = 0;
-	
+
 	QLabel *label = new QLabel(tr ("Enter Script:"));
 	label->setAlignment(Qt::AlignVCenter);
 	grid_layout->addWidget(label, row, 0);
-	
+
 	label = new QLabel(tr ("Variables:"));
 	label->setAlignment(Qt::AlignVCenter);
 	grid_layout->addWidget(label, row, 1);
 	++row;
-	
+
 	Script_TextEdit = new QTextEdit(tr ("Script"));
 	Script_TextEdit->setText(Script);
 	Script_TextEdit->setMinimumSize(500, 250);
 	connect(Script_TextEdit, SIGNAL(textChanged ()), SLOT(script_edited()));
 	grid_layout->addWidget(Script_TextEdit,row, 0);
-	
+
 	Variables_ListWidget = new QListWidget (this);
 	Variables_ListWidget->setAlternatingRowColors (true);
 	Variables_ListWidget->setVerticalScrollMode (QAbstractItemView::ScrollPerItem);
@@ -5959,21 +5962,21 @@ Scripts_Section::Scripts_Section (QWidget* parent) {
 	connect(Variables_ListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)), SLOT(add_variable(QListWidgetItem *)));
 	grid_layout->addWidget(Variables_ListWidget);
 	++row;
-	
+
 	grid_layout->setRowMinimumHeight(0, 20);
 	Show_Script_CheckBox = new QCheckBox(tr ("Show Script Panel"));
 	Show_Script_CheckBox->setChecked(Show_Script);
 	Show_Script_CheckBox->setChecked (Show_Script);
 	connect(Show_Script_CheckBox, SIGNAL (toggled (bool)), SLOT(show_script(bool)));
-	grid_layout->addWidget(Show_Script_CheckBox, row, 0); 
+	grid_layout->addWidget(Show_Script_CheckBox, row, 0);
 	++row;
-	
+
 	//Default and Apply Buttons
 	QDialogButtonBox *buttons = new QDialogButtonBox (Qt::Horizontal, this);
 	Defaults_Button = buttons->addButton(tr ("Defaults"), QDialogButtonBox::ResetRole);
 	Defaults_Button->setIcon (*Defaults_Button_Icon);
 	connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
-	
+
 /*	DEFAULTS QACTION*/
 	QAction *action = new QAction(tr ("Defaults"), this);
 	action->setShortcut(tr ("Ctrl+Shift+D"));
@@ -5981,7 +5984,7 @@ Scripts_Section::Scripts_Section (QWidget* parent) {
 	addAction(action);
 	connect(action, SIGNAL(triggered()), Defaults_Button, SLOT(click ()));
 	Defaults_Button->setEnabled(reset_defaults_button());
-	
+
 	Apply_Button = buttons->addButton(QDialogButtonBox::Apply);
 	if(Apply_Button_Icon)
 		Apply_Button->setIcon(*Apply_Button_Icon);
@@ -5995,10 +5998,10 @@ Scripts_Section::Scripts_Section (QWidget* parent) {
 	connect(action, SIGNAL (triggered()), Apply_Button, SLOT(click ()));
 	addAction (action);
 	Apply_Button->setEnabled(false);
-	
+
 	grid_layout->addWidget (buttons, row, 0, 1, -1);
-	
-	
+
+
 }
 
 /*=================================================================
@@ -6006,20 +6009,20 @@ Scripts_Section::Scripts_Section (QWidget* parent) {
   =================================================================*/
 void Scripts_Section::apply() {
 	QSettings settings;
-	
+
 	QString script = Script_TextEdit->toPlainText();
 	if(script != Script) {
 		Script = script;
 		settings.setValue(CURRENT_SCRIPT_KEY, Script);
 		emit script_changed(Script);
 	}
-	
+
 	if(Show_Script_CheckBox->isChecked() != Show_Script) {
 		Show_Script = Show_Script_CheckBox->isChecked();
 		settings.setValue(SHOW_SCRIPT_KEY, Show_Script);
 		emit show_script_changed(Show_Script);
 	}
-	
+
 	Apply_Button->setEnabled(false);
 	Defaults_Button->setEnabled(reset_defaults_button());
 }
@@ -6046,7 +6049,7 @@ void Scripts_Section::variables_updated(QStringList &pds_variables) {
  	Variables_ListWidget->addItem("distance_length_px");
  	Variables_ListWidget->addItem("distance_length_m");
 	Variables_ListWidget->addItems(pds_variables);
-	
+
 }
 
 void Scripts_Section::show_script(bool enabled) {
@@ -6067,7 +6070,7 @@ void Scripts_Section::add_variable(QListWidgetItem *variable) {
 /*=================================================================
   = Helpers
   =================================================================*/
-  
+
 bool Scripts_Section::reset_defaults_button() {
 	return (Script_TextEdit->toPlainText() != "") || (Show_Script_CheckBox->isChecked() != DEFAULT_SHOW_SCRIPT);
 }
@@ -6075,7 +6078,7 @@ bool Scripts_Section::reset_defaults_button() {
 bool Scripts_Section::has_changed() {
 	return (Script_TextEdit->toPlainText() != Script) || (Show_Script_CheckBox->isChecked() != Show_Script);
 }
-  
+
 void Scripts_Section::reset_modifier_buttons() {
 	Defaults_Button->setEnabled(reset_defaults_button());
 	Apply_Button->setEnabled(has_changed());
