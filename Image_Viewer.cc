@@ -295,17 +295,17 @@ qDebug() << "    Sliding_Scale range: "
 		<< slider_to_scale (Sliding_Scale->minimum ())
 		<< '/' << Sliding_Scale->minimum () << " - "
 		<< slider_to_scale (Sliding_Scale->maximum ())
-		<< '/' << Sliding_Scale->maximum () << endl
+		<< '/' << Sliding_Scale->maximum () << "\n"
 	  << "    Sliding_Scale increments: "
 		<< "minor - " << Scaling_Minor_Increment
 		<< '/' << Sliding_Scale->singleStep ()
 		<< ", major - " << Scaling_Major_Increment
-		<< '/' << Sliding_Scale->pageStep () << endl
+		<< '/' << Sliding_Scale->pageStep () << "\n"
     << "    Sliding_Scale tracking: "
- 		<< Sliding_Scale->hasTracking () << endl
+ 		<< Sliding_Scale->hasTracking () << "\n"
     << "    Sliding_Scale position: "
  		<< Sliding_Scale->sliderPosition ()
- 		<< " [" << Sliding_Scale->value () << "]" << endl;//)
+ 		<< " [" << Sliding_Scale->value () << "]" << "\n";
 #endif
 Sliding_Scale_Width = (Sliding_Scale->sizeHint ()).rwidth ();
 
