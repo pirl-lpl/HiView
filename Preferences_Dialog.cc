@@ -513,7 +513,7 @@ const char
 	"../docs/Users_Guide", \
 	"../Resources/Users_Guide", \
 	"docs/Users_Guide", \
-	"http://pirlwww.lpl.arizona.edu/software/HiView/Users_Guide"
+	"https://pirlwww.lpl.arizona.edu/software/HiView/Users_Guide"
 #endif
 const char
 	*General_Section::Default_Documentation_Search_Locations[] =
@@ -4989,7 +4989,7 @@ else
 	QUrl
 		URL (QUrl::fromUserInput (proxy));
 	if (URL.isValid () &&
-		URL.scheme ().toLower () == "http" &&
+		(URL.scheme ().toLower () == "https" || URL.scheme ().toLower () == "http") &&
 		! URL.host ().isEmpty ())
 		{
 		if (QHostInfo::fromName (URL.host ()).error () == QHostInfo::NoError ||
