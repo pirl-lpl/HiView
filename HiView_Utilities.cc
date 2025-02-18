@@ -216,7 +216,7 @@ else
 	}
 if (URL.scheme ().compare ("jpip", Qt::CaseInsensitive) == 0)
 	{
-	URL.setScheme ("http");
+	URL.setScheme ("https");
 	URL.setPort (-1);
 	}
 #if ((DEBUG_SECTION) & DEBUG_METADATA)

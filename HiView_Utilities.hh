@@ -92,14 +92,14 @@ inline std::ostream& operator<< (std::ostream& stream,
 //!	QRect output operator.
 inline std::ostream& operator<< (std::ostream& stream,
 	const QRect& rectangle)
-	{return 
+	{return
 		stream << rectangle.x () << "x, " << rectangle.y () << "y, "
 			   << rectangle.width () << "w, " << rectangle.height () << 'h';}
 
 //!	QRectF output operator.
 inline std::ostream& operator<< (std::ostream& stream,
 	const QRectF& rectangle)
-	{return 
+	{return
 		stream << rectangle.x () << "x, " << rectangle.y () << "y, "
 			   << rectangle.width () << "w, " << rectangle.height () << 'h';}
 
@@ -330,7 +330,7 @@ static const char* const
 
 	<i>protocol</i><b>://<i>hostname</i>[<b>:</b><i>port</i>]<b>/</b><i>source</i>
 
-	where the <i>protocol</i> is either "jpip" or "http" (case insensitive).
+	where the <i>protocol</i> is either "jpip" or "http(s)" (case insensitive).
 
 	The <i>hostname</i>, <i>port</i> and <i>source</i> are not checked
 	to have valid values, however both the <i>hostname</i> and
@@ -391,7 +391,7 @@ static QString file_filter_for (const QString& format);
 	"file", the model URL replaces the entire source name URL.
 
 	If the resulting URL specifies the "jpip" protocol scheme this is
-	replaced with "http".
+	replaced with "https".
 
 	@param	Source_Name	A QString which is the original path or URL to the image.
 	@param	model_URL	A QUrl providing a model for the URL to be
