@@ -347,10 +347,9 @@ else
 void
 Image_Renderer::print_render_queue () const
 {
+QMutexLocker qLocker(&Queue_Lock);
 QString
 	pathname (object_pathname (this));
-bool
-	locked = Queue_Lock.tryLock ();
 LOCK_LOG;
 if (Active_Tile)
 	clog << "    Image_Renderer::Active_Tile -" << endl
@@ -359,24 +358,19 @@ clog << "    Image_Renderer::Render_Queue" << endl
 	 << "    in " << pathname << endl;
 print_queue (Render_Queue);
 UNLOCK_LOG;
-if (locked)
-	Queue_Lock.unlock ();
 }
 
 void
 Image_Renderer::print_delete_queue () const
 {
+QMutexLocker qLocker(&Queue_Lock);
 QString
 	pathname (object_pathname (this));
-bool
-	locked = Queue_Lock.tryLock ();
 LOCK_LOG;
 clog << "    Image_Renderer::Delete_Queue" << endl
 	 << "    in " << pathname << endl;
 print_queue (Delete_Queue);
 UNLOCK_LOG;
-if (locked)
-	Queue_Lock.unlock ();
 }
 
 #else
@@ -611,7 +605,7 @@ clog << ">>> Image_Renderer::queue " << thread_ID << ": image -" << endl
 	 << "    lock Queue_Lock" << endl
 	 << "    in " << pathname << endl));
 #endif
-Queue_Lock.lock ();
+QMutexLocker qLocker(&Queue_Lock);
 
 int
 	index = find_tile (image, Render_Queue);
@@ -688,7 +682,7 @@ clog << "    Image_Renderer::queue " << thread_ID
 	 << "    in " << pathname << endl;
 UNLOCK_LOG;
 #endif
-Queue_Lock.unlock ();
+
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
 LOCKED_LOGGING ((
 clog << "    in " << pathname << endl
@@ -784,7 +778,9 @@ clog << ">>> Image_Renderer::cancel " << thread_ID << ": image -" << endl
 	 << "    lock Queue_Lock" << endl;
 UNLOCK_LOG;
 #endif
-Queue_Lock.lock ();
+
+QMutexLocker qLocker(&Queue_Lock);
+
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
 QString
 	pathname (object_pathname (this));
@@ -846,7 +842,7 @@ clog << "    Image_Renderer::cancel " << thread_ID
 		<< ": unlock Queue_Lock" << endl;
 UNLOCK_LOG;
 #endif
-Queue_Lock.unlock ();
+
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
 LOCKED_LOGGING ((
 clog << "<<< Image_Renderer::cancel " << thread_ID
@@ -872,7 +868,8 @@ clog << ">>> Image_Renderer::cancel " << thread_ID
 	 << "    lock Queue_Lock" << endl;
 UNLOCK_LOG;
 #endif
-Queue_Lock.lock ();
+QMutexLocker qLocker(&Queue_Lock);
+
 bool
 	done = clear (cancel_options);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_QUEUE))
@@ -880,7 +877,7 @@ LOCKED_LOGGING ((
 clog << "    Image_Renderer::cancel " << thread_ID
 		<< ": unlock Queue_Lock" << endl));
 #endif
-Queue_Lock.unlock ();
+
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_QUEUE))
 LOCKED_LOGGING ((
 clog << "<<< Image_Renderer::cancel " << thread_ID
@@ -908,7 +905,8 @@ clog << ">>> Image_Renderer::reset " << thread_ID
 	 << "    in " << pathname << endl
 	 << "    lock Queue_Lock" << endl));
 #endif
-Queue_Lock.lock ();
+
+QMutexLocker qLocker(&Queue_Lock);
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
 LOCKED_LOGGING ((
 clog << "    Image_Renderer::reset " << thread_ID << ": stop rendering" << endl
@@ -923,7 +921,7 @@ clog << "    Image_Renderer::reset " << thread_ID
 		<< ": unlock Queue_Lock" << endl
 	 << "    in " << pathname << endl));
 #endif
-Queue_Lock.unlock ();
+
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
 LOCKED_LOGGING ((
 clog << "    in " << pathname << endl
@@ -1281,7 +1279,7 @@ clog << ">>> Image_Renderer::delete_image " << thread_ID << ": image -" << endl
 	 << "    " << *image << endl
 	 << "    lock Queue_Lock" << endl));
 #endif
-Queue_Lock.lock ();
+QMutexLocker qLocker(&Queue_Lock);
 bool
 	deleted = false;
 int
@@ -1327,7 +1325,7 @@ LOCKED_LOGGING ((
 clog << "    Image_Renderer::delete_image " << thread_ID
 		<< ": unlock Queue_Lock" << endl));
 #endif
-Queue_Lock.unlock ();
+
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 LOCKED_LOGGING ((
 clog << "<<< Image_Renderer::delete_image " << thread_ID
@@ -1434,6 +1432,7 @@ void
 Image_Renderer::delete_tiles ()
 {
 //	>>> CAUTION: The Queue_Lock is expected to be locked by the Renderer thread.
+
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 void*
 	thread_ID = (void*)QThread::currentThreadId ();
@@ -1443,8 +1442,7 @@ LOCKED_LOGGING ((
 clog << ">>> Image_Renderer::delete_tiles " << thread_ID << endl
 	 << "    in " << pathname << endl));
 #endif
-bool
-	locked = Queue_Lock.tryLock ();
+
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 LOCK_LOG;
 clog << "    Image_Renderer::delete_tiles " << thread_ID
@@ -1477,16 +1475,14 @@ LOCK_LOG;
 image_accounting ();
 UNLOCK_LOG;
 #endif
-if (locked)
-	{
+
 	#if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 	LOCKED_LOGGING ((
 	clog << "    Image_Renderer::delete_tiles " << thread_ID
 		 	<< ": unlock Queue_Lock" << endl
 		 << "    in " << pathname << endl));
 	#endif
-	Queue_Lock.unlock ();
-	}
+
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 LOCKED_LOGGING ((
 clog << "<<< Image_Renderer::delete_tiles " << thread_ID << endl));
@@ -1497,9 +1493,7 @@ clog << "<<< Image_Renderer::delete_tiles " << thread_ID << endl));
 void
 Image_Renderer::clean_up ()
 {
-Queue_Lock.lock ();
 delete_tiles ();
-Queue_Lock.unlock ();
 }
 
 /*==============================================================================
@@ -1534,7 +1528,7 @@ clog << "    Image_Renderer::run_rendering " << thread_ID
 		<< ": Queue_Lock was " << (locked ? "not " : "") << "locked" << endl
 	 << "    in " << pathname << endl));
 #endif
-Queue_Lock.unlock ();	
+if (locked) Queue_Lock.unlock ();
 
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
 LOCKED_LOGGING ((
@@ -2168,7 +2162,7 @@ if (! source_name.isEmpty ())
 			<< ": lock Queue_Lock" << endl
 		 << "    in " << pathname << endl));
 	#endif
-	Queue_Lock.lock ();
+	QMutexLocker qLocker(&Queue_Lock);
 	#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
 	LOCK_LOG;
 	clog << "    Image_Renderer::image " << thread_ID << endl
@@ -2191,7 +2185,6 @@ if (! source_name.isEmpty ())
 			<< ": unlock Queue_Lock" << endl
 		 << "    in " << pathname << endl));
 	#endif
-	Queue_Lock.unlock ();
 	}
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
 LOCKED_LOGGING ((
@@ -2234,7 +2227,7 @@ if (source_image)
 			<< ": lock Queue_Lock" << endl
 		 << "    in " << pathname << endl));
 	#endif
-	Queue_Lock.lock ();
+	QMutexLocker qLocker(&Queue_Lock);
 	#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
 	LOCK_LOG;
 	clog << "    Image_Renderer::image " << thread_ID << endl
@@ -2257,7 +2250,6 @@ if (source_image)
 			<< ": unlock Queue_Lock" << endl
 		 << "    in " << pathname << endl));
 	#endif
-	Queue_Lock.unlock ();
 	}
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
 LOCKED_LOGGING ((
@@ -2289,8 +2281,8 @@ clog << ">>> Image_Renderer::load_image " << thread_ID << endl
 	 << "    Image_Renderer::load_image " << thread_ID
 		<< ": tryLock Queue_Lock" << endl));
 #endif
-bool
-	locked = Queue_Lock.tryLock ();
+QMutexLocker qLocker(&Queue_Lock);
+
 if (! Image_Source &&
 	Source_Name.isEmpty ())
 	{
@@ -2301,12 +2293,10 @@ if (! Image_Source &&
 		 << "    in " << pathname << endl
 		 << "<<< Image_Renderer::load_image " << thread_ID << endl));
 	#endif
-	if (locked)
-		Queue_Lock.unlock ();
+
 	return;
 	}
-if (locked)
-	{
+
 	//	Emit signals without Queue_Lock locked.
 	#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
 	LOCKED_LOGGING ((
@@ -2314,8 +2304,6 @@ if (locked)
 		 	<< ": unlock Queue_Lock" << endl
 		 << "    in " << pathname << endl));
 	#endif
-	Queue_Lock.unlock ();
-	}
 
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | \
 				DEBUG_OVERVIEW | \
@@ -2337,7 +2325,7 @@ clog << "    Image_Renderer::load_image " << thread_ID
 		<< ": lock Queue_Lock" << endl
 	 << "    in " << pathname << endl));
 #endif
-Queue_Lock.lock ();
+//Queue_Lock.lock ();
 
 bool
 	loaded = false;
@@ -2470,7 +2458,6 @@ clog << "    Image_Renderer::load_image " << thread_ID
 	 	<< ": unlock Queue_Lock" << endl
 	 << "    in " << pathname << endl));
 #endif
-Queue_Lock.unlock ();
 
 //	Emit signals without Queue_Lock locked.
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | \
@@ -2981,4 +2968,3 @@ return descriptions;
 
 }	//	namespace HiRISE
 }	//	namespace UA
-
