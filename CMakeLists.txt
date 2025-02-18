@@ -142,7 +142,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
 # To debug, add e.g. DEBUG_SECTION=1 DEBUG=DEBUG_ALL or call cmake with them as -D args
 # and/or compile with -DCMAKE_BUILD_TYPE=Debug and use the debugger
-target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1 DEBUG_SECTION=1 DEBUG=DEBUG_ALL)
+target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
 
 #
 # TODO try and understand why the linker says that QwtSeriesStore<QPointF> is defined twice, once
