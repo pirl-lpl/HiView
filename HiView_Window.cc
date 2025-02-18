@@ -1900,7 +1900,7 @@ if (! name.isEmpty ())
 			clog << "    hostname lookup succeeded" << endl;
 			#endif
 			//	Add the HTTP URL prefix.
-			name.insert (0, "http://");
+			name.insert (0, "https://");
 			source_is_URL = true;
 			}
 		}
