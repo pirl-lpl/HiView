@@ -21,8 +21,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 
 The Rotated_Label class is a simplification of the QxtLabel class
-implementation from the Qxt library (http://libqxt.org;
-foundation@libqxt.org).
+implementation from the Qxt library (https://github.com/strixcode/libqxt).
 
 *******************************************************************************/
 
