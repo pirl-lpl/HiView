@@ -491,8 +491,8 @@ Plastic_Image::source_name
 	const QString&	name
 	)
 {
-QMutexLocker
-	object_lock (&Object_Lock);
+//QMutexLocker
+//	object_lock (&Object_Lock);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
 clog << ">>> Plastic_Image::source_name: " << name << endl;
 #endif
@@ -500,6 +500,8 @@ bool
 	changed = false;
 if (! closed ())
 	{
+	QMutexLocker
+		object_lock (&Object_Lock);
 	if ((changed = Source_Name != name))
 		{
 		#if ((DEBUG_SECTION) & DEBUG_METADATA)
@@ -525,7 +527,7 @@ if (! closed ())
 				*parameter = String (Source_Name.toStdString (), String::TEXT);
 				Image_Metadata->poke (Metadata->begin (), parameter);
 				}
-
+			object_lock.unlock();
 			//	Send change notification.
 			notify_metadata_monitors ();
 			}
@@ -540,22 +542,22 @@ return changed;
 idaeim::PVL::Aggregate*
 Plastic_Image::metadata ()
 {
-QMutexLocker
-	object_lock (&Object_Lock);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
 clog << ">>> Plastic_Image::metadata" << endl;
 #endif
 
 if (! Metadata)
 	{
+	QSize
+		image_size (source_size ());
+	QMutexLocker
+		object_lock (&Object_Lock);
 	Metadata = new Aggregate ("Metadata");
 	Image_Metadata = new Aggregate (IMAGE_METADATA_GROUP);
 	#if ((DEBUG_SECTION) & DEBUG_METADATA)
 	clog << "          Metadata @ " << (void*)Metadata << endl
 		 << "    Image_Metadata @ " << (void*)Image_Metadata << endl;
 	#endif
-	QSize
-		image_size (source_size ());
 	(*Image_Metadata)
 		.add (Assignment (IMAGE_SOURCE_PARAMETER)
 			= String (source_name ().toStdString (), String::TEXT))
@@ -906,14 +908,14 @@ Plastic_Image::different_band_map
 	const unsigned int*	band_map
 	) const
 {
+int
+	band = source_bands ();
 QMutexLocker
 	object_lock (&Object_Lock);
 if (! band_map)
 	return Band_Map != NULL;
 if (! Band_Map)
 	return true;
-int
-	band = source_bands ();
 while (band--)
 	if (Band_Map[band] != band_map[band])
 		return true;
@@ -1543,14 +1545,14 @@ Plastic_Image::image_region
 	int		band
 	) const
 {
-QMutexLocker
-	object_lock (&Object_Lock);
 QPoint
 	origin (round_down (source_origin ()));
 double
 	scale_width,
 	scale_height;
 source_scaling (&scale_width, &scale_height, band);
+QMutexLocker
+	object_lock (&Object_Lock);
 QSize
 	image_size (source_size ()),
 	region_size
@@ -1570,16 +1572,16 @@ Plastic_Image::displayed_size
 	int		band
 	) const
 {
-QMutexLocker
-	object_lock (&Object_Lock);
 double
 	scale_width,
 	scale_height;
-source_scaling (&scale_width, &scale_height, band);
+    source_scaling (&scale_width, &scale_height, band);
 QPoint
 	origin (round_down (source_origin ()));
 QSize
 	image_size (source_size ());
+QMutexLocker
+	object_lock (&Object_Lock);
 image_size.rwidth () -= origin.rx ();
 image_size.rwidth () = static_cast<int>(image_size.rwidth () * scale_width);
 if (image_size.rwidth () > width ())
@@ -2172,13 +2174,13 @@ if (source_region.isEmpty ())
 	return 0;
 	}
 
-QMutexLocker
-	object_lock (&Object_Lock);
 QRect
 	selected_region (image_region ());
 #if ((DEBUG_SECTION) & (DEBUG_HISTOGRAMS | DEBUG_PRINT_HISTOGRAMS))
 clog << "    image region = " << selected_region << endl;
 #endif
+QMutexLocker
+	object_lock (&Object_Lock);
 if (source_region.left () >
 		(selected_region.left () + selected_region.width ()) ||
 	(source_region.left () + source_region.width ()) <
@@ -2420,10 +2422,10 @@ if (display_region.isEmpty ())
 	return 0;
 	}
 
+QRect
+		selected_region (rect ());	//	Selected display region.
 QMutexLocker
 	object_lock (&Object_Lock);
-QRect
-	selected_region (rect ());	//	Selected display region.
 #if ((DEBUG_SECTION) & (DEBUG_HISTOGRAMS | DEBUG_PRINT_HISTOGRAMS))
 clog << "    display region = " << selected_region << endl;
 #endif
@@ -3416,7 +3418,7 @@ if (! Updating ||
 		change - because the QMutexLocker will only call the lock method
 		on the lock if it had been unlocked here.
 	*/
-	update_lock.relock ();
+	if (Updating) update_lock.relock (); // TODO possible bug
 	Initiator_Thread = current_thread;
 	#if ((DEBUG_SECTION) & DEBUG_UPDATE)
 	LOCKED_LOGGING ((
