@@ -166,7 +166,7 @@ if (! isRunning () &&
 	HTTP_Status_Description.clear ();
 	Status_Lock->unlock ();
 
-	if (URL.scheme ().compare ("HTTP", Qt::CaseInsensitive) == 0 &&
+	if (URL.scheme ().compare ("HTTPS", Qt::CaseInsensitive) == 0 &&
 		! URL.host ().isEmpty () &&
 		! URL.path ().isEmpty ())
 		{
@@ -284,7 +284,7 @@ Status_Lock->lock ();
 if (Timer->isActive ())
 	{
 	Timer->stop ();
-	reset (*Network_Reply);	
+	reset (*Network_Reply);
 	}
 else
 	{
