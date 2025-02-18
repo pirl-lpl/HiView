@@ -95,8 +95,8 @@ class Coordinate;
 
 	Note: This class is based on the Java Projection class of the
 	Image_Tools package of the PIRL Java Packages
-	(http://pirlwww.lpl.arizona.edu/software/PIRL_Java_Packages.shtml).
-	
+	(https://pirlwww.lpl.arizona.edu/software/PIRL_Java_Packages.shtml).
+
 	@author		Bradford Castalia, UA/HiROC
 	@version	$Revision: 1.13 $
 */
@@ -844,7 +844,7 @@ enum
 
 	The required list is first checked for the presences of the parameter
 	name. If the name is found in the list REQUIRED (1) is returned.
-	
+
 	The optional list is then checked for the presences of the parameter
 	name. If the name is found in the list OPTIONAL (-1) is returned.
 

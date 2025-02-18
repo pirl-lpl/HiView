@@ -35,8 +35,7 @@ namespace HiRISE
 	may be rotated in 90 degree increments.
 
 	The Rotated_Label class is a simplification of the QxtLabel class
-	implementation from the Qxt library (http://libqxt.org;
-	foundation@libqxt.org).
+	implementation from the Qxt library (https://github.com/strixcode/libqxt).
 
 	@author		Bradford Castalia, UA/HiROC
 	@version	$Revision: 1.1 $
