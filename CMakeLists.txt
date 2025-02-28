@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.17)
 
+# cmake --fresh -S ..\HiView -B HiView -DCMAKE_PREFIX_PATH=%HOMEPATH%
+# -DQwt_DIR=%HOMEPATH%\Qwt-6.3.0 -DKAKADU_DIR=%HOMEPATH%\hiview3\v8_4-00307L 
+# -DCMAKE_BUILD_TYPE=DEBUG -DDEBUG_SECTION=1 -DDEBUG=DEBUG_ALL
 project(HiView)
 
 # prevents a warning message
@@ -26,7 +29,6 @@ Data_Mapper_Tool.hh
 Distance_Line.hh
 Drawn_Line.hh
 Equirectangular_Projection.hh
-FunctionEvaluator.hh
 Function_Nodes.hh
 Graph_Tracker.hh
 Help_Docs.hh
@@ -60,6 +62,8 @@ Qstream.hh
 Rotated_Label.hh
 Save_Image_Dialog.hh
 Save_Image_Thread.hh
+Script_Evaluator.hh
+Script_Utility.hh
 SpeechHandler.hh
 Statistics_Tool.hh
 Statistics_Tools.hh
@@ -122,14 +126,18 @@ set(SOURCES
  Equirectangular_Projection.cc
  Polar_Stereographic_Elliptical_Projection.cc
    SpeechHandler.cc
-   FunctionEvaluator.cc
- Voice_Adapter.cc
+   Script_Evaluator.cc
+   Script_Utility.cc
+   Voice_Adapter.cc
  Distance_Line.cc
 )
 
 if(APPLE)
     list(APPEND HEADERS MacSpeechHandler.h MacSpeechHandlerDelegate.h)
     list(APPEND SOURCES MacSpeechHandler.mm MacSpeechHandlerDelegate.mm Mac_Voice_Adapter.mm)
+elseif(WIN32)    
+    list(APPEND HEADERS WinSpeechHandler.hh)
+    list(APPEND SOURCES WinSpeechHandler.cc)
 endif()
 
 list(LENGTH HEADERS HeaderCount)
@@ -140,7 +148,7 @@ add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
+target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1 $ENV{DEBUG_SECTION})
 
 #
 # TODO try and understand why the linker says that QwtSeriesStore<QPointF> is defined twice, once
