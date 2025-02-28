@@ -3,10 +3,9 @@
 #include "Statistics_Tool.hh"
 #include "Data_Mapper_Tool.hh"
 #include "Voice_Adapter.hh"
-using namespace UA::HiRISE;
 
 #include <cmath>
-using namespace std;
+using std::ceil;
 
 #include <QObject>
 
@@ -25,9 +24,9 @@ const char* const
 Voice_Adapter::Voice_Adapter
 (
    /*UA::HiRISE::HiView_Window &window,*/
-   UA::HiRISE::Image_Viewer* viewer,
-   UA::HiRISE::Statistics_Tools* stattool,
-   UA::HiRISE::Data_Mapper_Tool* mapper
+   Image_Viewer* viewer,
+   Statistics_Tools* stattool,
+   Data_Mapper_Tool* mapper
 )
  : viewer(viewer), window(window), stattool(stattool), mapper(mapper)
 {

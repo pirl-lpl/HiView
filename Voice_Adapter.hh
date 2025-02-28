@@ -1,4 +1,4 @@
-/*	Voice_Adapter
+/*	Voice_Adapter.hh
 
 HiROC CVS ID: $Id: Voice_Adapter.hh,v 2.1 2013/04/08 19:29:11 guym Exp $
 
@@ -21,26 +21,39 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Voice_Adapter_hh
-#define HiView_Voice_Adapter_hh
+#pragma once
 
 #include "Image_Viewer.hh"
 #include "Statistics_Tools.hh"
 #include "Data_Mapper_Tool.hh"
-using namespace UA::HiRISE;
+#include "SpeechHandler.hh"
 
+#include <array>
+#include <string>
+
+using UA::HiRISE::Image_Viewer, UA::HiRISE::Statistics_Tools, UA::HiRISE::Data_Mapper_Tool;
 
 class Voice_Adapter
 {
-
-public:
+ public:
 /*==============================================================================
-	Constants
+  Constants
 */
-//!	Class identification name with source code version and date.
-static const char* const ID;
+    //! Class identification name with source code version and date.
+    static const char *const ID;
 
-    Voice_Adapter(UA::HiRISE::Image_Viewer* viewer, UA::HiRISE::Statistics_Tools* stattool, UA::HiRISE::Data_Mapper_Tool* mapper);
+    static const std::array<std::string, 10> COMMANDS;
+
+    explicit Voice_Adapter(Image_Viewer *viewer, Statistics_Tools *stattool, Data_Mapper_Tool *mapper);
+
+    void receiveCommand(const std::string &input);
+
+    void toggle(bool on);
+
+ protected:
+    SpeechHandler *speechHandler;
+
+ private:
     void doFullSize();
     void doFitImage();
     void doZoomIn();
@@ -52,11 +65,7 @@ static const char* const ID;
     void doEnhance();
     void doRestore();
 
-private:
-    Image_Viewer* viewer;
-    Statistics_Tools* stattool;
-    Data_Mapper_Tool* mapper;
+    Image_Viewer *viewer;
+    Statistics_Tools *stattool;
+    Data_Mapper_Tool *mapper;
 };
-
-
-#endif /* HiView_Voice_Adapter_hh */
