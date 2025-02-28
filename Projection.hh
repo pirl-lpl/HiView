@@ -835,7 +835,7 @@ static bool is_invalid (double value);
 */
 enum
 	{
-	OPTIONAL	= -1,
+	UNREQUIRED	= -1,
 	UNREQUESTED	= 0,
 	REQUIRED	= 1
 	};

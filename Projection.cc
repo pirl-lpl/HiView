@@ -1237,9 +1237,9 @@ if ((list = const_cast<const char**>(optional_list)))
 			{
 			#if ((DEBUG_SECTION) & DEBUG_UTILTIIES)
 			clog << "<<< Projection::is_requested: "
-					<< requested_name (OPTIONAL) << endl;
+					<< requested_name (UNREQUIRED) << endl;
 			#endif
-			return OPTIONAL;
+			return UNREQUIRED;
 			}
 		}
 	}
