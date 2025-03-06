@@ -189,7 +189,10 @@ void Script_Evaluator::run()
   while (it.hasNext())
   {
     it.next();
-    qDebug() << it.name() << ": " << it.value().toString();
+    auto val = it.value();
+    if (val.isUndefined()) continue;
+    if (!(val.isNumber() || val.isString() || val.isBool() || val.isDate() || val.isArray())) continue;
+    qDebug() << it.name() << ": " << val.toString();
   }
 #endif
 
