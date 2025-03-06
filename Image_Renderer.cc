@@ -347,8 +347,6 @@ Image_Renderer::print_render_queue() const
 {
     QString
         pathname(object_pathname(this));
-    bool
-        locked = Queue_Lock.tryLock();
     LOCK_LOG;
     if (Active_Tile)
         clog << "    Image_Renderer::Active_Tile -" << endl
@@ -357,8 +355,6 @@ Image_Renderer::print_render_queue() const
         << "    in " << pathname << endl;
     print_queue(Render_Queue);
     UNLOCK_LOG;
-    if (locked)
-        Queue_Lock.unlock();
 }
 
 void
@@ -366,15 +362,11 @@ Image_Renderer::print_delete_queue() const
 {
     QString
         pathname(object_pathname(this));
-    bool
-        locked = Queue_Lock.tryLock();
     LOCK_LOG;
     clog << "    Image_Renderer::Delete_Queue" << endl
         << "    in " << pathname << endl;
     print_queue(Delete_Queue);
     UNLOCK_LOG;
-    if (locked)
-        Queue_Lock.unlock();
 }
 
 #else
@@ -452,7 +444,7 @@ Image_Renderer::Image_Renderer
     setObjectName("Image_Renderer");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_IMAGE_ACCOUNTING))
     LOCKED_LOGGING((
-        clog << ">-< Image_Renderer @ " << reinterpret_cast<void*>this
+        clog << ">-< Image_Renderer @ " << reinterpret_cast<void*>(this)
         << ": " << object_pathname(this) << endl
         << "       initial Source_Image " << *Source_Image << endl
         << "    initial Reference_Image " << *Reference_Image << endl));
@@ -472,7 +464,7 @@ Image_Renderer::~Image_Renderer()
 #endif
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_IMAGE_ACCOUNTING))
     LOCKED_LOGGING((
-        clog << ">>> ~Image_Renderer @ " << reinterpret_cast<void*>this
+        clog << ">>> ~Image_Renderer @ " << reinterpret_cast<void*>(this)
         << ": " << pathname << endl));
 #endif
     /* >>> WARNING <<< This Image_Renderer is destroyed AFTER any derived
@@ -514,7 +506,7 @@ Image_Renderer::~Image_Renderer()
     LOCK_LOG;
     image_accounting();
     clog << "    in " << pathname << endl
-        << "<<< ~Image_Renderer @ " << reinterpret_cast<void*>this << endl;
+        << "<<< ~Image_Renderer @ " << reinterpret_cast<void*>(this) << endl;
     UNLOCK_LOG;
 #endif
 }
@@ -545,7 +537,7 @@ Image_Renderer::immediate_mode
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
     LOCKED_LOGGING((
         clog << ">-< Image_Renderer::immediate_mode "
-        << reinterpret_cast<void*>QThread::currentThreadId()
+        << reinterpret_cast<void*>(this)
         << ": " << boolalpha << enable << endl));
 #endif
 
@@ -556,18 +548,11 @@ Image_Renderer::immediate_mode
 bool
 Image_Renderer::immediate_mode() const
 {
-#if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
-    void*
-        thread_ID = reinterpret_cast<void*>QThread::currentThreadId();
-    LOCKED_LOGGING((
-        clog << ">>> Image_Renderer::immediate_mode " << thread_ID << endl));
-#endif
-
     bool
         immediate_mode = Immediate_Mode;
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
     LOCKED_LOGGING((
-        clog << "<<< Image_Renderer::immediate_mode " << thread_ID
+        clog << "<<< Image_Renderer::immediate_mode "
         << ": " << boolalpha << immediate_mode << endl));
 #endif
     return immediate_mode;
@@ -593,7 +578,7 @@ Image_Renderer::queue
         new Image_Tile(image, tile_coordinate, tile_region, cancelable);
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
     void*
-        thread_ID = reinterpret_cast<void*>QThread::currentThreadId();
+        thread_ID = reinterpret_cast<void*>(this);
     QString
         pathname(object_pathname(this));
     LOCKED_LOGGING((
@@ -752,7 +737,7 @@ Image_Renderer::cancel
 
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
     void*
-        thread_ID = reinterpret_cast<void*>::currentThreadId();
+        thread_ID = reinterpret_cast<void*>(this);
     LOCK_LOG;
     clog << ">>> Image_Renderer::cancel " << thread_ID << ": image -" << endl
         << "    " << *image << endl
@@ -816,7 +801,7 @@ Image_Renderer::cancel
         clog << "    Active_Tile -" << endl
         << "    " << *Active_Tile << endl;
     clog << "    Render_Queue after canceling image @ "
-        << reinterpret_cast<void*>image << " -" << endl;
+        << reinterpret_cast<void*>(image) << " -" << endl;
     print_queue(Render_Queue);
     clog << "    Image_Renderer::cancel " << thread_ID
         << ": unlock Queue_Lock" << endl;
@@ -839,7 +824,7 @@ Image_Renderer::cancel
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_QUEUE))
     void*
-        thread_ID = reinterpret_cast<void*>QThread::currentThreadId();
+        thread_ID = reinterpret_cast<void*>(this);
     LOCK_LOG;
     clog << ">>> Image_Renderer::cancel " << thread_ID
         << ": " << cancel_options
@@ -871,7 +856,7 @@ Image_Renderer::reset
 {
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
     void*
-        thread_ID = reinterpret_cast<void*>QThread::currentThreadId();
+        thread_ID = reinterpret_cast<void*>(this);
     QString
         pathname(object_pathname(this)),
         description(cancel_options_descriptions(cancel_options));
@@ -930,7 +915,7 @@ Image_Renderer::add_tile
     // >>> CAUTION: The Queue_Lock is expected to be locked.
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
     void*
-        thread_ID = reinterpret_cast<void*>QThread::currentThreadId();
+        thread_ID = reinterpret_cast<void*>(this);
     QString
         pathname(object_pathname(this));
     LOCK_LOG;
@@ -1376,15 +1361,6 @@ Image_Renderer::delete_tiles()
         << "    in " << pathname << endl));
 #endif
 
-#if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
-    LOCK_LOG;
-    clog << "    Image_Renderer::delete_tiles " << thread_ID
-        << ": Queue_Lock was " << (locked ? "not " : "") << "locked" << endl
-        << "    in " << pathname << endl
-        << "    Delete_Queue -" << endl;
-    print_queue(Delete_Queue);
-    UNLOCK_LOG;
-#endif
     int
         index = Delete_Queue.size();
     while (--index >= 0)
@@ -1446,13 +1422,6 @@ Image_Renderer::run_rendering()
     afterwards so the caller's expectation of needing to unlock it
     can be met.
     */
-
-#if ((DEBUG_SECTION) & DEBUG_RENDER)
-    LOCKED_LOGGING((
-        clog << "    Image_Renderer::run_rendering " << thread_ID
-        << ": Queue_Lock was " << (locked ? "not " : "") << "locked" << endl
-        << "    in " << pathname << endl));
-#endif
 
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
     LOCKED_LOGGING((
@@ -2846,4 +2815,3 @@ Image_Renderer::cancel_options_descriptions
 
 
 } // namespace UA::HiRISE
-
