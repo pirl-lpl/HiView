@@ -25,7 +25,7 @@ Voice_Adapter::Voice_Adapter
 (
    /*UA::HiRISE::HiView_Window &window,*/
    Image_Viewer* viewer,
-   Statistics_Tools* stattool,
+   Statistics_Tools stattool,
    Data_Mapper_Tool* mapper
 )
  : viewer(viewer), window(window), stattool(stattool), mapper(mapper)

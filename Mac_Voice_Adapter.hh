@@ -25,7 +25,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include "Image_Viewer.hh"
 #include "Statistics_Tool.hh"
 #include "Data_Mapper_Tool.hh"
-using UA::HiRISE::Image_Viewer, UA::HiRISE::Statistics_Tools, UA::HiRISE::Data_Mapper_Tool;
+using UA::HiRISE::Image_Viewer, UA::HiRISE::Statistics_Tool, UA::HiRISE::Data_Mapper_Tool;
 
 #include "Voice_Adapter.hh"
 #include "SpeechHandler.hh"
@@ -40,7 +40,7 @@ class Mac_Voice_Adapter : Voice_Adapter
     //! Class identification name with source code version and date.
     static const char *const ID;
 
-    Mac_Voice_Adapter(Image_Viewer *viewer, Statistics_Tools *stattool, Data_Mapper_Tool *mapper);
+    Mac_Voice_Adapter(Image_Viewer *viewer, Statistics_Tool *stattool, Data_Mapper_Tool *mapper);
 
     void toggle(bool on);
 

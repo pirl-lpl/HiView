@@ -36,6 +36,5 @@ class SpeechHandler
  protected:
     virtual ~SpeechHandler();
 
- private:
     Voice_Adapter *voice_adapter;
 };

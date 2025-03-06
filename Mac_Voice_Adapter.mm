@@ -21,7 +21,7 @@ const char* const
 Mac_Voice_Adapter::Mac_Voice_Adapter
 (
    UA::HiRISE::Image_Viewer* viewer,
-   UA::HiRISE::Statistics_Tools* stattool,
+   UA::HiRISE::Statistics_Tool* stattool,
    UA::HiRISE::Data_Mapper_Tool* mapper
 )
  : Voice_Adapter(viewer, stattool, mapper)

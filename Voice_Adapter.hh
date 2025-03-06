@@ -24,14 +24,14 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #pragma once
 
 #include "Image_Viewer.hh"
-#include "Statistics_Tools.hh"
+#include "Statistics_Tool.hh"
 #include "Data_Mapper_Tool.hh"
 #include "SpeechHandler.hh"
 
 #include <array>
 #include <string>
 
-using UA::HiRISE::Image_Viewer, UA::HiRISE::Statistics_Tools, UA::HiRISE::Data_Mapper_Tool;
+using UA::HiRISE::Image_Viewer, UA::HiRISE::Statistics_Tool, UA::HiRISE::Data_Mapper_Tool;
 
 class Voice_Adapter
 {
@@ -44,16 +44,11 @@ class Voice_Adapter
 
     static const std::array<std::string, 10> COMMANDS;
 
-    explicit Voice_Adapter(Image_Viewer *viewer, Statistics_Tools *stattool, Data_Mapper_Tool *mapper);
+    explicit Voice_Adapter(Image_Viewer *viewer, Statistics_Tool *stattool, Data_Mapper_Tool *mapper);
 
     void receiveCommand(const std::string &input);
 
     void toggle(bool on);
-
- protected:
-    SpeechHandler *speechHandler;
-
- private:
     void doFullSize();
     void doFitImage();
     void doZoomIn();
@@ -65,7 +60,11 @@ class Voice_Adapter
     void doEnhance();
     void doRestore();
 
+ protected:
+    SpeechHandler *speechHandler;
+
+ private:
     Image_Viewer *viewer;
-    Statistics_Tools *stattool;
+    Statistics_Tool *stattool;
     Data_Mapper_Tool *mapper;
 };

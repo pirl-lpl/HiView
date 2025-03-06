@@ -21,14 +21,14 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 #include "Image_Viewer.hh"
-#include "Statistics_Tools.hh"
+#include "Statistics_Tool.hh"
 #include "Data_Mapper_Tool.hh"
 #include "Voice_Adapter.hh"
 #ifdef Q_OS_WIN32
 #include "WinSpeechHandler.hh"
 #endif
 
-using UA::HiRISE::Image_Viewer, UA::HiRISE::Statistics_Tools, UA::HiRISE::Data_Mapper_Tool;
+using UA::HiRISE::Image_Viewer, UA::HiRISE::Statistics_Tool, UA::HiRISE::Data_Mapper_Tool;
 
 #include <cmath>
 
@@ -56,7 +56,7 @@ const std::array<std::string, 10> Voice_Adapter::COMMANDS =
 */
 Voice_Adapter::Voice_Adapter(
     Image_Viewer *viewer,
-    Statistics_Tools *stattool,
+    Statistics_Tool *stattool,
     Data_Mapper_Tool *mapper)
     : viewer(viewer), stattool(stattool), mapper(mapper)
 {
