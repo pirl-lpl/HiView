@@ -3416,7 +3416,7 @@ if (! Updating ||
 		change - because the QMutexLocker will only call the lock method
 		on the lock if it had been unlocked here.
 	*/
-	update_lock.relock ();
+	if (!update_lock.isLocked()) update_lock.relock ();
 	Initiator_Thread = current_thread;
 	#if ((DEBUG_SECTION) & DEBUG_UPDATE)
 	LOCKED_LOGGING ((

@@ -23,7 +23,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include "Image_Info_Panel.hh"
 
-#include "Plastic_Image.hh"
+#include "Dynamic_Image.hh"
 #include "Projection.hh"
 #include "Coordinate.hh"
 #include "PDS_Metadata.hh"
@@ -82,10 +82,10 @@ namespace HiRISE
  Constants
 */
 const char* const
- Image_Info_Panel::ID =
-  "UA::HiRISE::Image_Info_Panel ($Revision: 1.26 $ $Date: 2014/08/05 17:58:08 $)";
-const Coordinate XY_10(1,0);
-const Coordinate XY_00(0,0);
+Image_Info_Panel::ID =
+"UA::HiRISE::Image_Info_Panel ($Revision: 1.26 $ $Date: 2014/08/05 17:58:08 $)";
+const Coordinate XY_10(1, 0);
+const Coordinate XY_00(0, 0);
 
 /*==============================================================================
  Defaults
@@ -115,406 +115,406 @@ const Coordinate XY_00(0,0);
 #endif
 
 const char
-	*RESTORE_LONGITUDE_FORMAT_KEY = "Restore_Longitude_Format";
+* RESTORE_LONGITUDE_FORMAT_KEY = "Restore_Longitude_Format";
 const char
-	*RESTORE_LATITUDE_FORMAT_KEY = "Restore_Latitude_Format";
+* RESTORE_LATITUDE_FORMAT_KEY = "Restore_Latitude_Format";
 const char
-	*RESTORE_LONGITUDE_DIRECTION_KEY = "Restore_Longitude_Direction";
+* RESTORE_LONGITUDE_DIRECTION_KEY = "Restore_Longitude_Direction";
 const char
-	*SHOW_SCRIPT_KEY = "Scripts_Show_Script";
+* SHOW_SCRIPT_KEY = "Scripts_Show_Script";
 const char
-	*CURRENT_SCRIPT_KEY = "Scripts_Current_Script";
+* CURRENT_SCRIPT_KEY = "Scripts_Current_Script";
 
 /*==============================================================================
  Constructors
 */
 Image_Info_Panel::Image_Info_Panel
- (
- QWidget* parent
- )
- : QFrame (parent),
-  Image_Values (true),
-  Use_Avg_Rgb (false),
-  Image_Bands (3),
-  Display_Data (tr (DISPLAY_DATA_LABEL)),
-  Image_Data (tr (IMAGE_DATA_LABEL)),
-  Projector (NULL),
-  Statistics (NULL),
-  Exception_List (QList<int>())
+(
+  QWidget* parent
+)
+  : QFrame(parent),
+  Image_Values(true),
+  Use_Avg_Rgb(false),
+  Image_Bands(3),
+  Display_Data(tr(DISPLAY_DATA_LABEL)),
+  Image_Data(tr(IMAGE_DATA_LABEL)),
+  Projector(NULL),
+  Statistics(NULL),
+  Exception_List(QList<int>())
 {
-Global_Object = Engine.globalObject();    
-degree_precision = 6; // guess, VALGRIND
-    Longitude_Location = Projection::INVALID_VALUE;
-    Latitude_Location = Projection::INVALID_VALUE;
+  Global_Object = Engine.globalObject();
+  degree_precision = 6; // guess, VALGRIND
+  Longitude_Location = Projection::INVALID_VALUE;
+  Latitude_Location = Projection::INVALID_VALUE;
 
-QSettings settings;
-// Get Coordinate Display Format Settings
-Longitude_Units = settings.value (RESTORE_LONGITUDE_FORMAT_KEY, DEFAULT_COORDINATE_FORMAT).toInt();
-Longitude_Direction = settings.value (RESTORE_LONGITUDE_DIRECTION_KEY, DEFAULT_COORDINATE_FORMAT).toInt();
-Latitude_Units =  settings.value (RESTORE_LATITUDE_FORMAT_KEY, DEFAULT_COORDINATE_FORMAT).toInt();
+  QSettings settings;
+  // Get Coordinate Display Format Settings
+  Longitude_Units = settings.value(RESTORE_LONGITUDE_FORMAT_KEY, DEFAULT_COORDINATE_FORMAT).toInt();
+  Longitude_Direction = settings.value(RESTORE_LONGITUDE_DIRECTION_KEY, DEFAULT_COORDINATE_FORMAT).toInt();
+  Latitude_Units = settings.value(RESTORE_LATITUDE_FORMAT_KEY, DEFAULT_COORDINATE_FORMAT).toInt();
 
-Script = settings.value(CURRENT_SCRIPT_KEY, "").toString();
-Show_Script = settings.value(SHOW_SCRIPT_KEY, DEFAULT_SHOW_SCRIPT).toBool();
+  Script = settings.value(CURRENT_SCRIPT_KEY, "").toString();
+  Show_Script = settings.value(SHOW_SCRIPT_KEY, DEFAULT_SHOW_SCRIPT).toBool();
 
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << ">>> Image_Info_Panel" << endl;
-QPalette
- colors = palette ();
-colors.setBrush (QPalette::Window, Qt::red);
-setPalette (colors);
-setAutoFillBackground (true);
+  clog << ">>> Image_Info_Panel" << endl;
+  QPalette
+    colors = palette();
+  colors.setBrush(QPalette::Window, Qt::red);
+  setPalette(colors);
+  setAutoFillBackground(true);
 #endif
 
-QVBoxLayout
- *layout = new QVBoxLayout (this);
-layout->setAlignment (Qt::AlignTop); 
-layout->setContentsMargins (0, 0, 0, 0);
-layout->setSpacing (0);
-layout->setSizeConstraint (QLayout::SetFixedSize);
+  QVBoxLayout
+    * layout = new QVBoxLayout(this);
+  layout->setAlignment(Qt::AlignTop);
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setSpacing(0);
+  layout->setSizeConstraint(QLayout::SetFixedSize);
 
-layout->addWidget (image_data_panel ());
-layout->addWidget (Script_Panel = create_script_engine ());
-//Only show Script_Panel if there is a script, and the user wants the panel open.
-Script_Panel->setVisible(Show_Script && (Script != ""));
+  layout->addWidget(image_data_panel());
+  layout->addWidget(Script_Panel = create_script_engine());
+  //Only show Script_Panel if there is a script, and the user wants the panel open.
+  Script_Panel->setVisible(Show_Script && (Script != ""));
 
-setSizePolicy (QSizePolicy::Fixed, QSizePolicy::Fixed);
+  setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << "    Image_Info_Panel sizeHint = " << sizeHint () << endl
-  << "<<< Image_Info_Panel" << endl;
+  clog << "    Image_Info_Panel sizeHint = " << sizeHint() << endl
+    << "<<< Image_Info_Panel" << endl;
 #endif
 }
 
 
 QWidget*
-Image_Info_Panel::image_data_panel ()
+Image_Info_Panel::image_data_panel()
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << ">>> Image_Info_Panel::image_data_panel" << endl;
-QPalette
- colors = palette ();
-colors.setColor (QPalette::Window, Qt::green);
+  clog << ">>> Image_Info_Panel::image_data_panel" << endl;
+  QPalette
+    colors = palette();
+  colors.setColor(QPalette::Window, Qt::green);
 #endif
-QWidget
- *panel = new QWidget (this);
-QHBoxLayout
- *layout = new QHBoxLayout (panel);
-// Tight layout.
-layout->setSpacing (0);
+  QWidget
+    * panel = new QWidget(this);
+  QHBoxLayout
+    * layout = new QHBoxLayout(panel);
+  // Tight layout.
+  layout->setSpacing(0);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-int
- left, top, right, bottom;
-layout->getContentsMargins (&left, &top, &right, &bottom);
-clog << "    layout margins = "
-   << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
-  << endl;
+  int
+    left, top, right, bottom;
+  layout->getContentsMargins(&left, &top, &right, &bottom);
+  clog << "    layout margins = "
+    << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
+    << endl;
 #endif
-layout->setContentsMargins (ITEM_SPACING, 0, ITEM_SPACING, 0);
+  layout->setContentsMargins(ITEM_SPACING, 0, ITEM_SPACING, 0);
 
-QLabel
- *label;
+  QLabel
+    * label;
 
-// Data Source.
-Data_Source = new QLabel (Display_Data);
-Data_Source->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
+  // Data Source.
+  Data_Source = new QLabel(Display_Data);
+  Data_Source->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-//  Label fixed height.
-Data_Source_Size = Data_Source->sizeHint ();
-Data_Source->setFixedHeight (Data_Source_Size.height ());
+  //  Label fixed height.
+  Data_Source_Size = Data_Source->sizeHint();
+  Data_Source->setFixedHeight(Data_Source_Size.height());
 
-//  Label fixed width is max of all possible.
-Data_Source->setText (Image_Data);
-if (Data_Source_Size.rwidth () < Data_Source->sizeHint ().width ())
- Data_Source_Size.rwidth () = Data_Source->sizeHint ().width ();
+  //  Label fixed width is max of all possible.
+  Data_Source->setText(Image_Data);
+  if (Data_Source_Size.rwidth() < Data_Source->sizeHint().width())
+    Data_Source_Size.rwidth() = Data_Source->sizeHint().width();
 
-Data_Source->setFixedWidth (Data_Source_Size.width ());
+  Data_Source->setFixedWidth(Data_Source_Size.width());
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-Data_Source->setAutoFillBackground (true);
-Data_Source->setPalette (colors);
-clog << "        Data_Source_Size = " << Data_Source_Size << endl
-  << "    Data_Source sizeHint = " << Data_Source->sizeHint () << endl;
+  Data_Source->setAutoFillBackground(true);
+  Data_Source->setPalette(colors);
+  clog << "        Data_Source_Size = " << Data_Source_Size << endl
+    << "    Data_Source sizeHint = " << Data_Source->sizeHint() << endl;
 #endif
 
-if (Image_Values)
- Data_Source->setText (Image_Data);
-else
- Data_Source->setText (Display_Data);
-layout->addWidget (Data_Source);
+  if (Image_Values)
+    Data_Source->setText(Image_Data);
+  else
+    Data_Source->setText(Display_Data);
+  layout->addWidget(Data_Source);
 
-// Location values.
-label = new QLabel (tr ("<b>Location: </b>"));
-label->setFixedHeight (Data_Source_Size.height ());
-label->setFixedWidth (label->sizeHint ().width ());
-layout->addWidget (label);
+  // Location values.
+  label = new QLabel(tr("<b>Location: </b>"));
+  label->setFixedHeight(Data_Source_Size.height());
+  label->setFixedWidth(label->sizeHint().width());
+  layout->addWidget(label);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-label->setAutoFillBackground (true);
-label->setPalette (colors);
-clog << "    Location sizeHint = " << label->sizeHint () << endl;
+  label->setAutoFillBackground(true);
+  label->setPalette(colors);
+  clog << "    Location sizeHint = " << label->sizeHint() << endl;
 #endif
 
-Location_X = new QLabel ("000000");
-Location_X->setFixedHeight (Data_Source_Size.height ());
-Location_X->setFixedWidth (Location_X->sizeHint ().width ());
-Location_X->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
-Location_X->clear ();
-layout->addWidget (Location_X);
+  Location_X = new QLabel("000000");
+  Location_X->setFixedHeight(Data_Source_Size.height());
+  Location_X->setFixedWidth(Location_X->sizeHint().width());
+  Location_X->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  Location_X->clear();
+  layout->addWidget(Location_X);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-Location_X->setAutoFillBackground (true);
-Location_X->setPalette (colors);
-clog << "    Location_X sizeHint = " << Location_X->sizeHint () << endl;
+  Location_X->setAutoFillBackground(true);
+  Location_X->setPalette(colors);
+  clog << "    Location_X sizeHint = " << Location_X->sizeHint() << endl;
 #endif
 
-Annotation_X = new QLabel ("<b>x</b>");
-Annotation_X->setFixedHeight (Data_Source_Size.height ());
-Annotation_X->setFixedWidth (Annotation_X->sizeHint ().width ());
-layout->addWidget (Annotation_X);
+  Annotation_X = new QLabel("<b>x</b>");
+  Annotation_X->setFixedHeight(Data_Source_Size.height());
+  Annotation_X->setFixedWidth(Annotation_X->sizeHint().width());
+  layout->addWidget(Annotation_X);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-Annotation_X->setAutoFillBackground (true);
-Annotation_X->setPalette (colors);
-clog << "    Annotation_X sizeHint = " << Annotation_X->sizeHint () << endl;
+  Annotation_X->setAutoFillBackground(true);
+  Annotation_X->setPalette(colors);
+  clog << "    Annotation_X sizeHint = " << Annotation_X->sizeHint() << endl;
 #endif
 
-layout->addSpacing (ITEM_SPACING);
+  layout->addSpacing(ITEM_SPACING);
 
-Location_Y = new QLabel ("000000");
-Location_Y->setFixedHeight (Data_Source_Size.height ());
-Location_Y->setFixedWidth (Location_Y->sizeHint ().width ());
-Location_Y->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
-Location_Y->clear ();
-layout->addWidget (Location_Y);
+  Location_Y = new QLabel("000000");
+  Location_Y->setFixedHeight(Data_Source_Size.height());
+  Location_Y->setFixedWidth(Location_Y->sizeHint().width());
+  Location_Y->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  Location_Y->clear();
+  layout->addWidget(Location_Y);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-Location_Y->setAutoFillBackground (true);
-Location_Y->setPalette (colors);
-clog << "    Location_Y sizeHint = " << Location_Y->sizeHint () << endl;
+  Location_Y->setAutoFillBackground(true);
+  Location_Y->setPalette(colors);
+  clog << "    Location_Y sizeHint = " << Location_Y->sizeHint() << endl;
 #endif
 
-Annotation_Y = new QLabel ("<b>y</b>");
-Annotation_Y->setFixedHeight (Data_Source_Size.height ());
-Annotation_Y->setFixedWidth (Annotation_Y->sizeHint ().width ());
-layout->addWidget (Annotation_Y);
+  Annotation_Y = new QLabel("<b>y</b>");
+  Annotation_Y->setFixedHeight(Data_Source_Size.height());
+  Annotation_Y->setFixedWidth(Annotation_Y->sizeHint().width());
+  layout->addWidget(Annotation_Y);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-Annotation_Y->setAutoFillBackground (true);
-Annotation_Y->setPalette (colors);
-clog << "    Annotation_Y sizeHint = " << Annotation_Y->sizeHint () << endl;
+  Annotation_Y->setAutoFillBackground(true);
+  Annotation_Y->setPalette(colors);
+  clog << "    Annotation_Y sizeHint = " << Annotation_Y->sizeHint() << endl;
 #endif
 
-//layout->addSpacing (SECTION_SPACING);
-layout->addWidget (World_Location = world_location_panel ());
-World_Location->setVisible (false);
-layout->addSpacing (SECTION_SPACING);
+  //layout->addSpacing (SECTION_SPACING);
+  layout->addWidget(World_Location = world_location_panel());
+  World_Location->setVisible(false);
+  layout->addSpacing(SECTION_SPACING);
 
-// Pixel values.
-label = new QLabel (tr ("<b>Value: </b>"));
-label->setFixedHeight (Data_Source_Size.height ());
-label->setFixedWidth (label->sizeHint ().width ());
-layout->addWidget (label);
+  // Pixel values.
+  label = new QLabel(tr("<b>Value: </b>"));
+  label->setFixedHeight(Data_Source_Size.height());
+  label->setFixedWidth(label->sizeHint().width());
+  layout->addWidget(label);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-label->setAutoFillBackground (true);
-label->setPalette (colors);
-clog << "    Value sizeHint = " << label->sizeHint () << endl;
+  label->setAutoFillBackground(true);
+  label->setPalette(colors);
+  clog << "    Value sizeHint = " << label->sizeHint() << endl;
 #endif
 
-const char
- *band_label[] = {"<font color='red'><b>r</b></font>", "<font color='green'><b>g</b></font>", "<font color='blue'><b>b</b></font>"};
-for (int
-  band = 0;
-  band < 3;
-  band++)
- {
- if (band)
-  layout->addSpacing (ITEM_SPACING);
+  const char
+    * band_label[] = { "<font color='red'><b>r</b></font>", "<font color='green'><b>g</b></font>", "<font color='blue'><b>b</b></font>" };
+  for (int
+       band = 0;
+       band < 3;
+       band++)
+  {
+    if (band)
+      layout->addSpacing(ITEM_SPACING);
 
- Pixel_Value[band] = new QLabel ("00000");
- Pixel_Value[band]->setFixedHeight (Data_Source_Size.height ());
- Pixel_Value[band]->setFixedWidth (Pixel_Value[band]->sizeHint ().width ());
- Pixel_Value[band]->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
- Pixel_Value[band]->clear ();
- #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
- Pixel_Value[band]->setAutoFillBackground (true);
- Pixel_Value[band]->setPalette (colors);
- clog << "    Pixel_Value[" << band << "] sizeHint = "
-  << Pixel_Value[band]->sizeHint () << endl;
- #endif
- layout->addWidget (Pixel_Value[band]);
-
- Pixel_Label[band] = new QLabel (band_label[band]);
- Pixel_Label[band]->setFixedHeight (Data_Source_Size.height ());
- Pixel_Label[band]->setFixedWidth (Pixel_Label[band]->sizeHint ().width ());
- layout->addWidget (Pixel_Label[band]);
- #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
- Pixel_Label[band]->setAutoFillBackground (true);
- Pixel_Label[band]->setPalette (colors);
- clog << "    Pixel_Label[" << band << "] sizeHint = "
-  << Pixel_Label[band]->sizeHint () << endl;
- #endif
- }
-
-layout->addSpacing (SECTION_SPACING);
-
-// Scale.
-label = new QLabel (tr ("<b>Scale: </b>"));
-label->setFixedHeight (Data_Source_Size.height ());
-label->setFixedWidth (label->sizeHint ().width ());
-layout->addWidget (label);
+    Pixel_Value[band] = new QLabel("00000");
+    Pixel_Value[band]->setFixedHeight(Data_Source_Size.height());
+    Pixel_Value[band]->setFixedWidth(Pixel_Value[band]->sizeHint().width());
+    Pixel_Value[band]->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    Pixel_Value[band]->clear();
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-label->setAutoFillBackground (true);
-label->setPalette (colors);
-clog << "    Scale sizeHint = " << label->sizeHint () << endl;
+    Pixel_Value[band]->setAutoFillBackground(true);
+    Pixel_Value[band]->setPalette(colors);
+    clog << "    Pixel_Value[" << band << "] sizeHint = "
+      << Pixel_Value[band]->sizeHint() << endl;
 #endif
+    layout->addWidget(Pixel_Value[band]);
 
-Scaling = new QLabel;
-Scaling->setFixedHeight (Data_Source_Size.height ());
-// Variable width set by value formatting in image_scale.
-Scaling->setAlignment (Qt::AlignLeft | Qt::AlignVCenter);
-Scaling->clear ();
-layout->addWidget (Scaling);
+    Pixel_Label[band] = new QLabel(band_label[band]);
+    Pixel_Label[band]->setFixedHeight(Data_Source_Size.height());
+    Pixel_Label[band]->setFixedWidth(Pixel_Label[band]->sizeHint().width());
+    layout->addWidget(Pixel_Label[band]);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-Scaling->setAutoFillBackground (true);
-Scaling->setPalette (colors);
-clog << "    Scaling sizeHint = " << Scaling->sizeHint () << endl;
+    Pixel_Label[band]->setAutoFillBackground(true);
+    Pixel_Label[band]->setPalette(colors);
+    clog << "    Pixel_Label[" << band << "] sizeHint = "
+      << Pixel_Label[band]->sizeHint() << endl;
+#endif
+  }
+
+  layout->addSpacing(SECTION_SPACING);
+
+  // Scale.
+  label = new QLabel(tr("<b>Scale: </b>"));
+  label->setFixedHeight(Data_Source_Size.height());
+  label->setFixedWidth(label->sizeHint().width());
+  layout->addWidget(label);
+#if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
+  label->setAutoFillBackground(true);
+  label->setPalette(colors);
+  clog << "    Scale sizeHint = " << label->sizeHint() << endl;
 #endif
 
-panel->setSizePolicy (QSizePolicy::Fixed, QSizePolicy::Fixed);
+  Scaling = new QLabel;
+  Scaling->setFixedHeight(Data_Source_Size.height());
+  // Variable width set by value formatting in image_scale.
+  Scaling->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+  Scaling->clear();
+  layout->addWidget(Scaling);
+#if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
+  Scaling->setAutoFillBackground(true);
+  Scaling->setPalette(colors);
+  clog << "    Scaling sizeHint = " << Scaling->sizeHint() << endl;
+#endif
+
+  panel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-layout->getContentsMargins (&left, &top, &right, &bottom);
-clog << "    sizeHint = " << panel->sizeHint () << endl
-  << "        size = " << panel->size () << endl
-  << "     margins = "
-   << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
-  << endl
-  << "<<< Image_Info_Panel::image_data_panel" << endl;
+  layout->getContentsMargins(&left, &top, &right, &bottom);
+  clog << "    sizeHint = " << panel->sizeHint() << endl
+    << "        size = " << panel->size() << endl
+    << "     margins = "
+    << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
+    << endl
+    << "<<< Image_Info_Panel::image_data_panel" << endl;
 #endif
-return panel;
+  return panel;
 }
 
 
 QWidget*
-Image_Info_Panel::world_location_panel ()
+Image_Info_Panel::world_location_panel()
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << ">>> Image_Info_Panel::world_location_panel" << endl;
-QPalette
- colors = palette ();
-colors.setColor (QPalette::Window, Qt::yellow);
+  clog << ">>> Image_Info_Panel::world_location_panel" << endl;
+  QPalette
+    colors = palette();
+  colors.setColor(QPalette::Window, Qt::yellow);
 #endif
-QWidget
- *panel = new QWidget (this);
- 
-QHBoxLayout
- *layout;
- 
-QLabel
- *label;
+  QWidget
+    * panel = new QWidget(this);
 
-// Projection name.
-layout = new QHBoxLayout (panel);
-layout->setSpacing (0);
-layout->setContentsMargins (0, 0, 0, 0);
+  QHBoxLayout
+    * layout;
+
+  QLabel
+    * label;
+
+  // Projection name.
+  layout = new QHBoxLayout(panel);
+  layout->setSpacing(0);
+  layout->setContentsMargins(0, 0, 0, 0);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-int
- left, top, right, bottom;
-layout->getContentsMargins (&left, &top, &right, &bottom);
-clog << "    projection name layout margins = "
-   << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
-  << endl;
+  int
+    left, top, right, bottom;
+  layout->getContentsMargins(&left, &top, &right, &bottom);
+  clog << "    projection name layout margins = "
+    << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
+    << endl;
 #endif
 
-// Locations:
-layout->setSpacing (ITEM_SPACING);
-layout->setContentsMargins (ITEM_SPACING, 0, ITEM_SPACING, 0);
+  // Locations:
+  layout->setSpacing(ITEM_SPACING);
+  layout->setContentsMargins(ITEM_SPACING, 0, ITEM_SPACING, 0);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-layout->getContentsMargins (&left, &top, &right, &bottom);
-clog << "    locations layout margins = "
-   << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
-  << endl;
+  layout->getContentsMargins(&left, &top, &right, &bottom);
+  clog << "    locations layout margins = "
+    << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
+    << endl;
 #endif
 
-// Longitude.
-Longitude = new QLabel ("-00h 00m 00.000s");
-Longitude->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
-int
- location_value_width = Longitude->sizeHint ().width ();
-Longitude->setFixedHeight (Data_Source_Size.height ());
-Longitude->setFixedWidth (location_value_width);
-Longitude->clear ();
+  // Longitude.
+  Longitude = new QLabel("-00h 00m 00.000s");
+  Longitude->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  int
+    location_value_width = Longitude->sizeHint().width();
+  Longitude->setFixedHeight(Data_Source_Size.height());
+  Longitude->setFixedWidth(location_value_width);
+  Longitude->clear();
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-Longitude->setAutoFillBackground (true);
-Longitude->setPalette (colors);
-clog << "    Longitude sizeHint = "
-  << Longitude->sizeHint () << endl;
+  Longitude->setAutoFillBackground(true);
+  Longitude->setPalette(colors);
+  clog << "    Longitude sizeHint = "
+    << Longitude->sizeHint() << endl;
 #endif
-layout->addWidget (Longitude);
+  layout->addWidget(Longitude);
 
-label = new QLabel (tr ("<b>lon.</b>"));
-label->setFixedHeight (Data_Source_Size.height ());
-label->setFixedWidth (label->sizeHint ().width ());
+  label = new QLabel(tr("<b>lon.</b>"));
+  label->setFixedHeight(Data_Source_Size.height());
+  label->setFixedWidth(label->sizeHint().width());
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-label->setAutoFillBackground (true);
-label->setPalette (colors);
-clog << "    lon. label sizeHint = "
-  << label->sizeHint () << endl;
+  label->setAutoFillBackground(true);
+  label->setPalette(colors);
+  clog << "    lon. label sizeHint = "
+    << label->sizeHint() << endl;
 #endif
-layout->addWidget (label);
+  layout->addWidget(label);
 
-layout->addSpacing (ITEM_SPACING);
+  layout->addSpacing(ITEM_SPACING);
 
-// Latitude.
-Latitude = new QLabel ();
-Latitude->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
-Latitude->setFixedHeight (Data_Source_Size.height ());
-Latitude->setFixedWidth (location_value_width);
+  // Latitude.
+  Latitude = new QLabel();
+  Latitude->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  Latitude->setFixedHeight(Data_Source_Size.height());
+  Latitude->setFixedWidth(location_value_width);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-Latitude->setAutoFillBackground (true);
-Latitude->setPalette (colors);
-clog << "    Latitude sizeHint = "
-  << Latitude->sizeHint () << endl;
+  Latitude->setAutoFillBackground(true);
+  Latitude->setPalette(colors);
+  clog << "    Latitude sizeHint = "
+    << Latitude->sizeHint() << endl;
 #endif
-layout->addWidget (Latitude);
+  layout->addWidget(Latitude);
 
-label = new QLabel (tr ("planetocentric"));
-label->setFixedHeight (Data_Source_Size.height ());
-label->setFixedWidth (label->sizeHint ().width ());
-label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
+  label = new QLabel(tr("planetocentric"));
+  label->setFixedHeight(Data_Source_Size.height());
+  label->setFixedWidth(label->sizeHint().width());
+  label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-label->setAutoFillBackground (true);
-label->setPalette (colors);
-clog << "    label sizeHint = "
-  << label->sizeHint () << endl;
+  label->setAutoFillBackground(true);
+  label->setPalette(colors);
+  clog << "    label sizeHint = "
+    << label->sizeHint() << endl;
 #endif
-layout->addWidget (label);
+  layout->addWidget(label);
 
-label = new QLabel (tr ("<b>lat.</b>"));
-label->setFixedHeight (Data_Source_Size.height ());
-label->setFixedWidth (label->sizeHint ().width ());
+  label = new QLabel(tr("<b>lat.</b>"));
+  label->setFixedHeight(Data_Source_Size.height());
+  label->setFixedWidth(label->sizeHint().width());
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-label->setAutoFillBackground (true);
-label->setPalette (colors);
-clog << "    lat. label sizeHint = "
-  << label->sizeHint () << endl;
+  label->setAutoFillBackground(true);
+  label->setPalette(colors);
+  clog << "    lat. label sizeHint = "
+    << label->sizeHint() << endl;
 #endif
-layout->addWidget (label);
+  layout->addWidget(label);
 
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-layout->getContentsMargins (&left, &top, &right, &bottom);
-clog << "     locations margins = "
-   << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
-  << endl;
-//panel_layout->getContentsMargins (&left, &top, &right, &bottom);
-clog << "        panel sizeHint = " << panel->sizeHint () << endl
-  << "            panel size = " << panel->size () << endl
-  << "         panel margins = "
-   << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
-  << endl;
-clog << "<<< Image_Info_Panel::world_location_panel" << endl;
+  layout->getContentsMargins(&left, &top, &right, &bottom);
+  clog << "     locations margins = "
+    << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
+    << endl;
+  //panel_layout->getContentsMargins (&left, &top, &right, &bottom);
+  clog << "        panel sizeHint = " << panel->sizeHint() << endl
+    << "            panel size = " << panel->size() << endl
+    << "         panel margins = "
+    << left << "l, " << top << "t, " << right << "r, " << bottom << 'b'
+    << endl;
+  clog << "<<< Image_Info_Panel::world_location_panel" << endl;
 #endif
-return panel;
+  return panel;
 }
 
 
-Image_Info_Panel::~Image_Info_Panel ()
+Image_Info_Panel::~Image_Info_Panel()
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << ">-< ~Image_Info_Panel" << endl;
+  clog << ">-< ~Image_Info_Panel" << endl;
 #endif
 }
 
@@ -523,30 +523,30 @@ clog << ">-< ~Image_Info_Panel" << endl;
 */
 void
 Image_Info_Panel::image_bands
- (
- int  bands
- )
+(
+  int  bands
+)
 {
-if (bands < 1)
- bands = 0;
-else
-if (bands > 3)
- bands = 3;
+  if (bands < 1)
+    bands = 0;
+  else
+    if (bands > 3)
+      bands = 3;
 
-Image_Bands = bands;
-if (Image_Values)
- {
- for (int
-   band = 0;
-   band < 3;
-   band++)
+  Image_Bands = bands;
+  if (Image_Values)
   {
-  Pixel_Value[band]->setVisible (band < Image_Bands);
-  Pixel_Label[band]->setVisible (band < Image_Bands);
+    for (int
+         band = 0;
+         band < 3;
+         band++)
+    {
+      Pixel_Value[band]->setVisible(band < Image_Bands);
+      Pixel_Label[band]->setVisible(band < Image_Bands);
+    }
+    if (Image_Bands == 1)
+      Pixel_Label[0]->setVisible(false);
   }
- if (Image_Bands == 1)
-  Pixel_Label[0]->setVisible (false);
- }
 }
 
 /*==============================================================================
@@ -557,242 +557,256 @@ if (Image_Values)
 */
 void
 Image_Info_Panel::image_values
- (
- bool enabled
- )
+(
+  bool enabled
+)
 {
-if (enabled != Image_Values)
- {
- Image_Values = enabled;
- int
-  bands = Image_Values ? Image_Bands : 3;
-
- Data_Source->setText
-  (Image_Values ? Image_Data : Display_Data);
- for (int
-   band = 0;
-   band < 3;
-   band++)
+  if (enabled != Image_Values)
   {
-  Pixel_Value[band]->setVisible (band < bands);
-  Pixel_Label[band]->setVisible (band < bands);
+    Image_Values = enabled;
+    int
+      bands = Image_Values ? Image_Bands : 3;
+
+    Data_Source->setText
+    (Image_Values ? Image_Data : Display_Data);
+    for (int
+         band = 0;
+         band < 3;
+         band++)
+    {
+      Pixel_Value[band]->setVisible(band < bands);
+      Pixel_Label[band]->setVisible(band < bands);
+    }
+    if (bands == 1)
+      Pixel_Label[0]->setVisible(false);
+
+    // Reset all the values.
+    QPoint
+      display_location(Display_Location),
+      image_location(Image_Location);
+    Display_Location =
+      Image_Location = QPoint(-1, -1);
+    cursor_location(display_location, image_location);
+
+    Dynamic_Image::Triplet
+      display_value(Display_Value),
+      image_value(Image_Value);
+    Display_Value.Datum[0] =
+      Display_Value.Datum[1] =
+      Display_Value.Datum[2] =
+      Image_Value.Datum[0] =
+      Image_Value.Datum[1] =
+      Image_Value.Datum[2] = static_cast<Dynamic_Image::Pixel_Datum>(-2);
+    pixel_value(display_value, image_value);
+
+    QSizeF
+      scaling(Image_Scale);
+    Image_Scale = QSizeF();
+    image_scale(scaling);
   }
- if (bands == 1)
-  Pixel_Label[0]->setVisible (false);
-
- // Reset all the values.
- QPoint
-  display_location (Display_Location),
-  image_location (Image_Location);
- Display_Location =
- Image_Location = QPoint (-1, -1);
- cursor_location (display_location, image_location);
-
- Plastic_Image::Triplet
-  display_value (Display_Value),
-  image_value (Image_Value);
- Display_Value.Datum[0] =
- Display_Value.Datum[1] =
- Display_Value.Datum[2] =
- Image_Value.Datum[0] =
- Image_Value.Datum[1] =
- Image_Value.Datum[2] = static_cast<Plastic_Image::Pixel_Datum>(-2);
- pixel_value (display_value, image_value);
-
- QSizeF
-  scaling (Image_Scale);
- Image_Scale = QSizeF ();
- image_scale (scaling);
- }
 }
 
 
 void
 Image_Info_Panel::cursor_location
- (
- const QPoint& display_location,
- const QPoint& image_location
- )
+(
+  const QPoint& display_location,
+  const QPoint& image_location
+)
 {
 #if ((DEBUG_SECTION) & (DEBUG_IMAGE_DATA | DEBUG_WORLD_DATA))
-clog << ">>> Image_Info_Panel::cursor_location:" << endl
-  << "    display_location = " << display_location << endl
-  << "      image_location = " << image_location << endl;
+  clog << ">>> Image_Info_Panel::cursor_location:" << endl
+    << "    display_location = " << display_location << endl
+    << "      image_location = " << image_location << endl;
 #endif
-if (Image_Values)
- {
- if (image_location != Image_Location)
+  if (Image_Values)
   {
-  int
-   x = image_location.x (),
-   y = image_location.y ();
-            
-            if (x < 0 || y < 0) return;
-  Coordinate
-   coordinate (Projection::INVALID_VALUE, Projection::INVALID_VALUE);
+    if (image_location != Image_Location)
+    {
+      int
+        x = image_location.x(),
+        y = image_location.y();
 
-  if (x < 0)
-   {
-   Location_X->clear ();
-   if(Evaluate_X) 
-    Script_Output->clear();
-//   Annotation_X->clear ();
-   }
-  else
-   {
-   Location_X->setNum (x);
-   if(Evaluate_X) {
-    Global_Object.setProperty("x_px", x);
-    evaluate_script();
-   }
-//   Annotation_X->setText ("<b>x</b>");
-   coordinate.X = x;
-   }
-  if (y < 0)
-   {
-   Location_Y->clear ();
-   if(Evaluate_Y)
-    Script_Output->clear();
-//   Annotation_Y->clear ();
-   }
-  else
-   {
-   Location_Y->setNum (y);
-   if(Evaluate_Y) {
-    Global_Object.setProperty("y_px", y);
-    evaluate_script();
-   }
-//   Annotation_Y->setText ("<b>y</b>");
+      if (x < 0 || y < 0) return;
+      Coordinate
+        coordinate(Projection::INVALID_VALUE, Projection::INVALID_VALUE);
 
-   coordinate.Y = y;
-   }
-        
-  if (! Projector ||
-   ! World_Location->isVisible ())
-   location (coordinate);
-  else
-   location (Projector->to_world (coordinate));
+      if (x < 0)
+      {
+        Location_X->clear();
+        if (Evaluate_X)
+          Script_Output->clear();
+        //   Annotation_X->clear ();
+      }
+      else
+      {
+        Location_X->setNum(x);
+        if (Evaluate_X)
+        {
+          Global_Object.setProperty("x_px", x);
+          evaluate_script();
+        }
+        //   Annotation_X->setText ("<b>x</b>");
+        coordinate.X = x;
+      }
+      if (y < 0)
+      {
+        Location_Y->clear();
+        if (Evaluate_Y)
+          Script_Output->clear();
+        //   Annotation_Y->clear ();
+      }
+      else
+      {
+        Location_Y->setNum(y);
+        if (Evaluate_Y)
+        {
+          Global_Object.setProperty("y_px", y);
+          evaluate_script();
+        }
+        //   Annotation_Y->setText ("<b>y</b>");
+
+        coordinate.Y = y;
+      }
+
+      if (!Projector ||
+          !World_Location->isVisible())
+        location(coordinate);
+      else
+        location(Projector->to_world(coordinate));
+    }
   }
- }
-else
- {
- if (display_location != Display_Location)
+  else
   {
-  Location_X->setNum (display_location.x ());
-  Location_Y->setNum (display_location.y ());
+    if (display_location != Display_Location)
+    {
+      Location_X->setNum(display_location.x());
+      Location_Y->setNum(display_location.y());
+    }
   }
- }
-Display_Location = display_location;
-Image_Location   = image_location;
+  Display_Location = display_location;
+  Image_Location = image_location;
 #if ((DEBUG_SECTION) & (DEBUG_IMAGE_DATA | DEBUG_WORLD_DATA))
-clog << "<<< Image_Info_Panel::cursor_location" << endl;
+  clog << "<<< Image_Info_Panel::cursor_location" << endl;
 #endif
 }
 
 
 void
 Image_Info_Panel::pixel_value
- (
- const Plastic_Image::Triplet& display_value,
- const Plastic_Image::Triplet& image_value
- )
+(
+  const Dynamic_Image::Triplet& display_value,
+  const Dynamic_Image::Triplet& image_value
+)
 {
- if(!Use_Avg_Rgb && Statistics != NULL) {
-  //r
-  Plastic_Image::Pixel_Datum value = Image_Values ? image_value.Datum[0] : display_value.Datum[0];
-  if (value != (Image_Values ? Image_Value.Datum[0] : Display_Value.Datum[0]))
+  if (!Use_Avg_Rgb && Statistics != NULL)
   {
-   if (value == Plastic_Image::UNDEFINED_PIXEL_VALUE) {
-    Pixel_Value[0]->clear ();
-    if(Evaluate_R)
-     Script_Output->clear();
-   }
-   else {
-    Pixel_Value[0]->setNum (static_cast<int>(value));
-    if(Evaluate_R) {
-     Global_Object.setProperty("red", static_cast<int>(value));
-     evaluate_script();
+    //r
+    Dynamic_Image::Pixel_Datum value = Image_Values ? image_value.Datum[0] : display_value.Datum[0];
+    if (value != (Image_Values ? Image_Value.Datum[0] : Display_Value.Datum[0]))
+    {
+      if (value == Dynamic_Image::UNDEFINED_PIXEL_VALUE)
+      {
+        Pixel_Value[0]->clear();
+        if (Evaluate_R)
+          Script_Output->clear();
+      }
+      else
+      {
+        Pixel_Value[0]->setNum(static_cast<int>(value));
+        if (Evaluate_R)
+        {
+          Global_Object.setProperty("red", static_cast<int>(value));
+          evaluate_script();
+        }
+      }
     }
-   }
-  }
-  //g
-  value = Image_Values ? image_value.Datum[1] : display_value.Datum[1];
-  if (value != (Image_Values ? Image_Value.Datum[1] : Display_Value.Datum[1]))
-  {
-   if (value == Plastic_Image::UNDEFINED_PIXEL_VALUE) {
-    Pixel_Value[1]->clear ();
-    if(Evaluate_G)
-     Script_Output->clear();
-   }
-   else {
-    Pixel_Value[1]->setNum (static_cast<int>(value));
-    if(Evaluate_G) {
-     Global_Object.setProperty("green", static_cast<int>(value));
-     evaluate_script();
+    //g
+    value = Image_Values ? image_value.Datum[1] : display_value.Datum[1];
+    if (value != (Image_Values ? Image_Value.Datum[1] : Display_Value.Datum[1]))
+    {
+      if (value == Dynamic_Image::UNDEFINED_PIXEL_VALUE)
+      {
+        Pixel_Value[1]->clear();
+        if (Evaluate_G)
+          Script_Output->clear();
+      }
+      else
+      {
+        Pixel_Value[1]->setNum(static_cast<int>(value));
+        if (Evaluate_G)
+        {
+          Global_Object.setProperty("green", static_cast<int>(value));
+          evaluate_script();
+        }
+      }
     }
-   }
-  }
-  //b
-  value = Image_Values ? image_value.Datum[2] : display_value.Datum[2];
-  if (value != (Image_Values ? Image_Value.Datum[2] : Display_Value.Datum[2]))
-  {
-   if (value == Plastic_Image::UNDEFINED_PIXEL_VALUE) {
-    Pixel_Value[2]->clear ();
-    if(Evaluate_B)
-     Script_Output->clear();
-   }
-   else {
-    Pixel_Value[2]->setNum (static_cast<int>(value));
-    if(Evaluate_B) {
-     Global_Object.setProperty("blue", static_cast<int>(value));
-     evaluate_script();
+    //b
+    value = Image_Values ? image_value.Datum[2] : display_value.Datum[2];
+    if (value != (Image_Values ? Image_Value.Datum[2] : Display_Value.Datum[2]))
+    {
+      if (value == Dynamic_Image::UNDEFINED_PIXEL_VALUE)
+      {
+        Pixel_Value[2]->clear();
+        if (Evaluate_B)
+          Script_Output->clear();
+      }
+      else
+      {
+        Pixel_Value[2]->setNum(static_cast<int>(value));
+        if (Evaluate_B)
+        {
+          Global_Object.setProperty("blue", static_cast<int>(value));
+          evaluate_script();
+        }
+      }
     }
-   }
   }
- }
 
- Display_Value = display_value;
- Image_Value   = image_value;
+  Display_Value = display_value;
+  Image_Value = image_value;
 }
 
-void Image_Info_Panel::use_avg_pixel_value(bool use) {
- Use_Avg_Rgb = use;
+void Image_Info_Panel::use_avg_pixel_value(bool use)
+{
+  Use_Avg_Rgb = use;
 }
 
 void
 Image_Info_Panel::image_scale
- (
- const QSizeF& scaling,
- int    /* band argument is not used */
- )
+(
+  const QSizeF& scaling,
+  int    /* band argument is not used */
+)
 {
-if (Image_Scale != scaling)
- {
- Image_Scale = scaling;
- double
-  scale_x = scaling.width (),
-  scale_y = scaling.height ();
- if (! Image_Values)
+  if (Image_Scale != scaling)
   {
-  scale_x = 1.0 / scale_x;
-  scale_y = 1.0 / scale_y;
-  }
- QString
-  report;
- report =
-  QString ("%1")
-  .arg (scale_x, 6, 'f', 3);
- if (scale_y != scale_x)
-  report +=
-   QString (" / %1")
-   .arg (scale_y, 6, 'f', 3);
+    Image_Scale = scaling;
+    double
+      scale_x = scaling.width(),
+      scale_y = scaling.height();
+    if (!Image_Values)
+    {
+      scale_x = 1.0 / scale_x;
+      scale_y = 1.0 / scale_y;
+    }
+    QString
+      report;
+    report =
+      QString("%1")
+      .arg(scale_x, 6, 'f', 3);
+    if (scale_y != scale_x)
+      report +=
+      QString(" / %1")
+      .arg(scale_y, 6, 'f', 3);
 
- Scaling->setText (report);
- Global_Object.setProperty("display.scale", scale_x);
- if(Evaluate_Scale) {
-  evaluate_script();
- }
- }
+    Scaling->setText(report);
+    Global_Object.setProperty("display.scale", scale_x);
+    if (Evaluate_Scale)
+    {
+      evaluate_script();
+    }
+  }
 }
 
 /*------------------------------------------------------------------------------
@@ -800,243 +814,256 @@ if (Image_Scale != scaling)
 */
 void
 Image_Info_Panel::projection
- (
- Projection* projector
- )
+(
+  Projection* projector
+)
 {
 #if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
-clog << ">>> Image_Info_Panel::projection: @ " << (void*)projector << endl;
+  clog << ">>> Image_Info_Panel::projection: @ " << (void*)projector << endl;
 #endif
-if (Projector != projector)
- Projector  = projector;
+  if (Projector != projector)
+    Projector = projector;
 
-bool
- visible = false;
-if (Projector && ! Projector->is_identity ()) {
- #if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
- clog << "    canonical_projection_name = "
-  << Projector->canonical_projection_name () << endl;
- #endif
-/* QString
-  name ("<b>");
- name += Projector->canonical_projection_name ();
- name += " Projection:</b>";
- Projection_Name->setText (name);*/
- visible = true;
- //set precision for the degree and radian values
- double result = qAbs(Projector->to_world(XY_10).X - Projector->to_world(XY_00).X);
- 
- if(result < 0.000001) {
-  degree_precision = 11;
- }
- else {
-  int i;
-  for(i = 0; result < 1; ++i) {
-   result = result * 10;
-  }
-  degree_precision = i + 5;
- }
-}
+  bool
+    visible = false;
+  if (Projector && !Projector->is_identity())
+  {
 #if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
-clog << "    World_Location->isVisible = "
-  << World_Location->isVisible () << endl
-  << "    setVisible = " << visible << endl;
+    clog << "    canonical_projection_name = "
+      << Projector->canonical_projection_name() << endl;
 #endif
-if (World_Location->isVisible () != visible)
- World_Location->setVisible (visible);
+    /* QString
+      name ("<b>");
+     name += Projector->canonical_projection_name ();
+     name += " Projection:</b>";
+     Projection_Name->setText (name);*/
+    visible = true;
+    //set precision for the degree and radian values
+    double result = qAbs(Projector->to_world(XY_10).X - Projector->to_world(XY_00).X);
+
+    if (result < 0.000001)
+    {
+      degree_precision = 11;
+    }
+    else
+    {
+      int i;
+      for (i = 0; result < 1; ++i)
+      {
+        result = result * 10;
+      }
+      degree_precision = i + 5;
+    }
+  }
 #if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
-clog << "<<< Image_Info_Panel::projection" << endl;
+  clog << "    World_Location->isVisible = "
+    << World_Location->isVisible() << endl
+    << "    setVisible = " << visible << endl;
+#endif
+  if (World_Location->isVisible() != visible)
+    World_Location->setVisible(visible);
+#if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
+  clog << "<<< Image_Info_Panel::projection" << endl;
 #endif
 }
 
 
 void
 Image_Info_Panel::longitude_units
- (
- int  units
- )
+(
+  int  units
+)
 {
-if (Longitude_Units != units) {
- Longitude_Units = units;
-}
-else
-if (! Projection::is_invalid (Longitude_Location))
- {
- // Refresh the displayed value.
- double
-  value = Longitude_Location;
- Longitude_Location = Projection::INVALID_VALUE;
- longitude (value);
- }
+  if (Longitude_Units != units)
+  {
+    Longitude_Units = units;
+  }
+  else
+    if (!Projection::is_invalid(Longitude_Location))
+    {
+      // Refresh the displayed value.
+      double
+        value = Longitude_Location;
+      Longitude_Location = Projection::INVALID_VALUE;
+      longitude(value);
+    }
 }
 
 
 void
 Image_Info_Panel::latitude_units
- (
- int  units
- )
+(
+  int  units
+)
 {
-if (Latitude_Units != units) {
- Latitude_Units = units; 
-}
-else
-if (! Projection::is_invalid (Latitude_Location))
- {
- // Refresh the displayed value.
- double
-  value = Latitude_Location;
- Latitude_Location = Projection::INVALID_VALUE;
- latitude (value);
- }
+  if (Latitude_Units != units)
+  {
+    Latitude_Units = units;
+  }
+  else
+    if (!Projection::is_invalid(Latitude_Location))
+    {
+      // Refresh the displayed value.
+      double
+        value = Latitude_Location;
+      Latitude_Location = Projection::INVALID_VALUE;
+      latitude(value);
+    }
 }
 
 
 void
 Image_Info_Panel::longitude_direction
- (
- int  direction
- )
+(
+  int  direction
+)
 {
-if (Longitude_Direction != direction)
- Longitude_Direction = direction;
-else
-if (! Projection::is_invalid (Longitude_Location))
- {
- // Refresh the displayed value.
- double
-  value = Longitude_Location;
- Longitude_Location = Projection::INVALID_VALUE;
- longitude (value);
- }
+  if (Longitude_Direction != direction)
+    Longitude_Direction = direction;
+  else
+    if (!Projection::is_invalid(Longitude_Location))
+    {
+      // Refresh the displayed value.
+      double
+        value = Longitude_Location;
+      Longitude_Location = Projection::INVALID_VALUE;
+      longitude(value);
+    }
 }
 
 
 void
 Image_Info_Panel::location
- (
- const Coordinate& coordinate
- )
+(
+  const Coordinate& coordinate
+)
 {
 #if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
-clog << ">>> Image_Info_Panel::location: " << coordinate << endl;
+  clog << ">>> Image_Info_Panel::location: " << coordinate << endl;
 #endif
-longitude (coordinate.X);
-latitude (coordinate.Y);
+  longitude(coordinate.X);
+  latitude(coordinate.Y);
 #if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
-clog << "<<< Image_Info_Panel::location" << endl;
+  clog << "<<< Image_Info_Panel::location" << endl;
 #endif
 }
 
 
 void
 Image_Info_Panel::longitude
- (
- double value
- )
+(
+  double value
+)
 {
-if (Longitude_Location != value)
- {
- Longitude_Location = value;
- if (Projection::is_invalid (value))
-  Longitude->clear ();
- else
+  if (Longitude_Location != value)
   {
-  if (Longitude_Direction == WEST)
-   value = 360 - value;
-  Longitude->setText (location_representation
-   (value, Longitude_Units));
+    Longitude_Location = value;
+    if (Projection::is_invalid(value))
+      Longitude->clear();
+    else
+    {
+      if (Longitude_Direction == WEST)
+        value = 360 - value;
+      Longitude->setText(location_representation
+      (value, Longitude_Units));
+    }
   }
- }
 }
 
 
 void
 Image_Info_Panel::latitude
- (
- double value
- )
+(
+  double value
+)
 {
-if (Latitude_Location != value)
- {
- Latitude_Location = value;
- if (Projection::is_invalid (value))
-  Latitude->clear ();
- else
-  Latitude->setText (location_representation
-   (value, Latitude_Units));
- }
+  if (Latitude_Location != value)
+  {
+    Latitude_Location = value;
+    if (Projection::is_invalid(value))
+      Latitude->clear();
+    else
+      Latitude->setText(location_representation
+      (value, Latitude_Units));
+  }
 }
 
 
 QString
 Image_Info_Panel::location_representation
- (
- double value,
- int  units
- ) const
+(
+  double value,
+  int  units
+) const
 {
 #if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
-clog << ">>> Image_Info_Panel::location_representation: " << value
-  << " units " << units << endl;
+  clog << ">>> Image_Info_Panel::location_representation: " << value
+    << " units " << units << endl;
 #endif
-QString
- representation;
-switch (units)
- {
- case DEGREES:
-  representation = QString ("%1")
-   .arg (value, 16, 'f', degree_precision);
-  break;
- case HMS:
-  representation = Projection::hours_minutes_seconds (value);
-  break;
- case RADIANS:
-  value = Projection::to_radians (value);
-  representation = QString ("%1")
-   .arg (value, 16, 'f', degree_precision + 2);
- }
+  QString
+    representation;
+  switch (units)
+  {
+    case DEGREES:
+      representation = QString("%1")
+        .arg(value, 16, 'f', degree_precision);
+      break;
+    case HMS:
+      representation = Projection::hours_minutes_seconds(value);
+      break;
+    case RADIANS:
+      value = Projection::to_radians(value);
+      representation = QString("%1")
+        .arg(value, 16, 'f', degree_precision + 2);
+  }
 #if ((DEBUG_SECTION) & DEBUG_WORLD_DATA)
-clog << "<<< Image_Info_Panel::location_representation: "
-  << representation << endl;
+  clog << "<<< Image_Info_Panel::location_representation: "
+    << representation << endl;
 #endif
-return representation;
+  return representation;
 }
 
 /***************************************************************
  * Qt Script Code
  ***************************************************************/
-void Image_Info_Panel::update_statistics(Stats *stats) {
- Statistics = stats;
-// Use_Avg_Rgb = Use_Avg_Rgb;
+void Image_Info_Panel::update_statistics(Stats* stats)
+{
+  Statistics = stats;
+  // Use_Avg_Rgb = Use_Avg_Rgb;
 }
 
-void Image_Info_Panel::update_region_stats() {
- Pixel_Value[0]->setText (QString::number(Statistics->mean_value(0),'f',1));
- Pixel_Value[1]->setText (QString::number(Statistics->mean_value(1),'f',1));
- Pixel_Value[2]->setText (QString::number(Statistics->mean_value(2),'f',1));
- if (Evaluate_R || Evaluate_G || Evaluate_B)
-  evaluate_script();
-}
- 
-void Image_Info_Panel::add_exception(int exception) {
- if(Exception_List.indexOf(exception) == -1) {
-  Exception_List.push_back(exception);
- }
+void Image_Info_Panel::update_region_stats()
+{
+  Pixel_Value[0]->setText(QString::number(Statistics->mean_value(0), 'f', 1));
+  Pixel_Value[1]->setText(QString::number(Statistics->mean_value(1), 'f', 1));
+  Pixel_Value[2]->setText(QString::number(Statistics->mean_value(2), 'f', 1));
+  if (Evaluate_R || Evaluate_G || Evaluate_B)
+    evaluate_script();
 }
 
-void Image_Info_Panel::clear_exceptions() {
- Exception_List.clear();
+void Image_Info_Panel::add_exception(int exception)
+{
+  if (Exception_List.indexOf(exception) == -1)
+  {
+    Exception_List.push_back(exception);
+  }
 }
- 
 
-void Image_Info_Panel::unset_properties() {
- initialize_script_values();
- QStringList::const_iterator end = Properties_List.end();
- for(QStringList::const_iterator i = Properties_List.begin(); i != end; ++i) {
-  //unset properties from last image
-  Global_Object.deleteProperty(*i);
- }
+void Image_Info_Panel::clear_exceptions()
+{
+  Exception_List.clear();
+}
+
+
+void Image_Info_Panel::unset_properties()
+{
+  initialize_script_values();
+  QStringList::const_iterator end = Properties_List.end();
+  for (QStringList::const_iterator i = Properties_List.begin(); i != end; ++i)
+  {
+    //unset properties from last image
+    Global_Object.deleteProperty(*i);
+  }
 }
 /*
 void Image_Info_Panel::array_to_string(idaeim::PVL::Array &array, QJSValue &engine_array) {
@@ -1054,80 +1081,88 @@ void Image_Info_Panel::array_to_string(idaeim::PVL::Array &array, QJSValue &engi
 
 
 //recursively iterate through metadata to get properties for engine.
-void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate &metadata) { 
- idaeim::PVL::Aggregate::Depth_Iterator end = metadata.end_depth();
- 
- //iterate through the metadata
- for(idaeim::PVL::Aggregate::Depth_Iterator parameters = metadata.begin_depth(); parameters != end; ++parameters) {
-  //if is_Aggregate() the parameter contains metadata, so make recursive call to this function
-  if(parameters->is_Aggregate()) {
-   get_properties(static_cast<idaeim::PVL::Aggregate &>(*parameters));
-  }
-  else {
-   QString qname = QString::fromStdString(parameters->name()).remove(':');
-   const char *name = qPrintable(qname);
-   idaeim::PVL::Value &value = parameters->value();
-   //names containing '^' typically tell the location of a file, so they are unnecissary
-   if(qname.contains('^'))
-    continue;
-   //if array representation is used, convert to QScriptValue array
-   else if(value.is_Array()) {
-    // moved in qt6
-    QJSValue engine_array = Engine.newArray();
-    array_to_string(static_cast<idaeim::PVL::Array &>(value), engine_array);
-    Properties_List.push_back(name);
-    Global_Object.setProperty(name, engine_array);
-   }
-   //otherwise push name onto property list, and set property in engine
-   else {
-    Properties_List.push_back(name);
+void Image_Info_Panel::get_properties(idaeim::PVL::Aggregate& metadata)
+{
+  idaeim::PVL::Aggregate::Depth_Iterator end = metadata.end_depth();
 
-             if (value.is_Real())
-             {
-                 Global_Object.setProperty(name, static_cast<idaeim::PVL::Value::Real_type>(value));
-             }
-             else if (value.is_Integer())
-             {
-                /*
-                 * Note, no method signature corresponding to
-                 * Value::Integer_type (long long) or Value::Unsigned_Integer_type (unsigned long long)
-                 */
-                 if (value.is_signed())
-                 {
-                     Global_Object.setProperty(name, static_cast<int>(value));
-                 }
-                 else
-                 {
-                     Global_Object.setProperty(name, static_cast<uint>(value));
-                 }
-             }
-             else if (value.is_Date_Time())
-             {
-                 // TODO check this
-                 QString tstr = QString::fromStdString(static_cast<idaeim::PVL::Value::String_type>(value).c_str ());
-
-                 Global_Object.setProperty(name, 1.0 * QDateTime::fromString(tstr, "yyyyMMdd'T'HHmmss").toMSecsSinceEpoch());
-             }
-             // TODO: check is_Identifier or is_Symbol ??
-             else
-             {
-    Global_Object.setProperty(name, QString::fromStdString(static_cast<std::string>(value).c_str ()));
+  //iterate through the metadata
+  for (idaeim::PVL::Aggregate::Depth_Iterator parameters = metadata.begin_depth(); parameters != end; ++parameters)
+  {
+    //if is_Aggregate() the parameter contains metadata, so make recursive call to this function
+    if (parameters->is_Aggregate())
+    {
+      get_properties(static_cast<idaeim::PVL::Aggregate&>(*parameters));
     }
-   }
+    else
+    {
+      QString qname = QString::fromStdString(parameters->name()).remove(':');
+      const char* name = qPrintable(qname);
+      idaeim::PVL::Value& value = parameters->value();
+      //names containing '^' typically tell the location of a file, so they are unnecissary
+      if (qname.contains('^'))
+        continue;
+      //if array representation is used, convert to QScriptValue array
+      else if (value.is_Array())
+      {
+        // moved in qt6
+        QJSValue engine_array = Engine.newArray();
+        array_to_string(static_cast<idaeim::PVL::Array&>(value), engine_array);
+        Properties_List.push_back(name);
+        Global_Object.setProperty(name, engine_array);
+      }
+      //otherwise push name onto property list, and set property in engine
+      else
+      {
+        Properties_List.push_back(name);
+
+        if (value.is_Real())
+        {
+          Global_Object.setProperty(name, static_cast<idaeim::PVL::Value::Real_type>(value));
+        }
+        else if (value.is_Integer())
+        {
+          /*
+           * Note, no method signature corresponding to
+           * Value::Integer_type (long long) or Value::Unsigned_Integer_type (unsigned long long)
+           */
+          if (value.is_signed())
+          {
+            Global_Object.setProperty(name, static_cast<int>(value));
+          }
+          else
+          {
+            Global_Object.setProperty(name, static_cast<uint>(value));
+          }
+        }
+        else if (value.is_Date_Time())
+        {
+          // TODO check this
+          QString tstr = QString::fromStdString(static_cast<idaeim::PVL::Value::String_type>(value).c_str());
+
+          Global_Object.setProperty(name, 1.0 * QDateTime::fromString(tstr, "yyyyMMdd'T'HHmmss").toMSecsSinceEpoch());
+        }
+        // TODO: check is_Identifier or is_Symbol ??
+        else
+        {
+          Global_Object.setProperty(name, QString::fromStdString(static_cast<std::string>(value).c_str()));
+        }
+      }
+    }
   }
- }
 }
 /* TODO use templates */
 //if there is a decent way to check if a property is being used, make sure to insert it here.
-void Image_Info_Panel::set_property(const char * name, unsigned long long data) {
- Global_Object.setProperty(name, double(data));
- if(Script.contains(name))
-  evaluate_script();
+void Image_Info_Panel::set_property(const char* name, unsigned long long data)
+{
+  Global_Object.setProperty(name, double(data));
+  if (Script.contains(name))
+    evaluate_script();
 }
-void Image_Info_Panel::set_property(const char * name, unsigned int data){
- Global_Object.setProperty(name, data);
- if(Script.contains(name))
-  evaluate_script();
+void Image_Info_Panel::set_property(const char* name, unsigned int data)
+{
+  Global_Object.setProperty(name, data);
+  if (Script.contains(name))
+    evaluate_script();
 }
 /*
 void Image_Info_Panel::set_property_qsreal(const char * name, qsreal data){
@@ -1135,128 +1170,157 @@ void Image_Info_Panel::set_property_qsreal(const char * name, qsreal data){
  if(Script.contains(name))
   evaluate_script();
 }*/
-void Image_Info_Panel::set_property_f(const char * name, double data){
- Global_Object.setProperty(name, data);
- if(Script.contains(name))
+void Image_Info_Panel::set_property_f(const char* name, double data)
+{
+  Global_Object.setProperty(name, data);
+  if (Script.contains(name))
+    evaluate_script();
+}
+
+
+void Image_Info_Panel::evaluate_script()
+{
+  /* moved in qt6 */
+  if ((Evaluate_R || Evaluate_G || Evaluate_B) && Use_Avg_Rgb && Statistics != NULL)
+  {
+    QVector<Dynamic_Image::Histogram*>& histograms = Statistics->histograms();
+    int lower_limit = Statistics->lower_limit();
+    int upper_limit = histograms[0]->size() - Statistics->upper_limit() - 1;
+    int count = 0;
+    double result = 0.0;
+
+    for (int i = lower_limit; i <= upper_limit; ++i)
+    {
+      QJSValue val;
+      bool skip = false;
+      int sum = 0;
+      for (int j = 0; j < Exception_List.size(); ++j)
+      {
+        if (i == Exception_List.at(i))
+        {
+          skip = true;
+          break;
+        }
+      }
+      if (!skip)
+      {
+        if (Evaluate_R)
+        {
+          Global_Object.setProperty("red", i);
+          sum = histograms[0]->at(i);
+        }
+        if (Evaluate_G)
+        {
+          if (histograms[1] != NULL)
+          {
+            Global_Object.setProperty("green", i);
+            sum += histograms[1]->at(i);
+          }
+          else
+          {
+            Global_Object.setProperty("green", 0);
+          }
+        }
+        if (Evaluate_B)
+        {
+          if (histograms[2] != NULL)
+          {
+            Global_Object.setProperty("blue", i);
+            sum += histograms[2]->at(i);
+          }
+          else
+          {
+            Global_Object.setProperty("blue", 0);
+          }
+        }
+
+        val = Engine.evaluate(Script);
+        if (!val.isNumber())
+        {
+          return;
+        }
+        count += sum;
+        result += val.toNumber() * sum;
+      }
+    }
+    result /= count;
+    Script_Output->setNum(result);
+  }
+  else
+  {
+    Script_Output->setText(Engine.evaluate(Script).toString());
+  }
+
+}
+
+void Image_Info_Panel::set_metadata(idaeim::PVL::Aggregate* metadata)
+{
+  //unset properties set by last metadata
+  unset_properties();
+  //clear properties list
+  Properties_List.clear();
+  Exception_List.clear();
+  //get new properties
+  if (metadata != NULL)
+  {
+    get_properties(*metadata);
+
+    idaeim::PVL::Parameter* param = metadata->find("CORE_NULL", false, 0, idaeim::PVL::Parameter::ASSIGNMENT);
+    if (param != NULL)
+    {
+      idaeim::PVL::Value& value = param->value();
+      if (value.is_Integer())
+      {
+        add_exception(static_cast<int>(value));
+      }
+    }
+    param = metadata->find("CORE_LOW_REPR_SATURATION", false, 0, idaeim::PVL::Parameter::ASSIGNMENT);
+    if (param != NULL)
+    {
+      idaeim::PVL::Value& value = param->value();
+      if (value.is_Integer())
+      {
+        add_exception(static_cast<int>(value));
+      }
+    }
+    param = metadata->find("CORE_LOW_INSTR_SATURATION", false, 0, idaeim::PVL::Parameter::ASSIGNMENT);
+    if (param != NULL)
+    {
+      idaeim::PVL::Value& value = param->value();
+      if (value.is_Integer())
+      {
+        add_exception(static_cast<int>(value));
+      }
+    }
+    param = metadata->find("CORE_HIGH_REPR_SATURATION", false, 0, idaeim::PVL::Parameter::ASSIGNMENT);
+    if (param != NULL)
+    {
+      idaeim::PVL::Value& value = param->value();
+      if (value.is_Integer())
+      {
+        add_exception(static_cast<int>(value));
+      }
+    }
+    param = metadata->find("CORE_HIGH_INSTR_SATURATION", false, 0, idaeim::PVL::Parameter::ASSIGNMENT);
+    if (param != NULL)
+    {
+      idaeim::PVL::Value& value = param->value();
+      if (value.is_Integer())
+      {
+        add_exception(static_cast<int>(value));
+      }
+    }
+  }
+  emit variables_updated(Properties_List);
+  preparse_script(Script);
+  Script_Value->setText(Script);
   evaluate_script();
 }
 
-
-void Image_Info_Panel::evaluate_script() {
-/* moved in qt6 */
- if((Evaluate_R || Evaluate_G || Evaluate_B) && Use_Avg_Rgb && Statistics != NULL) {
-  QVector<Plastic_Image::Histogram*> &histograms = Statistics->histograms();
-  int lower_limit = Statistics->lower_limit();
-  int upper_limit = histograms[0]->size () - Statistics->upper_limit() - 1;
-  int count = 0;
-  double result = 0.0;
-  
-  for(int i = lower_limit; i <= upper_limit; ++i) {
-   QJSValue val;
-   bool skip = false;
-   int sum = 0;
-   for(int j = 0; j < Exception_List.size(); ++j) {
-    if(i == Exception_List.at(i)) {
-     skip = true;
-     break;
-    }
-   }
-   if(!skip) {
-    if(Evaluate_R) {
-     Global_Object.setProperty("red", i);
-     sum = histograms[0]->at(i);
-    }
-    if(Evaluate_G) {
-     if(histograms[1] != NULL) {
-      Global_Object.setProperty("green", i);
-      sum += histograms[1]->at(i);
-     }
-     else {
-      Global_Object.setProperty("green", 0);
-     }
-    }
-    if(Evaluate_B) {
-     if(histograms[2] != NULL) {
-      Global_Object.setProperty("blue", i);
-      sum += histograms[2]->at(i);
-     }
-     else {
-      Global_Object.setProperty("blue", 0);
-     }
-    }
-    
-    val = Engine.evaluate(Script);
-    if(!val.isNumber()) {
-     return;
-    }
-    count += sum;
-    result += val.toNumber() * sum;
-   }
-  }
-  result /= count;
-  Script_Output->setNum(result);
- }
- else {
-  Script_Output->setText(Engine.evaluate(Script).toString());
- }
-
-}
- 
-void Image_Info_Panel::set_metadata(idaeim::PVL::Aggregate *metadata) {
- //unset properties set by last metadata
- unset_properties();
- //clear properties list
- Properties_List.clear();
- Exception_List.clear();
- //get new properties
- if(metadata != NULL) {
-  get_properties(*metadata);
-  
-  idaeim::PVL::Parameter * param = metadata->find("CORE_NULL",false,0,idaeim::PVL::Parameter::ASSIGNMENT);
-     if(param != NULL) {
-      idaeim::PVL::Value &value = param->value();
-     if(value.is_Integer()) {
-       add_exception(static_cast<int>(value));
-      }
-     }
-     param = metadata->find("CORE_LOW_REPR_SATURATION",false,0,idaeim::PVL::Parameter::ASSIGNMENT);
-     if(param != NULL) {
-      idaeim::PVL::Value &value = param->value();
-      if(value.is_Integer()) {
-       add_exception(static_cast<int>(value));
-      }
-     }
-     param = metadata->find("CORE_LOW_INSTR_SATURATION",false,0,idaeim::PVL::Parameter::ASSIGNMENT);
-     if(param != NULL) {
-      idaeim::PVL::Value &value = param->value();
-      if(value.is_Integer()) {
-       add_exception(static_cast<int>(value));
-      }
-     }
-     param = metadata->find("CORE_HIGH_REPR_SATURATION",false,0,idaeim::PVL::Parameter::ASSIGNMENT);
-     if(param != NULL) {
-      idaeim::PVL::Value &value = param->value();
-      if(value.is_Integer()) {
-       add_exception(static_cast<int>(value));
-      }
-     }
-     param = metadata->find("CORE_HIGH_INSTR_SATURATION",false,0,idaeim::PVL::Parameter::ASSIGNMENT);
-     if(param != NULL) {
-      idaeim::PVL::Value &value = param->value();
-      if(value.is_Integer()) {
-       add_exception(static_cast<int>(value));
-      }
-     }
- }
- emit variables_updated(Properties_List);
- preparse_script(Script);
- Script_Value->setText(Script);
- evaluate_script();
-}
-
-void Image_Info_Panel::initialize_script_values() {
- // All script values always available to the user need to be initialized here 
- Global_Object.setProperty("x_px", 0);
+void Image_Info_Panel::initialize_script_values()
+{
+  // All script values always available to the user need to be initialized here 
+  Global_Object.setProperty("x_px", 0);
   Global_Object.setProperty("y_px", 0);
   Global_Object.setProperty("red", 0);
   Global_Object.setProperty("green", 0);
@@ -1272,93 +1336,101 @@ void Image_Info_Panel::initialize_script_values() {
   Global_Object.setProperty("distance_length_m", 0);
 }
 
-QWidget* Image_Info_Panel::create_script_engine() {
- //create the QScriptEngine
-  // moved from Qt6 Engine = new QScriptEngine(this);
-  // Global_Object = QObject(); Engine->globalObject();
-  //set properties, which will act like variales in the script
+QWidget* Image_Info_Panel::create_script_engine()
+{
+  //create the QScriptEngine
+   // moved from Qt6 Engine = new QScriptEngine(this);
+   // Global_Object = QObject(); Engine->globalObject();
+   //set properties, which will act like variales in the script
   initialize_script_values();
 
   check_names();
- 
+
   //Layout
-  QWidget *panel = new QWidget(this);
-  QHBoxLayout *layout = new QHBoxLayout(panel);
-  layout->setSpacing (0);
+  QWidget* panel = new QWidget(this);
+  QHBoxLayout* layout = new QHBoxLayout(panel);
+  layout->setSpacing(0);
   layout->setContentsMargins(ITEM_SPACING, 0, ITEM_SPACING, 0);
-  
-  QLabel *label = new QLabel(SCRIPT_DATA_LABEL);
+
+  QLabel* label = new QLabel(SCRIPT_DATA_LABEL);
   label->setFixedHeight(label->sizeHint().height());
-  label->setFixedWidth(Data_Source_Size.width ());
+  label->setFixedWidth(Data_Source_Size.width());
   label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   layout->addWidget(label);
-  
+
   Script_Value = new QLabel(Script);
-  Script_Value->setFixedHeight(Data_Source_Size.height ());
+  Script_Value->setFixedHeight(Data_Source_Size.height());
   Script_Value->setMaximumWidth(MAX_SCRIPT_SHOWN);
   Script_Value->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   layout->addWidget(Script_Value);
-  
+
   label = new QLabel(" = ");
-  label->setFixedHeight(Data_Source_Size.height ());
-  label->setFixedWidth(label->sizeHint().width ());
+  label->setFixedHeight(Data_Source_Size.height());
+  label->setFixedWidth(label->sizeHint().width());
   label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   layout->addWidget(label);
-  
+
   Script_Output = new QLabel("Invalid Script");
   Script_Output->setFixedHeight(Script_Output->sizeHint().height());
   Script_Output->setMaximumWidth(MAX_OUTPUT_SHOWN);
   Script_Output->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
   layout->addWidget(Script_Output);
   Script_Output->clear();
-  panel->setSizePolicy (QSizePolicy::Fixed, QSizePolicy::Fixed);
+  panel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
   return panel;
- }
+}
 
 //Makes metadata properties case insensitive
-void Image_Info_Panel::preparse_script(QString &script) {
- QStringList::const_iterator end = Properties_List.end();
- for(QStringList::const_iterator i = Properties_List.begin(); i != end; ++i) {
-  script.replace(*i, *i, Qt::CaseInsensitive);
- }
+void Image_Info_Panel::preparse_script(QString& script)
+{
+  QStringList::const_iterator end = Properties_List.end();
+  for (QStringList::const_iterator i = Properties_List.begin(); i != end; ++i)
+  {
+    script.replace(*i, *i, Qt::CaseInsensitive);
+  }
 }
 
-void Image_Info_Panel::check_names() {
- QList<QString> list = QList<QString>() <<"x_px"<<"y_px"<<"red"<<"green"<<"blue"<<"scale";
- QList<bool> *inList = parse_variable_names(&Script, &list);
- Evaluate_X = inList->at(0);
- Evaluate_Y = inList->at(1);
- Evaluate_R = inList->at(2);
- Evaluate_G = inList->at(3);
- Evaluate_B = inList->at(4);
- Evaluate_Scale = inList->at(5);
- std::clog << "x_px : " << Evaluate_X << std::endl;
- std::clog << "y_px : " << Evaluate_Y << std::endl;
- std::clog << "red : " << Evaluate_R << std::endl;
- std::clog << "green : " << Evaluate_G << std::endl;
- std::clog << "blue : " << Evaluate_B << std::endl;
- std::clog << "scale : " << Evaluate_Scale << std::endl;
+void Image_Info_Panel::check_names()
+{
+  QList<QString> list = QList<QString>() << "x_px" << "y_px" << "red" << "green" << "blue" << "scale";
+  QList<bool>* inList = parse_variable_names(&Script, &list);
+  Evaluate_X = inList->at(0);
+  Evaluate_Y = inList->at(1);
+  Evaluate_R = inList->at(2);
+  Evaluate_G = inList->at(3);
+  Evaluate_B = inList->at(4);
+  Evaluate_Scale = inList->at(5);
+#ifndef QT_NO_DEBUG_OUTPUT
+  qDebug() << "x_px : " << Evaluate_X;
+  qDebug() << "y_px : " << Evaluate_Y;
+  qDebug() << "red : " << Evaluate_R;
+  qDebug() << "green : " << Evaluate_G;
+  qDebug() << "blue : " << Evaluate_B;
+  qDebug() << "scale : " << Evaluate_Scale;
+#endif
 }
 
 
-void Image_Info_Panel::script_changed(const QString& script) {
- // TODO if(!Engine->toStringHandle(script).isValid()) {
-        //  Script_Output->setText("Invalid Script");
- //}
- //else {
+void Image_Info_Panel::script_changed(const QString& script)
+{
+  // TODO if(!Engine->toStringHandle(script).isValid()) {
+         //  Script_Output->setText("Invalid Script");
+  //}
+  //else {
   Script = script;
   preparse_script(Script);
   Script_Value->setText(Script);
   check_names();
   evaluate_script();
- //}
- //check if Script was changed to ""
- Script_Panel->setVisible(Show_Script && (Script != ""));
+  //}
+  //check if Script was changed to ""
+  Script_Panel->setVisible(Show_Script && (Script != ""));
 }
 
-void Image_Info_Panel::show_script_changed(bool show_script) {
- Show_Script = show_script;
- Script_Panel->setVisible(Show_Script && (Script != ""));
+void Image_Info_Panel::show_script_changed(bool show_script)
+{
+  Show_Script = show_script;
+  Script_Panel->setVisible(Show_Script && (Script != ""));
 }
 
 } // namespace HiRISE

@@ -1,0 +1,15 @@
+
+BasedOnStyle: WebKit
+AccessModifierOffset: 1
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Allman
+BreakBeforeTernaryOperators: false
+BreakConstructorInitializers: BeforeColon
+ColumnLimit: 90
+EmptyLineBeforeAccessModifier: Leave
+ExperimentalAutoDetectBinPacking: true
+MaxEmptyLinesToKeep: 1
+ReflowComments: true
+SortIncludes: true
+SpaceInEmptyBlock: false
+

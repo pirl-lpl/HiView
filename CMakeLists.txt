@@ -52,9 +52,9 @@ Network_Status.hh
 PDS_Metadata.hh
 Parameter_Tree_Model.hh
 Parameter_Tree_View.hh
-Plastic_Image.hh
-Plastic_Image_Factory.hh
-Plastic_QImage.hh
+Dynamic_Image.hh
+Dynamic_Image_Factory.hh
+Dynamic_QImage.hh
 Polar_Stereographic_Elliptical_Projection.hh
 Preferences_Dialog.hh
 Projection.hh
@@ -87,10 +87,10 @@ set(SOURCES
  Synchronized_Event.cc
  Image_Renderer.cc
  Image_Renderer_Thread.cc
- Plastic_Image.cc
- Plastic_QImage.cc
+ Dynamic_Image.cc
+ Dynamic_QImage.cc
  JP2_Image.cc
- Plastic_Image_Factory.cc
+ Dynamic_Image_Factory.cc
  Tiled_Image_Display.cc
  Image_Viewer.cc
  Drawn_Line.cc
@@ -148,7 +148,9 @@ add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1 $ENV{DEBUG_SECTION})
+message(STATUS "Setting DEBUG to $ENV{DEBUG_SECTION}")
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1 DEBUG_SECTION=$ENV{DEBUG_SECTION})
 
 #
 # TODO try and understand why the linker says that QwtSeriesStore<QPointF> is defined twice, once
@@ -173,7 +175,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${QWT_INCLUDE_DIR}")
 target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT
  KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ libJP2::JP2 libJP2::KakaduReaders)
 
-qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}" PREFIX "/" FILES
+qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}" FILES
  Images/HiView_Splash.png
  Images/HiView_Icon.png
  Images/X_button.png
@@ -235,4 +237,7 @@ qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}" PREFIX "/" FILES
 #
 # TODO run windeployqt or macdeployqt
 # see https://riptutorial.com/qt/example/24133/integrating-with-cmake
-# windeployqt --no-translations HiView.exe
+
+# copy ${Qwt_DIR}/lib/qwt.dll .
+# https://doc.qt.io/qt-6/windows-deployment.html
+# windeployqt --dry-run --no-translations --no-compiler-runtime --no-virtualkeyboard --no-opengl-sw HiView.exe

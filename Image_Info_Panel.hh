@@ -27,7 +27,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QJSEngine>
 #include <QStringList>
 
-#include "Plastic_Image.hh"
+#include "Dynamic_Image.hh"
 #include "PVL.hh"
 #include "Stats.hh"
 
@@ -44,133 +44,133 @@ namespace UA::HiRISE
 class Coordinate;
 class Projection;
 
-   /**   The <i>Image_Info_Panel</i> provides brief image information -
-      location, value and scale - on a dynamically updated single line
-      display.
+/**   The <i>Image_Info_Panel</i> provides brief image information -
+   location, value and scale - on a dynamically updated single line
+   display.
 
-      @author      Bradford Castalia, UA/HiROC
-      @version   $Revision: 1.14 $
-   */
+   @author      Bradford Castalia, UA/HiROC
+   @version   $Revision: 1.14 $
+*/
 class Image_Info_Panel : public QFrame
 {
     // Qt Object declaration.
     Q_OBJECT
 
- public:
-/*==============================================================================
-    Constants
-*/
+public:
+    /*==============================================================================
+        Constants
+    */
     //!   Class identification name with source code version and date.
-    static const char *const
-    ID;
+    static const char* const
+        ID;
 
-   /**   Units for longitude and latitude values.
+    /**   Units for longitude and latitude values.
 
-      @see   longitude_units(Units)
-      @see   latitude_units(Units)
-   */
+       @see   longitude_units(Units)
+       @see   latitude_units(Units)
+    */
     enum Units
     {
-    DEGREES,
-    HMS,
-    RADIANS
+        DEGREES,
+        HMS,
+        RADIANS
     };
 
-   /**   Direction for longitude value.
+    /**   Direction for longitude value.
 
-      @see   longitude_direction(Direction)
-   */
+       @see   longitude_direction(Direction)
+    */
     enum Direction
     {
-    EAST,
-    WEST
+        EAST,
+        WEST
     };
 
-/*==============================================================================
-    Constructors
-*/
-    explicit Image_Info_Panel(QWidget *parent = NULL);
+    /*==============================================================================
+        Constructors
+    */
+    explicit Image_Info_Panel(QWidget* parent = NULL);
 
     virtual ~Image_Info_Panel();
 
-/*==============================================================================
-    Manipulators
-*/
+    /*==============================================================================
+        Manipulators
+    */
     void image_bands(int);
     void use_avg_pixel_value(bool use);
-    void set_property(const char *name, unsigned long long data);
-    void set_property(const char *name, unsigned int data);
-    void set_property_qsreal(const char *name, qreal data);
-    void set_property_f(const char *name, double data);
+    void set_property(const char* name, unsigned long long data);
+    void set_property(const char* name, unsigned int data);
+    void set_property_qsreal(const char* name, qreal data);
+    void set_property_f(const char* name, double data);
     void add_exception(int exception);
     void clear_exceptions();
     void evaluate_script();
     void update_region_stats();
-    void update_statistics(Stats *stats);
+    void update_statistics(Stats* stats);
     //QList<bool> *parse_variable_names(const QList<QString> *list);
     void check_names();
 
-/*==============================================================================
-    Signals
-*/
- signals:
-    void variables_updated(const QStringList &variables);
+    /*==============================================================================
+        Signals
+    */
+signals:
+    void variables_updated(const QStringList& variables);
 
-/*==============================================================================
-    Qt slots
-*/
- public slots:
+    /*==============================================================================
+        Qt slots
+    */
+public slots:
 
     void image_values(bool enabled);
 
-    void cursor_location(const QPoint &display_location, const QPoint &image_location);
+    void cursor_location(const QPoint& display_location, const QPoint& image_location);
 
-    void pixel_value(const Plastic_Image::Triplet &display_value,
-    const Plastic_Image::Triplet &image_value);
+    void pixel_value(const Dynamic_Image::Triplet& display_value,
+                     const Dynamic_Image::Triplet& image_value);
 
-    void image_scale(const QSizeF &scaling, int band = -1);
+    void image_scale(const QSizeF& scaling, int band = -1);
 
-    void projection(Projection *projection);
+    void projection(Projection* projection);
 
-    void set_metadata(idaeim::PVL::Aggregate *metadata);
+    void set_metadata(idaeim::PVL::Aggregate* metadata);
 
     void longitude_units(int units);
     void latitude_units(int units);
 
     void longitude_direction(int direction);
 
-    void location(const Coordinate &coordinate);
+    void location(const Coordinate& coordinate);
 
-    void script_changed(const QString &script);
+    void script_changed(const QString& script);
 
     void show_script_changed(bool show_script);
 
-/*==============================================================================
-    Helpers
-*/
- private:
-    QWidget *image_data_panel();
+    /*==============================================================================
+        Helpers
+    */
+private:
+    QWidget* image_data_panel();
 
-    QWidget *world_location_panel();
+    QWidget* world_location_panel();
 
-    QWidget *create_script_engine();
+    QWidget* create_script_engine();
 
     void longitude(double value);
     void latitude(double value);
     QString location_representation(double value, int units) const;
     //void array_to_string(idaeim::PVL::Array &array, QJSValue &engine_array);
-    void get_properties(idaeim::PVL::Aggregate &metadata);
+    void get_properties(idaeim::PVL::Aggregate& metadata);
 
-    void preparse_script(QString &script);
+    void preparse_script(QString& script);
 
     void unset_properties();
 
     void initialize_script_values();
 
-/*==============================================================================
-    Data
-*/
- private:
+    /*==============================================================================
+        Data
+    */
+private:
     bool
         Image_Values,
         Use_Avg_Rgb;
@@ -182,7 +182,7 @@ class Image_Info_Panel : public QFrame
         Display_Location,
         Image_Location;
 
-    Plastic_Image::Triplet
+    Dynamic_Image::Triplet
         Display_Value,
         Image_Value;
 
@@ -194,16 +194,16 @@ class Image_Info_Panel : public QFrame
         Image_Data;
 
     QLabel
-        *Data_Source,
-        *Location_X,
-        *Annotation_X,
-        *Location_Y,
-        *Annotation_Y,
-        *Pixel_Value[3],
-        *Pixel_Label[3],
-        *Scaling,
-        *Script_Output,
-        *Script_Value;
+        * Data_Source,
+        * Location_X,
+        * Annotation_X,
+        * Location_Y,
+        * Annotation_Y,
+        * Pixel_Value[3],
+        * Pixel_Label[3],
+        * Scaling,
+        * Script_Output,
+        * Script_Value;
 
     QSize
         Data_Source_Size;
@@ -218,18 +218,18 @@ class Image_Info_Panel : public QFrame
         Latitude_Location;
 
     Projection
-        *Projector;
+        * Projector;
 
     QWidget
-        *World_Location;
+        * World_Location;
 
     QWidget
-        *Script_Panel;
+        * Script_Panel;
 
     QLabel
-        *Projection_Name,
-        *Longitude,
-        *Latitude;
+        * Projection_Name,
+        * Longitude,
+        * Latitude;
 
     QJSEngine Engine;
 
@@ -251,7 +251,7 @@ class Image_Info_Panel : public QFrame
 
     bool Show_Script;
 
-    Stats *Statistics;
+    Stats* Statistics;
 
     int
         degree_precision;
