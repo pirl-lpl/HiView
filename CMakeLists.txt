@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 3.17)
 
+# Windows
 # cmake --fresh -S ..\HiView -B HiView -DCMAKE_PREFIX_PATH=%HOMEPATH%
-# -DQwt_DIR=%HOMEPATH%\Qwt-6.3.0 -DKAKADU_DIR=%HOMEPATH%\hiview3\v8_4-00307L 
-# -DCMAKE_BUILD_TYPE=DEBUG -DDEBUG_SECTION=1 -DDEBUG=DEBUG_ALL
+# -DQwt_DIR=%HOMEPATH%\Qwt-6.3.0 -DKAKADU_DIR=%HOMEPATH%\hiview3\v8_4-00307L
+# -DDEBUG_SECTION=DEBUG_ALL
+#
+# MAC
+# export DEBUG_SECTION=DEBUG_ALL
+# cmake -S ../c++/HiView -B HiView -DCMAKE_BUILD_TYPE=DEBUG
+# -DKAKADU_DIR=$HOME/build/v8_4-00307L
 project(HiView)
 
 # prevents a warning message
@@ -135,7 +141,7 @@ set(SOURCES
 if(APPLE)
     list(APPEND HEADERS MacSpeechHandler.h MacSpeechHandlerDelegate.h)
     list(APPEND SOURCES MacSpeechHandler.mm MacSpeechHandlerDelegate.mm Mac_Voice_Adapter.mm)
-elseif(WIN32)    
+elseif(WIN32)
     list(APPEND HEADERS WinSpeechHandler.hh)
     list(APPEND SOURCES WinSpeechHandler.cc)
 endif()
@@ -148,7 +154,11 @@ add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
-message(STATUS "Setting DEBUG to $ENV{DEBUG_SECTION}")
+if  (DEFINED ENV{DEBUG_SECTION})
+    message(STATUS "Setting DEBUG to $ENV{DEBUG_SECTION}")
+else()
+    set(ENV{DEBUG_SECTION} DEBUG_NONE)
+endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1 DEBUG_SECTION=$ENV{DEBUG_SECTION})
 
