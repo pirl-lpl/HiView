@@ -1308,7 +1308,7 @@ Upper_Default_Contrast_Stretch << 0.0 << 0.0 << 0.0;
 Lower_Default_Contrast_Stretch << 0.0 << 0.0 << 0.0;
 
 Default_Contrast_Stretch_Action = new QAction
-	(tr ("Default &Constrast Stretch"), this);
+	(tr ("Default &Contrast Stretch"), this);
 Default_Contrast_Stretch_Action->setToolTip
 	(tr ("Apply default contrast stretch percentages"));
 Default_Contrast_Stretch_Action->setShortcut (tr ("Ctrl+Alt+C"));
