@@ -175,12 +175,12 @@ Image_Renderer::Wait_Seconds = DEFAULT_WAIT_SECONDS;
 class Image_Renderer_Rendering_Monitor
     : public Dynamic_Image::Rendering_Monitor
 {
-private:
+    private:
 
     Image_Renderer
         * Owner;
 
-public:
+    public:
 
     Image_Renderer_Rendering_Monitor
     (
@@ -1585,7 +1585,7 @@ Image_Renderer::render()
 #if ((DEBUG_SECTION) & DEBUG_TILE_MARKINGS)
         // Tile markings.
         label = QString(" ante render @ %1: gc %2, %3; so %4, %5; s %6")
-            .arg((ulong)(Active_Tile->Image), 0, 16)
+            .arg((qulonglong)(Active_Tile->Image), 0, 16)
             .arg(Active_Tile->Tile_Coordinate.rx())
             .arg(Active_Tile->Tile_Coordinate.ry())
             .arg(Active_Tile->Image->source_origin().x())

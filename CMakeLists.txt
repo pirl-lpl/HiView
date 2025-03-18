@@ -1,14 +1,18 @@
 cmake_minimum_required(VERSION 3.17)
 
 # Windows
+# set DEBUG_SECTION=DEBUG_ALL
 # cmake --fresh -S ..\HiView -B HiView -DCMAKE_PREFIX_PATH=%HOMEPATH%
 # -DQwt_DIR=%HOMEPATH%\Qwt-6.3.0 -DKAKADU_DIR=%HOMEPATH%\hiview3\v8_4-00307L
-# -DDEBUG_SECTION=DEBUG_ALL
-#
+# cmake --build HiView --config Release
+# devenv /debugexe HiView.exe
+
 # MAC
 # export DEBUG_SECTION=DEBUG_ALL
 # cmake -S ../c++/HiView -B HiView -DCMAKE_BUILD_TYPE=DEBUG
 # -DKAKADU_DIR=$HOME/build/v8_4-00307L
+# cmake --build HiView
+# lldb HiView
 project(HiView)
 
 # prevents a warning message
@@ -45,8 +49,8 @@ HiView_Window.hh
 Histogram_Plot.hh
 Icon_Button.hh
 Image_Info_Panel.hh
-Image_Renderer.hh
-Image_Renderer_Thread.hh
+Tile_Queue.hh
+Tile_Renderer.hh
 Image_Tile.hh
 Image_Viewer.hh
 JP2_Image.hh
@@ -91,8 +95,8 @@ set(SOURCES
  About_HiView_Dialog.cc
  Image_Tile.cc
  Synchronized_Event.cc
- Image_Renderer.cc
- Image_Renderer_Thread.cc
+ Tile_Queue.cc
+ Tile_Renderer.cc
  Dynamic_Image.cc
  Dynamic_QImage.cc
  JP2_Image.cc
@@ -160,7 +164,7 @@ else()
     set(ENV{DEBUG_SECTION} DEBUG_NONE)
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1 DEBUG_SECTION=$ENV{DEBUG_SECTION})
+target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)# DEBUG_SECTION=$ENV{DEBUG_SECTION})
 
 #
 # TODO try and understand why the linker says that QwtSeriesStore<QPointF> is defined twice, once

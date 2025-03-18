@@ -23,15 +23,6 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include "Tiled_Image_Display.hh"
 
-#if (SYNCHRONOUS_RENDERING +0) == 1
-#warning
-#warning >> > Synchronous image rendering will be used.
-#warning
-#include "Image_Renderer.hh"
-#else
-#include "Image_Renderer_Thread.hh"
-#endif
-
 #include "Image_Tile.hh"
 #include "Dynamic_Image.hh"
 #include "Dynamic_QImage.hh"
@@ -44,7 +35,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QPointF>
 #include <QErrorMessage>
 #include <QApplication>
-#include        <QDebug>
+#include  <QDebug>
 
 #include <algorithm>
 using std::min;
@@ -252,15 +243,9 @@ Tiled_Image_Display::Tiled_Image_Display
 #endif
 
     // Renderer.
-#if (SYNCHRONOUS_RENDERING +0) == 1
-#if defined (DEBUG_SECTION) && DEBUG_SECTION != 0
-    LOCKED_LOGGING((
-        clog << "    >>> SYNCHRONOUS_RENDERING <<<" << endl));
-#endif
-    Renderer = new Image_Renderer;
-#else
-    Renderer = new Image_Renderer_Thread;
-#endif
+
+    Renderer = new Tile_Renderer;
+
     // Only update when all displayable tiles have been rendered.
     Renderer->immediate_mode(false);
     // Hold rendering in abeyance until started.
@@ -307,8 +292,8 @@ Tiled_Image_Display::~Tiled_Image_Display()
 #endif
     // Stop all rendering.
     Renderer->finish
-    (Image_Renderer::FORCE_CANCEL |
-     Image_Renderer::WAIT_UNTIL_DONE);
+    (Tile_Renderer::FORCE_CANCEL |
+     Tile_Renderer::WAIT_UNTIL_DONE);
     // Delete all of the tiles.
     clear_tiles();
 
@@ -360,8 +345,8 @@ Tiled_Image_Display::image
             clog << "    Tiled_Image_Display::image: force rendering reset" << endl));
 #endif
         Renderer->reset
-        (Image_Renderer::DO_NOT_WAIT |
-         Image_Renderer::FORCE_CANCEL);
+        (Tile_Renderer::DO_NOT_WAIT |
+         Tile_Renderer::FORCE_CANCEL);
 
         // Register the source with the Renderer for loading.
         if ((registered = Renderer->image(source_name)))
@@ -426,8 +411,8 @@ Tiled_Image_Display::image
         clog << "    Tiled_Image_Display::image: force rendering reset" << endl));
 #endif
     Renderer->reset
-    (Image_Renderer::DO_NOT_WAIT |
-     Image_Renderer::FORCE_CANCEL);
+    (Tile_Renderer::DO_NOT_WAIT |
+     Tile_Renderer::FORCE_CANCEL);
     Initial_Scaling = scaling;
 
     bool
@@ -719,8 +704,8 @@ Tiled_Image_Display::loaded
             if (Source_Image_Rendering)
                 // Queue the Source_Image for uncancelable background rendering.
                 Renderer->queue(Source_Image,
-                                Image_Renderer::LOW_PRIORITY_RENDERING,
-                                !Image_Renderer::CANCELABLE);
+                                Tile_Renderer::LOW_PRIORITY_RENDERING,
+                                !Tile_Renderer::CANCELABLE);
 
             Image_Loading = true;
         }
@@ -750,11 +735,8 @@ Tiled_Image_Display::loaded
         print_tile_grid();
         print_tile_pool();
         UNLOCK_LOG;
-        Renderer->print_render_queue();
-        Renderer->print_delete_queue();
         LOCK_LOG;
         Image_Tile::tile_accounting();
-        Renderer->image_accounting();
         UNLOCK_LOG;
 #endif
     }
@@ -1005,7 +987,7 @@ Tiled_Image_Display::max_source_image_area() const
 unsigned long
 Tiled_Image_Display::default_max_source_image_area()
 {
-    return Image_Renderer::default_max_source_image_area();
+    return Tile_Renderer::default_max_source_image_area();
 }
 
 
@@ -1015,7 +997,7 @@ Tiled_Image_Display::default_max_source_image_area
     unsigned long area
 )
 {
-    Image_Renderer::default_max_source_image_area(area);
+    Tile_Renderer::default_max_source_image_area(area);
 }
 
 /*------------------------------------------------------------------------------
@@ -2148,7 +2130,7 @@ Tiled_Image_Display::tile_display_size
         Pending_State_Change_Enabled = false;
 
         // Cancel all rendering.
-        Renderer->reset(Image_Renderer::WAIT_UNTIL_DONE);
+        Renderer->reset(Tile_Renderer::WAIT_UNTIL_DONE);
 
         // Reset the tile grid.
         clear_tiles();
@@ -2484,11 +2466,8 @@ Tiled_Image_Display::resize_tile_grid()
             << "    post-resize -" << endl;
         print_tile_grid();
         UNLOCK_LOG;
-        Renderer->print_render_queue();
-        Renderer->print_delete_queue();
         LOCK_LOG;
         Image_Tile::tile_accounting();
-        Renderer->image_accounting();
         UNLOCK_LOG;
 #endif
     }
@@ -2728,7 +2707,7 @@ Tiled_Image_Display::move_image
 #endif
                 if (!Image_Loading)
                     // Cancel all rendering.
-                    Renderer->reset(Image_Renderer::DO_NOT_WAIT);
+                    Renderer->reset(Tile_Renderer::DO_NOT_WAIT);
 
                 // Tile offset from image origin.
                 offset.rx() = location.rx() / Tile_Image_Size.rwidth();
@@ -3175,7 +3154,7 @@ Tiled_Image_Display::reset_tiles()
                             clog << "----- deactivating column " << tile_grid.rx() << endl
                             << "        cancel rendering " << endl));
 #endif
-                        Renderer->cancel(tile_image, Image_Renderer::DO_NOT_WAIT);
+                        Renderer->cancel(tile_image, Tile_Renderer::DO_NOT_WAIT);
                         if (Tile_Image_Pool.size() < Tile_Image_Pool_Max)
                         {
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
@@ -3264,7 +3243,7 @@ Tiled_Image_Display::reset_tiles()
                             clog << "----- deactivating column" << endl
                             << "        cancel rendering " << endl));
 #endif
-                        Renderer->cancel(tile_image, Image_Renderer::DO_NOT_WAIT);
+                        Renderer->cancel(tile_image, Tile_Renderer::DO_NOT_WAIT);
                         if (Tile_Image_Pool.size() < Tile_Image_Pool_Max)
                         {
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
@@ -3359,7 +3338,7 @@ Tiled_Image_Display::reset_tiles()
                             << ", display region " << (tile_region & viewport)
                             << endl));
 #endif
-                        Renderer->cancel(tile_image, Image_Renderer::DO_NOT_WAIT);
+                        Renderer->cancel(tile_image, Tile_Renderer::DO_NOT_WAIT);
 
                         /* Move the tile-viewport intersection region origin
                             to its tile-relative coordinate.
@@ -3372,7 +3351,7 @@ Tiled_Image_Display::reset_tiles()
                         // Queue the tile image for rendering.
                         Renderer->queue(tile_image,
                                         (displayed_tile_region.isEmpty() ?
-                                        Image_Renderer::LOW_PRIORITY_RENDERING : tile_grid),
+                                        Tile_Renderer::LOW_PRIORITY_RENDERING : tile_grid),
                                         displayed_tile_region);
                     }
                 }
@@ -3426,12 +3405,9 @@ Done:
     print_tile_grid();
 
     UNLOCK_LOG;
-    Renderer->print_render_queue();
-    Renderer->print_delete_queue();
 
     LOCK_LOG;
     Image_Tile::tile_accounting();
-    Renderer->image_accounting();
 
     clog << "    in " << pathname << endl
         << "<<< Tiled_Image_Display::reset_tiles: " << changed << endl;
@@ -3455,7 +3431,7 @@ Tiled_Image_Display::clear_tiles()
     UNLOCK_LOG;
 #endif
     // Cancel all rendering.
-    Renderer->reset(Image_Renderer::WAIT_UNTIL_DONE);
+    Renderer->reset(Tile_Renderer::WAIT_UNTIL_DONE);
     QList<Dynamic_Image*>
         * tiles;
     QPoint
@@ -3515,11 +3491,8 @@ Tiled_Image_Display::clear_tiles()
     print_tile_grid();
     print_tile_pool();
     UNLOCK_LOG;
-    Renderer->print_render_queue();
-    Renderer->print_delete_queue();
     LOCK_LOG;
     Image_Tile::tile_accounting();
-    Renderer->image_accounting();
     clog << "    in " << pathname << endl
         << "<<< Tiled_Image_Display::clear_tiles" << endl;
     UNLOCK_LOG;
@@ -3582,7 +3555,7 @@ Tiled_Image_Display::scale_image
         Pending_State_Change_Enabled = false;
 
         // Cancel all rendering.
-        Renderer->reset(Image_Renderer::DO_NOT_WAIT);
+        Renderer->reset(Tile_Renderer::DO_NOT_WAIT);
 
         // Current image origin.
         QPointF
@@ -4039,8 +4012,8 @@ Tiled_Image_Display::map_bands
             if (Source_Image_Rendering)
                 // Queue the Source_Image for low priority uncancelable rendering.
                 Renderer->queue(Source_Image,
-                                Image_Renderer::LOW_PRIORITY_RENDERING,
-                                !Image_Renderer::CANCELABLE);
+                                Tile_Renderer::LOW_PRIORITY_RENDERING,
+                                !Tile_Renderer::CANCELABLE);
         }
 
         // Start rendering tiles.
@@ -4144,8 +4117,8 @@ Tiled_Image_Display::map_data
 #endif
             // Queue the Source_Image for low priority uncancelable rendering.
             Renderer->queue(Source_Image,
-                            Image_Renderer::LOW_PRIORITY_RENDERING,
-                            !Image_Renderer::CANCELABLE);
+                            Tile_Renderer::LOW_PRIORITY_RENDERING,
+                            !Tile_Renderer::CANCELABLE);
         }
 
         // Start rendering tiles.
@@ -4248,7 +4221,7 @@ Tiled_Image_Display::image_update_needed
                     // Queue the tile image for rendering.
                     Renderer->queue(image,
                                     (displayed_tile_region.isEmpty() ?
-                                    Image_Renderer::LOW_PRIORITY_RENDERING : tile_grid),
+                                    Tile_Renderer::LOW_PRIORITY_RENDERING : tile_grid),
                                     displayed_tile_region);
                 }
 #if ((DEBUG_SECTION) & (DEBUG_MAP_BANDS | DEBUG_MAP_DATA))
@@ -4546,23 +4519,13 @@ Tiled_Image_Display::renderer_status
     int status
 )
 {
-#if ((DEBUG_SECTION) & DEBUG_STATE)
-    LOCKED_LOGGING((
-        clog << ">>> Tiled_Image_Display::renderer_status: " << status << ' '
-        << Image_Renderer::status_description(status) << endl
-        << "    in " << object_pathname(this) << endl));
-#endif
+
     // >>> SIGNAL <<<
-#if ((DEBUG_SECTION) & (DEBUG_STATE | DEBUG_SIGNALS))
-    LOCKED_LOGGING((
-        clog << "^^^ Tiled_Image_Display::renderer_status: "
-        "emit rendering_status " << status << " - "
-        << rendering_status_description(status) << endl));
-#endif
+
     emit rendering_status(status);
 
     if (status == NOT_RENDERING ||
-        (status & Image_Renderer::RENDERING_CANCELED))
+        (status & Tile_Renderer::RENDERING_CANCELED))
     {
         Renderer->clean_up();
 
@@ -4631,8 +4594,8 @@ Tiled_Image_Display::cancel_rendering()
         clog << "    reset Renderer without waiting" << endl));
 #endif
     Renderer->reset
-    (Image_Renderer::WAIT_UNTIL_DONE |
-     Image_Renderer::FORCE_CANCEL);
+    (Tile_Renderer::WAIT_UNTIL_DONE |
+     Tile_Renderer::FORCE_CANCEL);
 
     // Signal rendering canceled status (in case nothing was being rendered).
     renderer_status(RENDERING_CANCELED);
@@ -4729,7 +4692,7 @@ Tiled_Image_Display::rendered
                  rendering stops a final completed status will be signalled.
              */
              RENDERING_VISIBLE_TILES_COMPLETED_STATE);
-        }
+}
     }
     else
     {
@@ -4784,7 +4747,7 @@ Tiled_Image_Display::rendered
     LOCKED_LOGGING((
         clog << "<<< Tiled_Image_Display::rendered" << endl));
 #endif
-}
+    }
 
 
 void
@@ -4953,9 +4916,9 @@ Tiled_Image_Display::paintEvent
             clog << "    Tiled_Image_Display::paintEvent: "
             "queue new Source_Image for rendering" << endl));
 #endif
-        Renderer->queue(Source_Image,
-                        Image_Renderer::LOW_PRIORITY_RENDERING,
-                        !Image_Renderer::CANCELABLE);
+            Renderer->queue(Source_Image,
+                            Tile_Renderer::LOW_PRIORITY_RENDERING,
+                            !Tile_Renderer::CANCELABLE);
     }
 
     QSizeF
@@ -5067,7 +5030,7 @@ Tiled_Image_Display::paintEvent
 #if ((DEBUG_SECTION) & DEBUG_TILE_MARKINGS)
                             label = QString(" background: ");
 #endif
-                        }
+            }
                         if (!Source_Image->needs_update())
                         {
                             // Paint the tile region from the source image.
@@ -5081,7 +5044,7 @@ Tiled_Image_Display::paintEvent
                             label = QString(" source fill: ");
 #endif
                         }
-                    }
+        }
                     else
                     {
                         // Paint the tile image region on the display viewport.
@@ -5102,7 +5065,7 @@ Tiled_Image_Display::paintEvent
                             .arg((ulong)tile_image, 0, 16);
 #endif
                         painter.drawImage(tile_region, *tile_image);
-                    }
+    }
 #if ((DEBUG_SECTION) & DEBUG_TILE_MARKINGS)
                     // Tile markings.
                     painter.drawLine
@@ -5154,7 +5117,7 @@ Tiled_Image_Display::paintEvent
                 // Move to the next tile column.
                 tile_region.translate(Tile_Display_Size.rwidth(), 0);
                 source_region.translate(source_region.width(), 0);
-            }
+        }
             painted_limit.ry() = tile_region.bottom();
         }
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
@@ -5193,7 +5156,7 @@ Tiled_Image_Display::paintEvent
             clog << "    bottom background region = " << tile_region << endl));
 #endif
         painter.fillRect(tile_region, background_fill_color);
-    }
+}
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
     LOCKED_LOGGING((
         clog << "        painted region right = "
@@ -5212,7 +5175,7 @@ Tiled_Image_Display::paintEvent
             clog << "      side background region = " << tile_region << endl));
 #endif
         painter.fillRect(tile_region, background_fill_color);
-    }
+}
 #if ((DEBUG_SECTION) & DEBUG_PROMPT)
     char
         input[4];
@@ -5370,7 +5333,7 @@ Tiled_Image_Display::resizeEvent
 const QPoint Tiled_Image_Display::Get_Saved_Coordinate()
 {
     return Last_Clicked_Coord;
-}
+    }
 
 void
 Tiled_Image_Display::leaveEvent
