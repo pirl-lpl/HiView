@@ -35,12 +35,14 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 // PIRL++
 #include "Reference_Counted_Pointer.hh"
 
+#include <memory>
+using std::shared_ptr;
 
 namespace UA::HiRISE
 {
 // Forward reference.
 class JP2_Image;
-class Image_Renderer_Rendering_Monitor;
+class Tile_Rendering_Monitor;
 
 
 /** A <i>Image_Renderer</i> provides thread safe image rendering and
@@ -102,8 +104,7 @@ class Image_Renderer_Rendering_Monitor;
     @author Bradford Castalia, UA/HiROC
     @version $Revision: 1.35 $
 */
-class Tile_Renderer
-    : public QThread
+class Tile_Renderer : public QThread
 {
     // Qt Object declaration.
     Q_OBJECT
@@ -112,14 +113,15 @@ class Tile_Renderer
     /*==============================================================================
         Types:
     */
-    typedef PIRL::Reference_Counted_Pointer<Dynamic_Image> Shared_Image;
+    //typedef PIRL::Reference_Counted_Pointer<Dynamic_Image> Shared_Image;
+    //typedef shared_ptr<Dynamic_Image> Shared_Image;
+    typedef Dynamic_Image* Shared_Image;
 
     /*==============================================================================
         Constants
     */
     //! Class identification name with source code version and date.
-    static const char* const
-        ID;
+    static const char* const ID;
 
 
     /* >>> CAUTION <<< The Image_Tile values are relied on to be the

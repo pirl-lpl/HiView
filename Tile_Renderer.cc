@@ -203,6 +203,8 @@ void Tile_Renderer::queue(Dynamic_Image* image, const QPoint& tile_coordinate,
 
     Image_Tile* image_tile = new Image_Tile(image, tile_coordinate, tile_region, cancelable);
 
+    qDebug() << "Queuing tile " << tile_region << " from " << image->source_name();
+
     int index = Render_Queue.find(image_tile->Image);
     if (index < 0)
     {
@@ -658,6 +660,8 @@ Tile_Renderer::start_rendering()
 {
     Suspended = false;
     Runnable = true;
+
+    start();
     /*
         // Start the thread running (it is not already running).
     QThread thread;
@@ -775,6 +779,8 @@ void Tile_Renderer::load_image()
     // Clear the source image load request.
     Image_Source = NULL;
     Source_Name.clear();
+
+    qDebug() << "Loading " << source_image;
 
     if (source_image)
     {
