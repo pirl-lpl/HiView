@@ -1398,7 +1398,7 @@ while (index--)
 			clog << "    Image_Renderer::delete_tile " << thread_ID
 					<< ": delete image tile" << endl));
 			#endif
-			delete image_tile;
+			// TODO(guym) delete image_tile;
 			}
 		#if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 		else
@@ -1432,7 +1432,6 @@ void
 Image_Renderer::delete_tiles ()
 {
 //	>>> CAUTION: The Queue_Lock is expected to be locked by the Renderer thread.
-
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 void*
 	thread_ID = (void*)QThread::currentThreadId ();
@@ -1442,7 +1441,7 @@ LOCKED_LOGGING ((
 clog << ">>> Image_Renderer::delete_tiles " << thread_ID << endl
 	 << "    in " << pathname << endl));
 #endif
-
+bool locked = false; //Queue_Lock.tryLock();
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 LOCK_LOG;
 clog << "    Image_Renderer::delete_tiles " << thread_ID
@@ -1468,7 +1467,7 @@ while (--index >= 0)
 		clog << "!!! image to be deleted not accounted for!" << endl));
 		}
 	#endif
-	delete Delete_Queue.takeAt (index);
+	/*delete*/ Delete_Queue.takeAt (index);
 	}
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
 LOCK_LOG;
@@ -1689,6 +1688,9 @@ while (true)
 		is complete it will be deleted and the Active_Tile reset to NULL.
 	*/
 	Active_Tile = Render_Queue.takeAt (0);
+
+	if (!(Active_Tile && Active_Tile->Image)) continue;
+
 	tile_status = Active_Tile->status ();
 	canceled = Cancel;
 	#if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_TILE_MARKINGS))
@@ -1918,7 +1920,7 @@ while (true)
 		 << "    in " << pathname << endl));
 	#endif
 	delete_tile (Active_Tile);
-	Active_Tile = NULL;
+	//Active_Tile = NULL;
 
 	//	Release the Queue_Lock.
 	#if ((DEBUG_SECTION) & DEBUG_RENDER)
@@ -2448,7 +2450,7 @@ if (source_image)
 		clog << "    Image_Renderer::load_image " << thread_ID
 				<< ": source image clone failed." << endl));
 		#endif
-		delete source_image;
+		//delete source_image;
 		}
 	}
 
@@ -2538,7 +2540,7 @@ if (! source_name.isEmpty ())
 				}
 			else
 				{
-				delete source_image;
+				//delete source_image;
 				#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
 				LOCKED_LOGGING ((
 				clog << "   Image_Renderer::load_image " << thread_ID

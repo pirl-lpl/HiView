@@ -3406,7 +3406,7 @@ if (! Updating ||
 	LOCKED_LOGGING ((
 	clog << "    Object_Lock.lock" << endl));
 	#endif
-	Object_Lock->lock ();
+	bool locked = Object_Lock->tryLock ();
 	//	The current thread now has exclusive control of the update sequence.
 
 	/*
