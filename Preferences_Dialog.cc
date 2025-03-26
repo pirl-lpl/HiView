@@ -3379,7 +3379,7 @@ QRgb Rendering_Section::color_value(const QString &text)
 
 /*=*****************************************************************************
     JPIP_Section
-
+*/
 const char
     *JPIP_Section::HTTP_TO_JPIP_HOSTNAME_KEY	= "HTTP_to_JPIP_Hostname";
 
@@ -3390,7 +3390,7 @@ const char
 QString
     JPIP_Section::Default_HTTP_to_JPIP_Hostname
         = _DEFAULT_HTTP_TO_JPIP_HOSTNAME_;
-*/
+
 const char *JPIP_Section::JPIP_SERVER_PORT_KEY = "JPIP_Server_Port";
 
 #ifndef DEFAULT_JPIP_SERVER_PORT
@@ -3492,7 +3492,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 #endif
     QSettings settings;
     bool OK;
-    /*
+
     QString
         hostname =
         HTTP_to_JPIP_Hostname = settings.value (HTTP_TO_JPIP_HOSTNAME_KEY,
@@ -3504,7 +3504,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     if (! settings.contains (HTTP_TO_JPIP_HOSTNAME_KEY))
         settings.setValue (HTTP_TO_JPIP_HOSTNAME_KEY,
             Default_HTTP_to_JPIP_Hostname);
-    */
+
     int port = Port = settings.value(JPIP_SERVER_PORT_KEY, Default_JPIP_Server_Port).toInt(&OK);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    " << JPIP_SERVER_PORT_KEY << " = " << Port << endl;
@@ -3583,7 +3583,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     row = 0;
     //		Label.
     col = 0;
-    /*
+
     label = new QLabel (tr ("&HTTP-to-JPIP URL Hostname:"), this);
     label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
     grid_layout->addWidget (label, row, col);
@@ -3612,7 +3612,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
         row, col, Qt::AlignLeft);
     grid_layout->setColumnMinimumWidth
         (col, HTTP_to_JPIP_Hostname_Reset_Button->iconSize ().width ());
-    */
+
     //	Spacing.
     ++row;
     grid_layout->setRowMinimumHeight(row, 10);
@@ -3819,7 +3819,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     connect(action, SIGNAL(triggered()), Apply_Button, SLOT(click()));
     addAction(action);
     grid_layout->addWidget(buttons, row, 0, 1, -1);
-    /*
+
     //	Initialize the GUI widget values.
     HTTP_to_JPIP_Hostname_Pending = Default_HTTP_to_JPIP_Hostname;
     if (! (OK = HTTP_to_JPIP_hostname_is_valid (hostname)) &&
@@ -3828,7 +3828,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     if (! OK &&
         ! Default_HTTP_to_JPIP_Hostname.isEmpty ())
         HTTP_to_JPIP_hostname_is_valid ("");
-    */
+
     JPIP_server_port(port);
 
     Proxy_Pending = Default_JPIP_Proxy;
@@ -3853,7 +3853,6 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 #endif
 }
 
-/*
 void
 JPIP_Section::HTTP_to_JPIP_hostname
     (
@@ -3913,11 +3912,9 @@ if (OK &&
     }
 }
 
-
 void
 JPIP_Section::HTTP_to_JPIP_hostname_reset ()
 {HTTP_to_JPIP_hostname_is_valid (HTTP_to_JPIP_Hostname);}
-*/
 
 void JPIP_Section::JPIP_server_port(int port)
 {
@@ -4183,7 +4180,7 @@ void JPIP_Section::apply()
     QSettings settings;
     QString text;
 
-    /*text = HTTP_to_JPIP_Hostname_lineEdit->text ();
+    text = HTTP_to_JPIP_Hostname_lineEdit->text ();
     if (HTTP_to_JPIP_Hostname != text)
         {
         HTTP_to_JPIP_Hostname = text;
@@ -4192,7 +4189,7 @@ void JPIP_Section::apply()
         //	>>> SIGNAL <<<
         emit HTTP_to_JPIP_hostname_changed (HTTP_to_JPIP_Hostname);
         }
-    */
+
     if (Port != Port_spinBox->value())
     {
         Port = Port_spinBox->value();
