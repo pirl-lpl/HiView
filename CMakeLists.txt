@@ -1,5 +1,19 @@
 cmake_minimum_required(VERSION 3.17)
 
+# Windows build
+# set DEBUG_SECTION=DEBUG_ALL
+# cmake --fresh -S ..\HiView -B HiView -DCMAKE_PREFIX_PATH=%HOMEPATH%
+# -DQwt_DIR=%HOMEPATH%\Qwt-6.3.0 -DKAKADU_DIR=%HOMEPATH%\hiview3\v8_4-00307L
+# cmake --build HiView --config Release
+# devenv /debugexe HiView\HiView.exe
+
+# MacOS build
+# export DEBUG_SECTION=DEBUG_ALL
+# cmake -S ../c++/HiView -B HiView -DCMAKE_BUILD_TYPE=DEBUG
+# -DKAKADU_DIR=$HOME/build/v8_4-00307L
+# cmake --build HiView
+# lldb HiView/HiView
+#
 project(HiView)
 
 # prevents a warning message
@@ -140,9 +154,12 @@ add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
-# To debug, add e.g. DEBUG_SECTION=1 DEBUG=DEBUG_ALL or call cmake with them as -D args
-# and/or compile with -DCMAKE_BUILD_TYPE=Debug and use the debugger
-target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1 DEBUG_SECTION=$ENV{DEBUG_SECTION})
+if  (DEFINED ENV{DEBUG_SECTION})
+    message(STATUS "Setting DEBUG to $ENV{DEBUG_SECTION}")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG_SECTION=$ENV{DEBUG_SECTION})
+endif()
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
 
 #
 # TODO try and understand why the linker says that QwtSeriesStore<QPointF> is defined twice, once
