@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	https://developer.apple.com/library/ios/#documentation/General/Reference/InfoPlistKeyReference/Introduction/Introduction.html
+	https://developer.apple.com/library/ios/#documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+-->
+<plist version="1.0">
+<dict>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.uahirise.hiview</string>
+	<key>CFBundleName</key>
+	<string>HiView</string>
+	<key>CFBundleExecutable</key>
+	<string>HiView</string>
+	<key>CFBundleGetInfoString</key>
+	<string>HiView v3.0.0-alpha1</string>
+	<key>CFBundleVersion</key>
+	<string>3.0.0-alpha1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>3.0.0</string>
+	<key>CFBundleSignature</key>
+	<string>HiV3</string>
+	<key>CFBundleIconFile</key>
+	<string>HiView_Icons.icns</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleTypeName</key>
+			<string>public.jpeg-2000</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>JP2</string>
+				<string>jp2</string>
+				<string>JPL</string>
+				<string>jpl</string>
+		    </array>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>image/jp2</string>
+				<string>application/hiview</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>HiView_Icons.icns</string>
+		</dict>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>jpip</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>jpip</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
