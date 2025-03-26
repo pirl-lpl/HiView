@@ -226,9 +226,3 @@ qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}" PREFIX "/" FILES
  Images/UofA_Logo.png
  Images/NASA_Logo.png
 )
-#
-# TODO run windeployqt or macdeployqt
-# see https://riptutorial.com/qt/example/24133/integrating-with-cmake
-# windeployqt --no-translations HiView.exe
-#
-# macdeployqt HiView.app -no-strip -sign-for-notarization=HC4W89K7PS
