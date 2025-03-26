@@ -25,10 +25,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #ifndef HiView_Polar_Stereographic_Elliptical_Projection_hh
 #define HiView_Polar_Stereographic_Elliptical_Projection_hh
 
-#include	"Projection.hh"
+#include "Projection.hh"
 
 class QString;
-
 
 namespace UA
 {
@@ -37,345 +36,330 @@ namespace HiRISE
 //	Forward references.
 class Coordinate;
 
-class Polar_Stereographic_Elliptical_Projection
-:	public Projection
+class Polar_Stereographic_Elliptical_Projection : public Projection
 {
-public:
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const
-	ID;
-
-
-//!	The canonical name of the projection algorithm implemented by the class.
-static const char* const
-	CANONICAL_PROJECTION_NAME;
-
-//!	Names by which this projection is known.
-static const char* const
-	PROJECTION_NAMES[];
-
-//!	Names of required parameters for this projection.
-static const char* const
-	REQUIRED_PARAMETERS[];
-
-//!	Names of optional parameters for this projection.
-static const char* const
-	OPTIONAL_PARAMETERS[];
-
-/*==============================================================================
-	Constructors
-*/
-/**	Constructs a Polar_Stereographic_Elliptical_Projection from a
-	Parameter Aggregate.
-
-	@param	parameters	A pointer to an idaeim::PVL::Aggregate containing
-		(at least) the minimally required parameter values. If all
-		required parameters are not provided - including if the argument
-		is null - the {@link is_identity() identity projection flag} is
-		set.
-	@throws	idaeim::Exception	If there is a problem reading the parameters
-		or a parameter is found to have an invalid value.
-	@see	parameters(const idaeim::PVL::Aggregate*)
-*/
-explicit Polar_Stereographic_Elliptical_Projection
-	(const idaeim::PVL::Aggregate* parameters = 0);
-
-/**	Copies a Polar_Stereographic_Elliptical_Projection.
-
-	@param	projection	The Polar_Stereographic_Elliptical_Projection to
-		be copied.
-*/
-Polar_Stereographic_Elliptical_Projection
-	(const Polar_Stereographic_Elliptical_Projection& projection);
-
-/**	Assigns another Polar_Stereographic_Elliptical_Projection to this
-	Polar_Stereographic_Elliptical_Projection.
-
-	@param	projection	The Polar_Stereographic_Elliptical_Projection to
-		be assigned.
-	@return	This Polar_Stereographic_Elliptical_Projection.
-*/
-virtual Polar_Stereographic_Elliptical_Projection& operator=
-	(const Polar_Stereographic_Elliptical_Projection& projection);
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
+
+    //!	The canonical name of the projection algorithm implemented by the class.
+    static const char *const CANONICAL_PROJECTION_NAME;
+
+    //!	Names by which this projection is known.
+    static const char *const PROJECTION_NAMES[];
+
+    //!	Names of required parameters for this projection.
+    static const char *const REQUIRED_PARAMETERS[];
+
+    //!	Names of optional parameters for this projection.
+    static const char *const OPTIONAL_PARAMETERS[];
+
+    /*==============================================================================
+        Constructors
+    */
+    /**	Constructs a Polar_Stereographic_Elliptical_Projection from a
+        Parameter Aggregate.
+
+        @param	parameters	A pointer to an idaeim::PVL::Aggregate containing
+            (at least) the minimally required parameter values. If all
+            required parameters are not provided - including if the argument
+            is null - the {@link is_identity() identity projection flag} is
+            set.
+        @throws	idaeim::Exception	If there is a problem reading the parameters
+            or a parameter is found to have an invalid value.
+        @see	parameters(const idaeim::PVL::Aggregate*)
+    */
+    explicit Polar_Stereographic_Elliptical_Projection(const idaeim::PVL::Aggregate *parameters = 0);
+
+    /**	Copies a Polar_Stereographic_Elliptical_Projection.
+
+        @param	projection	The Polar_Stereographic_Elliptical_Projection to
+            be copied.
+    */
+    Polar_Stereographic_Elliptical_Projection(const Polar_Stereographic_Elliptical_Projection &projection);
 
-/**	Clone the Polar_Stereographic_Elliptical_Projection.
+    /**	Assigns another Polar_Stereographic_Elliptical_Projection to this
+        Polar_Stereographic_Elliptical_Projection.
 
-	@return	A pointer to an Polar_Stereographic_Elliptical_Projection
-		that is a copy of this Polar_Stereographic_Elliptical_Projection
-		or the appropriate subclass.
-*/
-virtual Polar_Stereographic_Elliptical_Projection* clone () const;
+        @param	projection	The Polar_Stereographic_Elliptical_Projection to
+            be assigned.
+        @return	This Polar_Stereographic_Elliptical_Projection.
+    */
+    virtual Polar_Stereographic_Elliptical_Projection &operator=(
+        const Polar_Stereographic_Elliptical_Projection &projection);
 
-//!	Destroys the Polar_Stereographic_Elliptical_Projection.
-virtual ~Polar_Stereographic_Elliptical_Projection ();
+    /**	Clone the Polar_Stereographic_Elliptical_Projection.
 
-/*==============================================================================
-	Accessors
-*/
-/**	Canonical projection algorithm name.
+        @return	A pointer to an Polar_Stereographic_Elliptical_Projection
+            that is a copy of this Polar_Stereographic_Elliptical_Projection
+            or the appropriate subclass.
+    */
+    virtual Polar_Stereographic_Elliptical_Projection *clone() const;
 
-	@return	The canonical name of the projection algorithm.
-	@see	projection_name()
-*/
-virtual const char* canonical_projection_name () const;
+    //!	Destroys the Polar_Stereographic_Elliptical_Projection.
+    virtual ~Polar_Stereographic_Elliptical_Projection();
 
-/*	Get the list of names by which a projection is known.
+    /*==============================================================================
+        Accessors
+    */
+    /**	Canonical projection algorithm name.
 
-	@return	A NULL terminated list of names for the projection
-		implementation. Any of the names in the list will qualify for a
-		match when the {@link projection_name_parameter() projection name
-		parameter is examined when a Projection is to be {@link
-		create(const idaeim::PVL::Aggregate*, bool) created}.
-*/
-static const char* const* projection_names ();
+        @return	The canonical name of the projection algorithm.
+        @see	projection_name()
+    */
+    virtual const char *canonical_projection_name() const;
 
-/**	Get the list of parameters required by the projection implementation.
+    /*	Get the list of names by which a projection is known.
 
-	The list of required parameters is used when {@link
-	parameters(const idaeim::PVL::Aggregate* parameters, const char* const*,
-	const char* const*) parameter values are obtained}.
+        @return	A NULL terminated list of names for the projection
+            implementation. Any of the names in the list will qualify for a
+            match when the {@link projection_name_parameter() projection name
+            parameter is examined when a Projection is to be {@link
+            create(const idaeim::PVL::Aggregate*, bool) created}.
+    */
+    static const char *const *projection_names();
 
-	@return	A NULL terminated list of parameter name strings. May be NULL
-		if no parameters are required.
-*/
-virtual const char* const* required_parameters () const;
+    /**	Get the list of parameters required by the projection implementation.
 
-/**	Get the list of optional parameters that may be used by the
-	projection implementation.
+        The list of required parameters is used when {@link
+        parameters(const idaeim::PVL::Aggregate* parameters, const char* const*,
+        const char* const*) parameter values are obtained}.
 
-	The list of optional parameters is used when {@link
-	parameters(const idaeim::PVL::Aggregate* parameters, const char* const*,
-	const char* const*) parameter values are obtained}.
+        @return	A NULL terminated list of parameter name strings. May be NULL
+            if no parameters are required.
+    */
+    virtual const char *const *required_parameters() const;
 
-	@return	A NULL terminated list of parameter name strings. May be NULL
-		if no optional parameters are used.
-*/
-virtual const char* const* optional_parameters () const;
+    /**	Get the list of optional parameters that may be used by the
+        projection implementation.
 
-/*==============================================================================
-	Converters
-*/
-/**	Get the world longitude,latitude coordinate for an image sample,line
-	coordinate.
+        The list of optional parameters is used when {@link
+        parameters(const idaeim::PVL::Aggregate* parameters, const char* const*,
+        const char* const*) parameter values are obtained}.
 
-	The conversion algorithm is:
+        @return	A NULL terminated list of parameter name strings. May be NULL
+            if no optional parameters are used.
+    */
+    virtual const char *const *optional_parameters() const;
 
-<dl>
-<dt>Wx =
-<dd>CLS * {@link center_longitude() Center_Longitude}<br>
+    /*==============================================================================
+        Converters
+    */
+    /**	Get the world longitude,latitude coordinate for an image sample,line
+        coordinate.
 
-	if Distance == 0<br>
+        The conversion algorithm is:
 
-	CLS * atan2 (E, -N) + {@link center_longitude() Center_Longitude}<br>
+    <dl>
+    <dt>Wx =
+    <dd>CLS * {@link center_longitude() Center_Longitude}<br>
 
-	if Distance != 0<br>
-</dl>
+        if Distance == 0<br>
 
-	where:
+        CLS * atan2 (E, -N) + {@link center_longitude() Center_Longitude}<br>
 
-	CLS is the sign of the {@link center_latitude() Center_Latitude}; i.e.
-	CLS = -1 if the Center_Latitude is negative, 1 otherwise.
+        if Distance != 0<br>
+    </dl>
 
-	Distance = sqrt (E**2 + N**2)<br>
-	E = CLS * WOx<br>
-	N = CLS * WOy<br>
+        where:
 
-	WOx is the {@link to_world_X_offset(double) horizontal offset from
-	the projection center of the image coordinate} in meters.
+        CLS is the sign of the {@link center_latitude() Center_Latitude}; i.e.
+        CLS = -1 if the Center_Latitude is negative, 1 otherwise.
 
-	WOy is the {@link to_world_Y_offset(double) vertical offset from
-	the projection center of the image coordinate} in meters.
+        Distance = sqrt (E**2 + N**2)<br>
+        E = CLS * WOx<br>
+        N = CLS * WOy<br>
 
+        WOx is the {@link to_world_X_offset(double) horizontal offset from
+        the projection center of the image coordinate} in meters.
 
-	Wy = CLS * P
+        WOy is the {@link to_world_Y_offset(double) vertical offset from
+        the projection center of the image coordinate} in meters.
 
-	where:
 
-	P = PI_OVER_2 - 2 * atan (T)
+        Wy = CLS * P
 
-	where:
+        where:
 
-	P is iteratively converged such that abs (P - P') <= 0.0000000001;
+        P = PI_OVER_2 - 2 * atan (T)
 
-<dl>
-<dt>P' =
-<dd>PI_OVER_2 - 2 * atan
-		(T * ( (1 - ECC * sin (P)) / (1 + ECC * sin (P)) )**(ECC / 2) )<br>
-</dl>
-	ECC = {@link eccentricity() Eccentricity}
+        where:
 
-	and:
+        P is iteratively converged such that abs (P - P') <= 0.0000000001;
 
-	T = Distance * Distance_Coefficient
+    <dl>
+    <dt>P' =
+    <dd>PI_OVER_2 - 2 * atan
+            (T * ( (1 - ECC * sin (P)) / (1 + ECC * sin (P)) )**(ECC / 2) )<br>
+    </dl>
+        ECC = {@link eccentricity() Eccentricity}
 
-	where:
+        and:
 
-<dl>
-<dt>Distance_Coefficient =
-<dd>sqrt ( (1 + ECC)**(1 + ECC) * (1 - ECC)**(1 - ECC) ) / (2 * Re)<br>
+        T = Distance * Distance_Coefficient
 
-	if the {@link center_latitude() Center_Latitude} is at a pole.<br>
+        where:
 
-	coefficient_T (CLA) / ( Re * cos (CLA)
-		/ sqrt ( 1 - ECC * sin (CLA)**2 ) )<br>
+    <dl>
+    <dt>Distance_Coefficient =
+    <dd>sqrt ( (1 + ECC)**(1 + ECC) * (1 - ECC)**(1 - ECC) ) / (2 * Re)<br>
 
-	if the Center_Latitude is not at a pole.<br>
+        if the {@link center_latitude() Center_Latitude} is at a pole.<br>
 
-<dt>coefficient_T (latitude) =
-<dd>tan ( PI - (latitude / 2) )
-		/ ( (1 - (ECC * sin (latitude)))
-		  / (1 + (ECC * sin (latitude))) )**(ECC / 2)<br>
-</dl>
-	CLA = absolute value of the Center_Latitude; i.e. CLS * Center_Latitude.<br>
-	Re = {@link equatorial_radius() Equitorial_Radius}<br>
+        coefficient_T (CLA) / ( Re * cos (CLA)
+            / sqrt ( 1 - ECC * sin (CLA)**2 ) )<br>
 
-	The {@link center_latitude() Center_Latitude} is at a pole if its
-	absolute value is (or is vanishingly near) PI_OVER_2, or the absolute
-	value of coefficient_T (CLA) is (or is vanishingly near) zero.
+        if the Center_Latitude is not at a pole.<br>
 
-	<b>N.B.</b>: The image sample,line coordinate is {@link
-	rotate_from_image(Coordinate&) rotated to the world coordinate
-	space}.
+    <dt>coefficient_T (latitude) =
+    <dd>tan ( PI - (latitude / 2) )
+            / ( (1 - (ECC * sin (latitude)))
+              / (1 + (ECC * sin (latitude))) )**(ECC / 2)<br>
+    </dl>
+        CLA = absolute value of the Center_Latitude; i.e. CLS * Center_Latitude.<br>
+        Re = {@link equatorial_radius() Equitorial_Radius}<br>
 
-	@param	image_coordinate	An image sample,line Coordinate.
-		<b>N.B.</b>: The image coordinate system is left-handed
-		cartesian; i.e. the x axis corresponds to pixel samples
-		increasing rightwards, the y axis corresponds to image lines
-		increasing downwards, the origin (0,0) is the upper-left pixel.
-	@return	A world longitude,latitude coordinate. The X value of the
-		Coordinate is the easting longitude in the [0-360) degree range;
-		the Y value is the planetocentric latitude in the +/90 degreee
-		range.
-	@throws std::out_of_range	If the projection of the coordinate
-		resulted in an invalid latitude.
-*/
-virtual Coordinate to_world (const Coordinate& image_coordinate) const;
+        The {@link center_latitude() Center_Latitude} is at a pole if its
+        absolute value is (or is vanishingly near) PI_OVER_2, or the absolute
+        value of coefficient_T (CLA) is (or is vanishingly near) zero.
 
-/**	Get the image sample,line coordinate for a world longitude,latitude
-	coordinate.
+        <b>N.B.</b>: The image sample,line coordinate is {@link
+        rotate_from_image(Coordinate&) rotated to the world coordinate
+        space}.
 
-	The conversion algorithm is:
+        @param	image_coordinate	An image sample,line Coordinate.
+            <b>N.B.</b>: The image coordinate system is left-handed
+            cartesian; i.e. the x axis corresponds to pixel samples
+            increasing rightwards, the y axis corresponds to image lines
+            increasing downwards, the origin (0,0) is the upper-left pixel.
+        @return	A world longitude,latitude coordinate. The X value of the
+            Coordinate is the easting longitude in the [0-360) degree range;
+            the Y value is the planetocentric latitude in the +/90 degreee
+            range.
+        @throws std::out_of_range	If the projection of the coordinate
+            resulted in an invalid latitude.
+    */
+    virtual Coordinate to_world(const Coordinate &image_coordinate) const;
 
-	Ix = IOx ( CLS * T * sin (L) )<br>
-	Iy = IOy ( -CLS * T * cos (L)) )<br>
+    /**	Get the image sample,line coordinate for a world longitude,latitude
+        coordinate.
 
-	where:
+        The conversion algorithm is:
 
-	IOx is the function that produces the {@link
-	to_image_X_offset(double) horizontal image offset} derived from the
-	projection center borizontal offset of the world coordinate.
-	
-	IOy is the function that produces the {@link
-	to_image_Y_offset(double) vertical image offset} derived from the
-	projection center vertical offset of the world coordinate.
+        Ix = IOx ( CLS * T * sin (L) )<br>
+        Iy = IOy ( -CLS * T * cos (L)) )<br>
 
-	CLS is the sign of the {@link center_latitude() Center_Latitude}; i.e.
-	CLS = -1 if the Center_Latitude is negative, 1 otherwise.
+        where:
 
-	L = CLS * (Wx - {@link center_longitude() Center_Longitude})
+        IOx is the function that produces the {@link
+        to_image_X_offset(double) horizontal image offset} derived from the
+        projection center borizontal offset of the world coordinate.
 
-	Wx is the world coordinate longitude converted to radians.
+        IOy is the function that produces the {@link
+        to_image_Y_offset(double) vertical image offset} derived from the
+        projection center vertical offset of the world coordinate.
 
-	T = coefficient_T (Wy) / Distance_Coefficient
+        CLS is the sign of the {@link center_latitude() Center_Latitude}; i.e.
+        CLS = -1 if the Center_Latitude is negative, 1 otherwise.
 
-	where:
+        L = CLS * (Wx - {@link center_longitude() Center_Longitude})
 
-	Wy is the world coordinate latitude converted to planetographic radians.<br>
+        Wx is the world coordinate longitude converted to radians.
 
-<dl>
-<dt>coefficient_T (latitude) =
-<dd>tan ( PI - (latitude / 2) )
-		/ ( (1 - (ECC * sin (latitude)))
-		  / (1 + (ECC * sin (latitude))) )**(ECC / 2)<br>
-<dt>Distance_Coefficient =
-<dd>sqrt ( (1 + ECC)**(1 + ECC) * (1 - ECC)**(1 - ECC) ) / (2 * Re)<br>
+        T = coefficient_T (Wy) / Distance_Coefficient
 
-	if the {@link center_latitude() Center_Latitude} is at a pole.<br>
+        where:
 
-	coefficient_T (CLA) / ( Re * cos (CLA)
-		/ sqrt ( 1 - ECC * sin (CLA)**2 ) )<br>
+        Wy is the world coordinate latitude converted to planetographic radians.<br>
 
-	if the Center_Latitude is not at a pole.<br>
-</dl>
+    <dl>
+    <dt>coefficient_T (latitude) =
+    <dd>tan ( PI - (latitude / 2) )
+            / ( (1 - (ECC * sin (latitude)))
+              / (1 + (ECC * sin (latitude))) )**(ECC / 2)<br>
+    <dt>Distance_Coefficient =
+    <dd>sqrt ( (1 + ECC)**(1 + ECC) * (1 - ECC)**(1 - ECC) ) / (2 * Re)<br>
 
-	CLA = absolute value of the Center_Latitude; i.e. CLS * Center_Latitude.<br>
-	ECC = {@link eccentricity() Eccentricity}<br>
-	Re = {@link equatorial_radius() Equitorial_Radius}<br>
+        if the {@link center_latitude() Center_Latitude} is at a pole.<br>
 
-	The {@link center_latitude() Center_Latitude} is at a pole if its
-	absolute value is (or is vanishingly near) PI_OVER_2, or the absolute
-	value of coefficient_T (CLA) is (or is vanishingly near) zero.
+        coefficient_T (CLA) / ( Re * cos (CLA)
+            / sqrt ( 1 - ECC * sin (CLA)**2 ) )<br>
 
-	<b.N.B.</b>: The Ix,Iy coordinate is rounded to the nearest pixel and
-	{@link rotate_to_image(Coordinate&) rotated to image sample,line
-	values} before being returned.
+        if the Center_Latitude is not at a pole.<br>
+    </dl>
 
-	@param	world_coordinate	A world longitude,latitude Coordinate.
-		The X value of the Coordinate is the easting longitude; the Y
-		value is the planetocentric latitude. Values are in degrees.
-	@return	An image sample,line Coordinate.
-		<b>N.B.</b>: The image coordinate system is left-handed
-		cartesian; i.e. the x axis corresponds to pixel samples
-		increasing rightwards, the y axis corresponds to image lines
-		increasing downwards, the origin (0,0) is the upper-left pixel.
-*/
-virtual Coordinate to_image (const Coordinate& world_coordinate) const;
+        CLA = absolute value of the Center_Latitude; i.e. CLS * Center_Latitude.<br>
+        ECC = {@link eccentricity() Eccentricity}<br>
+        Re = {@link equatorial_radius() Equitorial_Radius}<br>
 
-/*==============================================================================
-	Derived values
-*/
-protected:
+        The {@link center_latitude() Center_Latitude} is at a pole if its
+        absolute value is (or is vanishingly near) PI_OVER_2, or the absolute
+        value of coefficient_T (CLA) is (or is vanishingly near) zero.
 
-/**	Computes a T coefficient.
+        <b.N.B.</b>: The Ix,Iy coordinate is rounded to the nearest pixel and
+        {@link rotate_to_image(Coordinate&) rotated to image sample,line
+        values} before being returned.
 
-	T = tan ((PI_OVER_2 - latitude) / 2) /
-		( (1 - ({@link eccentricity() Eccentricity} * sin (latitude)))
-		/ (1 + ({@link eccentricity() Eccentricity} * sin (latitude))) )
-			** ({@link eccentricity() Eccentricity} / 2)
+        @param	world_coordinate	A world longitude,latitude Coordinate.
+            The X value of the Coordinate is the easting longitude; the Y
+            value is the planetocentric latitude. Values are in degrees.
+        @return	An image sample,line Coordinate.
+            <b>N.B.</b>: The image coordinate system is left-handed
+            cartesian; i.e. the x axis corresponds to pixel samples
+            increasing rightwards, the y axis corresponds to image lines
+            increasing downwards, the origin (0,0) is the upper-left pixel.
+    */
+    virtual Coordinate to_image(const Coordinate &world_coordinate) const;
 
-	However, T = 0 if PI_OVER_2 - |latitude| < DBL_EPSILON
+    /*==============================================================================
+        Derived values
+    */
+  protected:
+    /**	Computes a T coefficient.
 
-	where DBL_EPSILON is a very small value.
+        T = tan ((PI_OVER_2 - latitude) / 2) /
+            ( (1 - ({@link eccentricity() Eccentricity} * sin (latitude)))
+            / (1 + ({@link eccentricity() Eccentricity} * sin (latitude))) )
+                ** ({@link eccentricity() Eccentricity} / 2)
 
-	<b>N.B.</b>: {@link eccentricity() Eccentricity} / 2 is assumed to
-	have been pre-computed as E_over_2.
+        However, T = 0 if PI_OVER_2 - |latitude| < DBL_EPSILON
 
-	@param	latitude	A panetographic latitude value in radians.
-	@return	A T coefficient value.
-*/
-double coefficient_T (double latitude) const;
+        where DBL_EPSILON is a very small value.
 
-/**	Calculate the Phi2 coefficient.
+        <b>N.B.</b>: {@link eccentricity() Eccentricity} / 2 is assumed to
+        have been pre-computed as E_over_2.
 
-	The Phi2 coefficient is used in the coversion of an image coordinate
-	{@link to_world{const Coordinate&) to world} coordinate. An
-	iterative converging algorithm is used.
+        @param	latitude	A panetographic latitude value in radians.
+        @return	A T coefficient value.
+    */
+    double coefficient_T(double latitude) const;
 
-	@param	coefficient_t	The coefficient t value calculated based on
-		the image coordinate values.
-	@return	The Phi2 coefficient used to calculate a world coordinate
-		latitude (Y) value.
-	@throws	std::out_of_range	If the algorithm failed to converge
-		after 15 iterations.
-*/
-double coefficient_Phi2 (double coefficient_t) const;
+    /**	Calculate the Phi2 coefficient.
 
-/*==============================================================================
-	Data
-*/
-protected:
+        The Phi2 coefficient is used in the coversion of an image coordinate
+        {@link to_world{const Coordinate&) to world} coordinate. An
+        iterative converging algorithm is used.
 
-double
-	E_over_2,
-	Center_Latitude_Sign,
-	Distance_Coefficient;
+        @param	coefficient_t	The coefficient t value calculated based on
+            the image coordinate values.
+        @return	The Phi2 coefficient used to calculate a world coordinate
+            latitude (Y) value.
+        @throws	std::out_of_range	If the algorithm failed to converge
+            after 15 iterations.
+    */
+    double coefficient_Phi2(double coefficient_t) const;
 
-};	//	End of Polar_Stereographic_Elliptical_Projection class.
+    /*==============================================================================
+        Data
+    */
+  protected:
+    double E_over_2, Center_Latitude_Sign, Distance_Coefficient;
 
+}; //	End of Polar_Stereographic_Elliptical_Projection class.
 
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif

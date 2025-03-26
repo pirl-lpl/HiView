@@ -21,173 +21,146 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#include	"Location_Mapper.hh"
+#include "Location_Mapper.hh"
 
-#include	"Coordinate.hh"
-#include	"Projection.hh"
-#include	"PDS_Metadata.hh"
-#include	"HiView_Utilities.hh"
+#include "Coordinate.hh"
+#include "HiView_Utilities.hh"
+#include "PDS_Metadata.hh"
+#include "Projection.hh"
 
-#include	"PVL.hh"
+#include "PVL.hh"
 using idaeim::PVL::Aggregate;
 
-#include	<QString>
+#include <QString>
 
-
-#if defined (DEBUG_SECTION)
+#if defined(DEBUG_SECTION)
 /*	DEBUG_SECTION controls
 
-	DEBUG_SECTION report selection options.
-	Define any of the following options to obtain the desired debug reports:
+    DEBUG_SECTION report selection options.
+    Define any of the following options to obtain the desired debug reports:
 */
-#define DEBUG_OFF				0
-#define DEBUG_ALL				-1
-#define DEBUG_CONSTRUCTORS		(1 << 0)
-#define DEBUG_ACCESSORS			(1 << 1)
-#define DEBUG_HELPERS			(1 << 2)
-#define	DEBUG_TRANSFORM			(1 << 3)
-#define	DEBUG_PROJECTION		(1 << 4)
+#define DEBUG_OFF 0
+#define DEBUG_ALL -1
+#define DEBUG_CONSTRUCTORS (1 << 0)
+#define DEBUG_ACCESSORS (1 << 1)
+#define DEBUG_HELPERS (1 << 2)
+#define DEBUG_TRANSFORM (1 << 3)
+#define DEBUG_PROJECTION (1 << 4)
 
-#define DEBUG_DEFAULT			DEBUG_ALL
+#define DEBUG_DEFAULT DEBUG_ALL
 
-#if (DEBUG_SECTION +0) == 0
-#undef  DEBUG_SECTION
+#if (DEBUG_SECTION + 0) == 0
+#undef DEBUG_SECTION
 #define DEBUG_SECTION DEBUG_OFF
 
 #else
-#include	<iostream>
-#include	<iomanip>
+#include <iomanip>
+#include <iostream>
 using std::clog;
 using std::endl;
 using std::setw;
 #endif
 
-#endif	//	DEBUG_SECTION
-
+#endif //	DEBUG_SECTION
 
 namespace UA
 {
 namespace HiRISE
 {
 /*==============================================================================
-	Constants
+    Constants
 */
-const char* const
-	Location_Mapper::ID =
-		"UA::HiRISE::Location_Mapper ($Revision: 1.6 $ $Date: 2012/09/27 22:09:16 $)";
+const char *const Location_Mapper::ID = "UA::HiRISE::Location_Mapper ($Revision: 1.6 $ $Date: 2012/09/27 22:09:16 $)";
 
 /*==============================================================================
-	Constructors
+    Constructors
 */
-Location_Mapper::Location_Mapper
-	(
-	idaeim::PVL::Aggregate*	parameters
-	)
-	:	Projector (NULL)
+Location_Mapper::Location_Mapper(idaeim::PVL::Aggregate *parameters) : Projector(NULL)
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << ">>> Location_Mapper" << endl;
+    clog << ">>> Location_Mapper" << endl;
 #endif
-try {this->parameters (parameters);}
-catch (...) {reset ();}
+    try
+    {
+        this->parameters(parameters);
+    }
+    catch (...)
+    {
+        reset();
+    }
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << "<<< Location_Mapper" << endl;
+    clog << "<<< Location_Mapper" << endl;
 #endif
 }
 
-
-Location_Mapper::Location_Mapper
-	(
-	const Location_Mapper&	location_mapper
-	)
-	:	Projector (NULL)
-{*this = location_mapper;}
-
-
-Location_Mapper&
-Location_Mapper::operator=
-	(
-	const Location_Mapper&	location_mapper
-	)
+Location_Mapper::Location_Mapper(const Location_Mapper &location_mapper) : Projector(NULL)
 {
-if (this != &location_mapper)
-	{
-	delete Projector;
-	if (location_mapper.Projector)
-		Projector = location_mapper.Projector->clone ();
-	else
-		Projector = NULL;
-	}
-return *this;
+    *this = location_mapper;
 }
 
-
-Location_Mapper::~Location_Mapper ()
-{delete Projector;}
-
-/*==============================================================================
-	Accessors
-*/
-QString
-Location_Mapper::projection_name () const
+Location_Mapper &Location_Mapper::operator=(const Location_Mapper &location_mapper)
 {
-if (Projector)
-	return Projector->projection_name ();
-return QString ();
+    if (this != &location_mapper)
+    {
+        delete Projector;
+        if (location_mapper.Projector)
+            Projector = location_mapper.Projector->clone();
+        else
+            Projector = NULL;
+    }
+    return *this;
 }
 
-
-Coordinate
-Location_Mapper::project_to_world
-	(
-	const Coordinate&	image_coordinate
-	) const
+Location_Mapper::~Location_Mapper()
 {
-if (Projector)
-	return Projector->to_world (image_coordinate);
-return Coordinate ();
-}
-
-
-Coordinate
-Location_Mapper::project_to_image
-	(
-	const Coordinate&	world_coordinate
-	) const
-{
-if (Projector)
-	return Projector->to_image (world_coordinate);
-return Coordinate ();
+    delete Projector;
 }
 
 /*==============================================================================
-	Manipulators
+    Accessors
 */
-Location_Mapper&
-Location_Mapper::parameters
-	(
-	const idaeim::PVL::Aggregate*	parameters
-	)
+QString Location_Mapper::projection_name() const
 {
-#if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << ">>> Location_Mapper::parameters" << endl;
-#endif
-delete Projector;
-Projector = Projection::create (parameters);
-#if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-clog << "<<< Location_Mapper::parameters" << endl;
-#endif
-return *this;
+    if (Projector)
+        return Projector->projection_name();
+    return QString();
 }
 
-
-void
-Location_Mapper::reset ()
+Coordinate Location_Mapper::project_to_world(const Coordinate &image_coordinate) const
 {
-if (Projector)
-	Projector->reset ();
+    if (Projector)
+        return Projector->to_world(image_coordinate);
+    return Coordinate();
 }
 
+Coordinate Location_Mapper::project_to_image(const Coordinate &world_coordinate) const
+{
+    if (Projector)
+        return Projector->to_image(world_coordinate);
+    return Coordinate();
+}
 
-}	//	namespace HiRISE
-}	//	namespace UA
+/*==============================================================================
+    Manipulators
+*/
+Location_Mapper &Location_Mapper::parameters(const idaeim::PVL::Aggregate *parameters)
+{
+#if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
+    clog << ">>> Location_Mapper::parameters" << endl;
+#endif
+    delete Projector;
+    Projector = Projection::create(parameters);
+#if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
+    clog << "<<< Location_Mapper::parameters" << endl;
+#endif
+    return *this;
+}
+
+void Location_Mapper::reset()
+{
+    if (Projector)
+        Projector->reset();
+}
+
+} // namespace HiRISE
+} // namespace UA

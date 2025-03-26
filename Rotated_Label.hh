@@ -26,112 +26,105 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include <QFrame>
 
-
 namespace UA
 {
 namespace HiRISE
 {
 /**	A <i>Rotated_Label</i> is a text label widget in which the text
-	may be rotated in 90 degree increments.
+    may be rotated in 90 degree increments.
 
-	The Rotated_Label class is a simplification of the QxtLabel class
-	implementation from the Qxt library (https://github.com/strixcode/libqxt).
+    The Rotated_Label class is a simplification of the QxtLabel class
+    implementation from the Qxt library (https://github.com/strixcode/libqxt).
 
-	@author		Bradford Castalia, UA/HiROC
-	@version	$Revision: 1.1 $
+    @author		Bradford Castalia, UA/HiROC
+    @version	$Revision: 1.1 $
 */
-class Rotated_Label
-:	public QFrame
+class Rotated_Label : public QFrame
 {
-//	Qt Object declaration.
-Q_OBJECT
+    //	Qt Object declaration.
+    Q_OBJECT
 
-public:
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const
-	ID;
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
 
-
-enum Text_Rotation
-	{
-	NO_ROTATION			= 0,
-	CLOCKWISE			= 90,
-	INVERTED			= 180,
-	COUNTER_CLOCKWISE	= 270
-	};
+    enum Text_Rotation
+    {
+        NO_ROTATION = 0,
+        CLOCKWISE = 90,
+        INVERTED = 180,
+        COUNTER_CLOCKWISE = 270
+    };
 
 //	Bit set in CLOCKWISE and COUNTER_CLOCKWISE but not NO_ROTATION and INVERTED.
-#define IS_VERTICAL		2
+#define IS_VERTICAL 2
 
-/*==============================================================================
-	Constructors
-*/
-explicit Rotated_Label
-	(QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
-explicit Rotated_Label
-	(const QString& text, QWidget* parent = NULL, Qt::WindowFlags flags = Qt::Widget);
+    /*==============================================================================
+        Constructors
+    */
+    explicit Rotated_Label(QWidget *parent = NULL, Qt::WindowFlags flags = Qt::Widget);
+    explicit Rotated_Label(const QString &text, QWidget *parent = NULL, Qt::WindowFlags flags = Qt::Widget);
 
-virtual ~Rotated_Label ();
+    virtual ~Rotated_Label();
 
-/*==============================================================================
-	Accessors
-*/
-inline QString text () const
-	{return Text;}
+    /*==============================================================================
+        Accessors
+    */
+    inline QString text() const
+    {
+        return Text;
+    }
 
-inline Qt::Alignment alignment () const
-	{return Align;}
-void alignment (Qt::Alignment alignment);
+    inline Qt::Alignment alignment() const
+    {
+        return Align;
+    }
+    void alignment(Qt::Alignment alignment);
 
-inline Text_Rotation text_rotation () const
-	{return Rotation;}
-void text_rotation (Text_Rotation rotation);
+    inline Text_Rotation text_rotation() const
+    {
+        return Rotation;
+    }
+    void text_rotation(Text_Rotation rotation);
 
-virtual QSize sizeHint() const;
-virtual QSize minimumSizeHint() const;
+    virtual QSize sizeHint() const;
+    virtual QSize minimumSizeHint() const;
 
-/*==============================================================================
-	Qt signals:
-*/
-signals:
+    /*==============================================================================
+        Qt signals:
+    */
+  signals:
 
-void textChanged (const QString& text);
+    void textChanged(const QString &text);
 
-/*==============================================================================
-	Qt slots
-*/
-public slots:
+    /*==============================================================================
+        Qt slots
+    */
+  public slots:
 
-void text (const QString& text);
+    void text(const QString &text);
 
-/*==============================================================================
-	Event Handlers
-*/
-protected:
+    /*==============================================================================
+        Event Handlers
+    */
+  protected:
+    virtual void changeEvent(QEvent *event);
+    virtual void paintEvent(QPaintEvent *event);
 
-virtual void changeEvent (QEvent* event);
-virtual void paintEvent (QPaintEvent* event);
+    /*==============================================================================
+        Data
+    */
+  private:
+    QString Text;
 
-/*==============================================================================
-	Data
-*/
-private:
+    Qt::Alignment Align;
 
-QString
-	Text;
-
-Qt::Alignment
-	Align;
-
-Text_Rotation
-	Rotation;
-
+    Text_Rotation Rotation;
 };
 
-
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif

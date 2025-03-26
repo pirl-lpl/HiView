@@ -24,68 +24,59 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #ifndef About_HiView_Dialog_hh
 #define About_HiView_Dialog_hh
 
-#include	<QDialog>
+#include <QDialog>
 
 //	Forward references.
 class QIcon;
 class QScrollArea;
-
 
 namespace UA
 {
 namespace HiRISE
 {
 //	Forward references.
-class	Icon_Button;
+class Icon_Button;
 
 /**	An <i>About_HiView_Dialog</i> provides a dialog box with information
-	about the HiView application.
+    about the HiView application.
 
-	@author		Andrew Stockton and Bradford Castalia, UA/HiROC
-	@version	$Revision: 1.2 $
+    @author		Andrew Stockton and Bradford Castalia, UA/HiROC
+    @version	$Revision: 1.2 $
 */
-class About_HiView_Dialog
-:	public QDialog
+class About_HiView_Dialog : public QDialog
 {
-//	Qt Object declaration.
-Q_OBJECT
+    //	Qt Object declaration.
+    Q_OBJECT
 
-public:
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const
-	ID;
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
 
-/*==============================================================================
-	Constructor
-*/
-//!	Constructs the About_HiView_Dialog.
-About_HiView_Dialog ();
+    /*==============================================================================
+        Constructor
+    */
+    //!	Constructs the About_HiView_Dialog.
+    About_HiView_Dialog();
 
-/*==============================================================================
-	Slots
-*/
-private slots:
+    /*==============================================================================
+        Slots
+    */
+  private slots:
 
-void expand_button_toggled (bool down);
+    void expand_button_toggled(bool down);
 
-/*==============================================================================
-	Data
-*/
-private:
-
-Icon_Button
-	*Expand_Button;
-QIcon
-	*Expand_Down_Icon,
-	*Expand_Up_Icon;
-QScrollArea 
-	*Expand_Panel;
-
+    /*==============================================================================
+        Data
+    */
+  private:
+    Icon_Button *Expand_Button;
+    QIcon *Expand_Down_Icon, *Expand_Up_Icon;
+    QScrollArea *Expand_Panel;
 };
 
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif

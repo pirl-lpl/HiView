@@ -2230,11 +2230,11 @@ bool HiView_Window::refresh_source_statistics()
                 //			Image_Info->set_avgG(Statistics->source_statistics()->stats().mean_value(1));
                 //			Image_Info->set_avgB(Statistics->source_statistics()->stats().mean_value(2));
                 //			Image_Info->set_property_f("red",
-                //Statistics->source_statistics()->stats().mean_value_excluding_exceptions(0));
+                // Statistics->source_statistics()->stats().mean_value_excluding_exceptions(0));
                 //			Image_Info->set_property_f("green",
-                //Statistics->source_statistics()->stats().mean_value_excluding_exceptions(1));
+                // Statistics->source_statistics()->stats().mean_value_excluding_exceptions(1));
                 //			Image_Info->set_property_f("blue",
-                //Statistics->source_statistics()->stats().mean_value_excluding_exceptions(2));
+                // Statistics->source_statistics()->stats().mean_value_excluding_exceptions(2));
             }
             // Image_Info->set_property("region_area_px", (unsigned long
             // long)selected_region.width()*selected_region.height()); Image_Info->set_property("region_width_px",

@@ -24,70 +24,70 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #ifndef HiView_Drawn_Line_hh
 #define HiView_Drawn_Line_hh
 
-#include	<QWidget>
-#include	<QBrush>
-
+#include <QBrush>
+#include <QWidget>
 
 namespace UA
 {
 namespace HiRISE
 {
-class Drawn_Line
-:	public QWidget
+class Drawn_Line : public QWidget
 {
-public:
-/*==============================================================================
-	Constructor
-*/
-Drawn_Line (int weight = 1, QWidget* parent = NULL);
+  public:
+    /*==============================================================================
+        Constructor
+    */
+    Drawn_Line(int weight = 1, QWidget *parent = NULL);
 
-Drawn_Line& operator= (const Drawn_Line& drawn_line);
+    Drawn_Line &operator=(const Drawn_Line &drawn_line);
 
-virtual ~Drawn_Line ();
+    virtual ~Drawn_Line();
 
-/*==============================================================================
-	Accessors
-*/
-Drawn_Line& weight (int weight);
-inline int weight () const
-	{return Weight;}
+    /*==============================================================================
+        Accessors
+    */
+    Drawn_Line &weight(int weight);
+    inline int weight() const
+    {
+        return Weight;
+    }
 
-Drawn_Line& orientation (Qt::Orientation orient);
-inline Qt::Orientation orientation () const
-	{return Orientation;}
+    Drawn_Line &orientation(Qt::Orientation orient);
+    inline Qt::Orientation orientation() const
+    {
+        return Orientation;
+    }
 
-Drawn_Line& alignment (Qt::Alignment align);
-inline Qt::Alignment alignment () const
-	{return Alignment;}
+    Drawn_Line &alignment(Qt::Alignment align);
+    inline Qt::Alignment alignment() const
+    {
+        return Alignment;
+    }
 
-Drawn_Line& brush (const QBrush& brush);
-inline QBrush brush () const
-	{return Brush;}
+    Drawn_Line &brush(const QBrush &brush);
+    inline QBrush brush() const
+    {
+        return Brush;
+    }
 
-/*==============================================================================
-	Events
-*/
-virtual void paintEvent (QPaintEvent*);
+    /*==============================================================================
+        Events
+    */
+    virtual void paintEvent(QPaintEvent *);
 
-/*==============================================================================
-	Data
-*/
-private:
+    /*==============================================================================
+        Data
+    */
+  private:
+    int Weight;
 
-int
-	Weight;
+    Qt::Orientation Orientation;
 
-Qt::Orientation
-	Orientation;
+    Qt::Alignment Alignment;
 
-Qt::Alignment
-	Alignment;
-
-QBrush
-	Brush;
+    QBrush Brush;
 };
 
-
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif

@@ -24,13 +24,12 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #ifndef HiView_Statistics_Tools_hh
 #define HiView_Statistics_Tools_hh
 
-#include	<QDockWidget>
+#include <QDockWidget>
 
 //	Forward references.
 class QWidget;
 class QTabWidget;
 class QResizeEvent;
-
 
 namespace UA
 {
@@ -42,121 +41,117 @@ class Statistics_Tool;
 
 /**	The <i>Statistics_Tools</i> for the HiView application.
 
-	The Statistics_Tools provides a QDockWidget container for the
-	Statistics_Tool and the Statistics_and_Bounds_Tool.
+    The Statistics_Tools provides a QDockWidget container for the
+    Statistics_Tool and the Statistics_and_Bounds_Tool.
 
-	@author		Bradford Castalia, UA/HiROC
-	@version	$Revision: 1.4 $
+    @author		Bradford Castalia, UA/HiROC
+    @version	$Revision: 1.4 $
 */
-class Statistics_Tools
-:	public QDockWidget
+class Statistics_Tools : public QDockWidget
 {
-//	Qt Object declaration.
-Q_OBJECT
+    //	Qt Object declaration.
+    Q_OBJECT
 
-public:
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
 
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const
-	ID;
+    enum
+    {
+        SOURCE_STATISTICS_INDEX = 0,
+        DISPLAY_STATISTICS_INDEX = 1
+    };
 
+    /*==============================================================================
+        Constructor
+    */
+    explicit Statistics_Tools(QWidget *parent = NULL);
 
-enum
-	{
-	SOURCE_STATISTICS_INDEX		= 0,
-	DISPLAY_STATISTICS_INDEX	= 1
-	};
+    virtual ~Statistics_Tools();
 
-/*==============================================================================
-	Constructor
-*/
-explicit Statistics_Tools (QWidget* parent = NULL);
+    /*==============================================================================
+        Accessors
+    */
+    inline Statistics_and_Bounds_Tool *source_statistics() const
+    {
+        return Source_Statistics;
+    }
+    inline Statistics_Tool *display_statistics() const
+    {
+        return Display_Statistics;
+    }
 
-virtual ~Statistics_Tools ();
+    inline QTabWidget *sections() const
+    {
+        return Sections;
+    }
 
-/*==============================================================================
-	Accessors
-*/
-inline Statistics_and_Bounds_Tool* source_statistics () const
-	{return Source_Statistics;}
-inline Statistics_Tool* display_statistics () const
-	{return Display_Statistics;}
+    virtual QSize minimumSizeHint() const;
+    virtual QSize sizeHint() const;
 
-inline QTabWidget* sections () const
-	{return Sections;}
+    /*	Get the previous size of the Statistics_Tools before the last
+        {@link resizeEvent(QResizeEvent*) resize event}.
 
-virtual QSize minimumSizeHint () const;
-virtual QSize sizeHint () const;
+        @return	A QSize for the previous size of the Statistics_Tools. This
+            will be an invalid size if a previous size is not yet known.
+    */
+    QSize previous_size() const
+    {
+        return Previous_Size;
+    }
 
-/*	Get the previous size of the Statistics_Tools before the last
-	{@link resizeEvent(QResizeEvent*) resize event}.
+    /*==============================================================================
+        Manipulators
+    */
+    inline bool visible_graph() const
+    {
+        return Visible_Graph;
+    }
+    bool visible_graph(bool enabled);
 
-	@return	A QSize for the previous size of the Statistics_Tools. This
-		will be an invalid size if a previous size is not yet known.
-*/
-QSize previous_size () const
-	{return Previous_Size;}
+    /*==============================================================================
+        Qt signals:
+    */
+  signals:
 
-/*==============================================================================
-	Manipulators
-*/
-inline bool visible_graph () const
-	{return Visible_Graph;}
-bool visible_graph (bool enabled);
+    void section_changed(int index);
 
-/*==============================================================================
-	Qt signals:
-*/
-signals:
+    void tool_context_menu_requested(QDockWidget *tool, QContextMenuEvent *event);
 
-void section_changed (int index);
+    /*==============================================================================
+        Qt slots
+    */
+  public slots:
 
-void tool_context_menu_requested (QDockWidget* tool, QContextMenuEvent* event);
+    void select_section(int index);
+    void select_section(QWidget *section);
 
-/*==============================================================================
-	Qt slots
-*/
-public slots:
+    /*==============================================================================
+        Event Handlers
+    */
+  protected:
+    virtual void resizeEvent(QResizeEvent *event);
+    virtual void contextMenuEvent(QContextMenuEvent *event);
 
-void select_section (int index);
-void select_section (QWidget* section);
+    /*==============================================================================
+        Data
+    */
+  private:
+    QTabWidget *Sections;
 
-/*==============================================================================
-	Event Handlers
-*/
-protected:
+    Statistics_and_Bounds_Tool *Source_Statistics;
+    Statistics_Tool *Display_Statistics;
 
-virtual void resizeEvent (QResizeEvent* event);
-virtual void contextMenuEvent (QContextMenuEvent* event);
-
-/*==============================================================================
-	Data
-*/
-private:
-
-QTabWidget
-	*Sections;
-
-Statistics_and_Bounds_Tool
-	*Source_Statistics;
-Statistics_Tool
-	*Display_Statistics;
-
-//	Dynamic size control.
-QSize
-	Minimum_Size;
-bool
-	Visible_Graph;
-int
-	Graph_Width_Increment;
-QSize
-	Previous_Size;
-
+    //	Dynamic size control.
+    QSize Minimum_Size;
+    bool Visible_Graph;
+    int Graph_Width_Increment;
+    QSize Previous_Size;
 };
 
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif

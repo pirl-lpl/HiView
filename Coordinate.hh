@@ -27,101 +27,96 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class QString;
 
-#include	<iosfwd>
-
+#include <iosfwd>
 
 namespace UA
 {
 namespace HiRISE
 {
 /**	A <i>Coordinate</i> holds the X,Y values of a location in a
-	two-dimensional coordinate system.
+    two-dimensional coordinate system.
 
-	@author		Bradford Castalia, UA/HiROC
-	@version	$Revision: 1.2 $
+    @author		Bradford Castalia, UA/HiROC
+    @version	$Revision: 1.2 $
 */
 class Coordinate
 {
-public:
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const
-	ID;
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
+
+    /*==============================================================================
+        Constructors
+    */
+    //!	Constructs a default Coordiante with zero values.
+    Coordinate();
+
+    /**	Constructs a Coordinate with the specified values.
+
+        @param	x	The X value.
+        @param	y	The Y value.
+    */
+    Coordinate(double x, double y);
+
+    /**	Constructs a coordinate from a string representation.
+
+        The string representation of a Coordinate has the form:
+
+        X[x],Y[y]
+
+        where X and Y are the coordinate values with optional 'x' and 'y'
+        annotations. The comma (',') separator is required. Whitespace is
+        ignored.
+
+        @param	coordinate	A string representation of a coordinate.
+        @throws	invalid_argument	If the string is not a valid coordinate
+            representation. In this case the coordinate will be left with
+            zero values.
+    */
+    explicit Coordinate(const QString &coordinate);
+
+    /**	Copies a Coordinate.
+
+        @param	coordinate	The Coordinate to be copied.
+    */
+    Coordinate(const Coordinate &coordinate);
+
+    /**	Assigns another Coordinate to this Coordinate.
+
+        @param	coordinate	The Coordinate to be assigned.
+    */
+    Coordinate &operator=(const Coordinate &coordinate);
+
+    /*==============================================================================
+        Data
+    */
+    //!	Coordinate values.
+    double X, Y;
+
+}; //	End of Coordinate class.
 
 /*==============================================================================
-	Constructors
-*/
-//!	Constructs a default Coordiante with zero values.
-Coordinate ();
-
-/**	Constructs a Coordinate with the specified values.
-
-	@param	x	The X value.
-	@param	y	The Y value.
-*/
-Coordinate (double x, double y);
-
-/**	Constructs a coordinate from a string representation.
-
-	The string representation of a Coordinate has the form:
-
-	X[x],Y[y]
-
-	where X and Y are the coordinate values with optional 'x' and 'y'
-	annotations. The comma (',') separator is required. Whitespace is
-	ignored.
-
-	@param	coordinate	A string representation of a coordinate.
-	@throws	invalid_argument	If the string is not a valid coordinate
-		representation. In this case the coordinate will be left with
-		zero values.
-*/
-explicit Coordinate (const QString& coordinate);
-
-/**	Copies a Coordinate.
-
-	@param	coordinate	The Coordinate to be copied.
-*/
-Coordinate (const Coordinate& coordinate);
-
-/**	Assigns another Coordinate to this Coordinate.
-
-	@param	coordinate	The Coordinate to be assigned.
-*/
-Coordinate& operator= (const Coordinate& coordinate);
-
-/*==============================================================================
-	Data
-*/
-//!	Coordinate values.
-double
-	X, Y;
-
-};	//	End of Coordinate class.
-
-/*==============================================================================
-	Utilities
+    Utilities
 */
 /**	Coordinate output operator.
 
-	The coordinate text representation has the form:
+    The coordinate text representation has the form:
 
-	Xx, Yy
+    Xx, Yy
 
-	where X and Y are the coordinate values and 'x' and 'y' are
-	value annotations.
+    where X and Y are the coordinate values and 'x' and 'y' are
+    value annotations.
 
-	@param	stream	A std::ostream reference where the represetation
-		will be written.
-	@param	coordinate	A Coordinate reference.
-	@return	The stream reference.
+    @param	stream	A std::ostream reference where the represetation
+        will be written.
+    @param	coordinate	A Coordinate reference.
+    @return	The stream reference.
 */
-std::ostream& operator<< (std::ostream& stream, const Coordinate& coordinate);
+std::ostream &operator<<(std::ostream &stream, const Coordinate &coordinate);
 
-
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif
-

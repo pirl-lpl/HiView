@@ -28,130 +28,95 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 class QCursor;
 class QIcon;
 
-
 namespace UA
 {
 namespace HiRISE
 {
 /**	The <i>HiView_Conf</i> provides the HiView compile-time default
-	configuration values and objects shared by various components.
+    configuration values and objects shared by various components.
 
-	HiView_Config is expected to be specified as a base classs of
-	those components sharing in the use of the application-wide
-	values and objects.
+    HiView_Config is expected to be specified as a base classs of
+    those components sharing in the use of the application-wide
+    values and objects.
 */
 class HiView_Config
 {
-public:
-/*==============================================================================
-	Constants
-*/
-static const char* const
-	CONFIG_ID;
+  public:
+    /*==============================================================================
+        Constants
+    */
+    static const char *const CONFIG_ID;
 
-/*------------------------------------------------------------------------------
-	Data constraints.
-*/
-static const int
-	MAX_SOURCE_DATA_PRECISION,
-	MAX_DISPLAY_VALUE;
+    /*------------------------------------------------------------------------------
+        Data constraints.
+    */
+    static const int MAX_SOURCE_DATA_PRECISION, MAX_DISPLAY_VALUE;
 
-static const int
-	PERCENT_DECIMAL_PLACES;
+    static const int PERCENT_DECIMAL_PLACES;
 
-/*------------------------------------------------------------------------------
-	Style.
-*/
-static int
-	Panel_Frame_Style,
-	Panel_Frame_Width,
-	Label_Frame_Style,
-	Label_Frame_Width,
-	Label_Frame_Margin,
-	Heading_Line_Weight;
+    /*------------------------------------------------------------------------------
+        Style.
+    */
+    static int Panel_Frame_Style, Panel_Frame_Width, Label_Frame_Style, Label_Frame_Width, Label_Frame_Margin,
+        Heading_Line_Weight;
 
-/*------------------------------------------------------------------------------
-	Cursors.
-*/
-static QCursor
-	*Reticule_Cursor,
-	*Shift_Cursor,
-	*Shift_Region_Cursor,
-	*Shift_Vertical_Cursor,
-	*Shift_Region_Vertical_Cursor,
-	*Shift_Horizontal_Cursor,
-	*Shift_Region_Horizontal_Cursor,
-	*Shift_Region_FDiag_Cursor,			//	"Forward"  TL-BR
-	*Shift_Region_BDiag_Cursor,			//	"Backward" TR-BL
-	*Scale_Cursor,
-	*Crosshair_Cursor,
-	*Move_Horizontal_Cursor,
-	//	Bounds selection cursors, by SELECTED color (zero is NULL).
-	*Greater_Than_Cursors[8],
-	*Less_Than_Cursors[8];
+    /*------------------------------------------------------------------------------
+        Cursors.
+    */
+    static QCursor *Reticule_Cursor, *Shift_Cursor, *Shift_Region_Cursor, *Shift_Vertical_Cursor,
+        *Shift_Region_Vertical_Cursor, *Shift_Horizontal_Cursor, *Shift_Region_Horizontal_Cursor,
+        *Shift_Region_FDiag_Cursor, //	"Forward"  TL-BR
+        *Shift_Region_BDiag_Cursor, //	"Backward" TR-BL
+        *Scale_Cursor, *Crosshair_Cursor, *Move_Horizontal_Cursor,
+        //	Bounds selection cursors, by SELECTED color (zero is NULL).
+        *Greater_Than_Cursors[8], *Less_Than_Cursors[8];
 
-/*------------------------------------------------------------------------------
-	Icons.
-*/
-static QIcon
-	*Apply_Button_Icon,
-	*Defaults_Button_Icon,
-	*Reset_Button_Icon;
+    /*------------------------------------------------------------------------------
+        Icons.
+    */
+    static QIcon *Apply_Button_Icon, *Defaults_Button_Icon, *Reset_Button_Icon;
 
-/*------------------------------------------------------------------------------
-	Display image band names and colors.
-*/
-static const char*
-	DISPLAY_BAND_NAMES[3];
-	
-static const unsigned int
-	DISPLAY_BAND_COLORS[3];
+    /*------------------------------------------------------------------------------
+        Display image band names and colors.
+    */
+    static const char *DISPLAY_BAND_NAMES[3];
 
-#define BLACK_COLOR	0xFF000000
-#define WHITE_COLOR	0xFFFFFFFF
+    static const unsigned int DISPLAY_BAND_COLORS[3];
 
-/*------------------------------------------------------------------------------
-	Data graphs.
-*/
-enum Band_Selection
-	{
-	SELECTED_NONE		= 0,
-	SELECTED_RED		= (1 << 0),
-	SELECTED_GREEN		= (1 << 1),
-	SELECTED_YELLOW		= SELECTED_RED |
-						  SELECTED_GREEN,
-	SELECTED_BLUE		= (1 << 2),
-	SELECTED_MAGENTA	= SELECTED_RED |
-						  SELECTED_BLUE,
-	SELECTED_CYAN		= SELECTED_GREEN |
-						  SELECTED_BLUE,
-	SELECTED_WHITE		= SELECTED_RED |
-						  SELECTED_GREEN |
-						  SELECTED_BLUE
-	};
-#define SELECTED_ALL \
-	HiView_Config::SELECTED_WHITE
+#define BLACK_COLOR 0xFF000000
+#define WHITE_COLOR 0xFFFFFFFF
 
-static const int
-	TRACKER_TRACK_MODE,
-	TRACKER_DRAG_MODE,
-	TRACKER_BOUND_MODE;
+    /*------------------------------------------------------------------------------
+        Data graphs.
+    */
+    enum Band_Selection
+    {
+        SELECTED_NONE = 0,
+        SELECTED_RED = (1 << 0),
+        SELECTED_GREEN = (1 << 1),
+        SELECTED_YELLOW = SELECTED_RED | SELECTED_GREEN,
+        SELECTED_BLUE = (1 << 2),
+        SELECTED_MAGENTA = SELECTED_RED | SELECTED_BLUE,
+        SELECTED_CYAN = SELECTED_GREEN | SELECTED_BLUE,
+        SELECTED_WHITE = SELECTED_RED | SELECTED_GREEN | SELECTED_BLUE
+    };
+#define SELECTED_ALL HiView_Config::SELECTED_WHITE
 
-static const unsigned int
-	Default_Graph_Canvas_Color;
+    static const int TRACKER_TRACK_MODE, TRACKER_DRAG_MODE, TRACKER_BOUND_MODE;
 
-/*==============================================================================
-	Constructor
-*/
+    static const unsigned int Default_Graph_Canvas_Color;
 
-static void initialize ();
+    /*==============================================================================
+        Constructor
+    */
 
-private:
-//	Nothing to construct.
-HiView_Config ();
+    static void initialize();
 
+  private:
+    //	Nothing to construct.
+    HiView_Config();
 };
 
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif

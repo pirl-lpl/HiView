@@ -1,7 +1,7 @@
+#include "Voice_Adapter.hh"
+#include "Data_Mapper_Tool.hh"
 #include "Image_Viewer.hh"
 #include "Statistics_Tools.hh"
-#include "Data_Mapper_Tool.hh"
-#include "Voice_Adapter.hh"
 using namespace UA::HiRISE;
 
 #include <cmath>
@@ -10,97 +10,92 @@ using namespace std;
 #include <QtDebug>
 
 /*==============================================================================
-	Constants
+    Constants
 */
-const char* const
-	Voice_Adapter::ID =
-		"Voice_Adapter ($Revision: 2.4 $ $Date: 2014/05/23 00:49:35 $)";
+const char *const Voice_Adapter::ID = "Voice_Adapter ($Revision: 2.4 $ $Date: 2014/05/23 00:49:35 $)";
 
 #define SHIFT_FRACTION 0.95
 
 /*==============================================================================
-	Constructors
+    Constructors
 */
-Voice_Adapter::Voice_Adapter
-(
-   UA::HiRISE::Image_Viewer* viewer,
-   UA::HiRISE::Statistics_Tools* stattool,
-   UA::HiRISE::Data_Mapper_Tool* mapper
-)
- : viewer(viewer), stattool(stattool), mapper(mapper)
+Voice_Adapter::Voice_Adapter(UA::HiRISE::Image_Viewer *viewer, UA::HiRISE::Statistics_Tools *stattool,
+                             UA::HiRISE::Data_Mapper_Tool *mapper)
+    : viewer(viewer), stattool(stattool), mapper(mapper)
 {
 }
 
 /*==============================================================================
-	Callback Methods
+    Callback Methods
 */
 void Voice_Adapter::doEnhance()
 {
-   #ifndef QT_NO_DEBUG_OUTPUT
-   qDebug() << "Received enhance command";
-   #endif
+#ifndef QT_NO_DEBUG_OUTPUT
+    qDebug() << "Received enhance command";
+#endif
 
-   mapper->default_contrast_stretch();
+    mapper->default_contrast_stretch();
 }
 
 void Voice_Adapter::doRestore()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Received restore command";
-    #endif
+#endif
 
     mapper->restore_original_contrast_stretch();
 }
 
 void Voice_Adapter::doFullSize()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Received full size command";
-    #endif
+#endif
 
     viewer->actual_size();
 }
 
 void Voice_Adapter::doFitImage()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Received fit image command";
-    #endif
+#endif
 
     viewer->fit_image_to_window();
 }
 
 void Voice_Adapter::doZoomIn()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Zooming in from " << viewer->image_scaling();
-    #endif
+#endif
 
-    //QSizeF image_scaling = viewer->image_scaling();
+    // QSizeF image_scaling = viewer->image_scaling();
 
     viewer->scale_up(/*image_scaling.height()/2*/);
 }
 
 void Voice_Adapter::doZoomOut()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Zooming out from " << viewer->image_scaling();
-    #endif
+#endif
 
-    //QSizeF image_scaling = viewer->image_scaling();
+    // QSizeF image_scaling = viewer->image_scaling();
 
     viewer->scale_down(/*image_scaling.height()*1.5*/);
 }
 
 void Voice_Adapter::doPanUp()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Received pan up command";
-    #endif
+#endif
 
     QSize size = viewer->image_display_size();
 
-    if (size.height() < 1) return;
+    if (size.height() < 1)
+        return;
 
     size.setWidth(0);
     size.setHeight(std::ceil(size.height() * SHIFT_FRACTION));
@@ -110,14 +105,14 @@ void Voice_Adapter::doPanUp()
 
 void Voice_Adapter::doPanDown()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Received pan out command";
-    #endif
-
+#endif
 
     QSize size = viewer->image_display_size();
 
-    if (size.height() < 1) return;
+    if (size.height() < 1)
+        return;
 
     size.setWidth(0);
     size.setHeight(std::ceil(-size.height() * SHIFT_FRACTION));
@@ -127,14 +122,14 @@ void Voice_Adapter::doPanDown()
 
 void Voice_Adapter::doPanLeft()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Received pan left command";
-    #endif
-
+#endif
 
     QSize size = viewer->image_display_size();
 
-    if (size.width() < 1) return;
+    if (size.width() < 1)
+        return;
 
     size.setHeight(0);
     size.setWidth(std::ceil(size.width() * SHIFT_FRACTION));
@@ -144,14 +139,14 @@ void Voice_Adapter::doPanLeft()
 
 void Voice_Adapter::doPanRight()
 {
-    #ifndef QT_NO_DEBUG_OUTPUT
+#ifndef QT_NO_DEBUG_OUTPUT
     qDebug() << "Received pan right command";
-    #endif
-
+#endif
 
     QSize size = viewer->image_display_size();
 
-    if (size.width() < 1) return;
+    if (size.width() < 1)
+        return;
 
     size.setHeight(0);
     size.setWidth(std::ceil(-size.width() * SHIFT_FRACTION));

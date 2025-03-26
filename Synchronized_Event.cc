@@ -21,60 +21,46 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#include	"Synchronized_Event.hh"
-
+#include "Synchronized_Event.hh"
 
 namespace UA
 {
 namespace HiRISE
 {
-Synchronized_Event::Synchronized_Event
-	(
-	bool	auto_reset
-	)
-	:	Auto_Reset (auto_reset),
-		Event_is_Set (false)
-{}
-
-
-Synchronized_Event::~Synchronized_Event ()
-{Wait_Condition.wakeAll ();}
-
-
-void
-Synchronized_Event::set ()
+Synchronized_Event::Synchronized_Event(bool auto_reset) : Auto_Reset(auto_reset), Event_is_Set(false)
 {
-if (! Event_is_Set)
-	{
-	Event_is_Set = true;
-	if (Auto_Reset)
-		Wait_Condition.wakeOne ();
-	else
-		Wait_Condition.wakeAll ();
-	}
 }
 
-
-bool
-Synchronized_Event::wait
-	(
-	QMutex*			mutex,
-	unsigned long	timeout
-	)
+Synchronized_Event::~Synchronized_Event()
 {
-bool
-	condition = Event_is_Set;
-if (! condition)
-	{
-	if (timeout <= 0)
-		timeout = ULONG_MAX;
-	condition = Wait_Condition.wait (mutex, timeout);
-	if (Auto_Reset)
-		Event_is_Set = false;
-	}
-return condition;
+    Wait_Condition.wakeAll();
 }
 
+void Synchronized_Event::set()
+{
+    if (!Event_is_Set)
+    {
+        Event_is_Set = true;
+        if (Auto_Reset)
+            Wait_Condition.wakeOne();
+        else
+            Wait_Condition.wakeAll();
+    }
+}
 
-}	//	namespace HiRISE
-}	//	namespace UA
+bool Synchronized_Event::wait(QMutex *mutex, unsigned long timeout)
+{
+    bool condition = Event_is_Set;
+    if (!condition)
+    {
+        if (timeout <= 0)
+            timeout = ULONG_MAX;
+        condition = Wait_Condition.wait(mutex, timeout);
+        if (Auto_Reset)
+            Event_is_Set = false;
+    }
+    return condition;
+}
+
+} // namespace HiRISE
+} // namespace UA

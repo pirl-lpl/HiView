@@ -142,7 +142,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
 # To debug, add e.g. DEBUG_SECTION=1 DEBUG=DEBUG_ALL or call cmake with them as -D args
 # and/or compile with -DCMAKE_BUILD_TYPE=Debug and use the debugger
-target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
+target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1 DEBUG_SECTION=$ENV{DEBUG_SECTION})
 
 #
 # TODO try and understand why the linker says that QwtSeriesStore<QPointF> is defined twice, once
@@ -155,7 +155,7 @@ endif()
 if (APPLE)
     target_include_directories(${PROJECT_NAME} PRIVATE "/usr/local/include")
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
-
+    set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE true)
     find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
     if(COREFOUNDATION_FRAMEWORK)
         target_link_libraries(${PROJECT_NAME} ${COREFOUNDATION_FRAMEWORK})
@@ -230,3 +230,5 @@ qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}" PREFIX "/" FILES
 # TODO run windeployqt or macdeployqt
 # see https://riptutorial.com/qt/example/24133/integrating-with-cmake
 # windeployqt --no-translations HiView.exe
+#
+# macdeployqt HiView.app -no-strip -sign-for-notarization=HC4W89K7PS

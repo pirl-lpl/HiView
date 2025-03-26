@@ -24,33 +24,31 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #ifndef HiView_Mac_Voice_Adapter_hh
 #define HiView_Mac_Voice_Adapter_hh
 
+#include "Data_Mapper_Tool.hh"
 #include "Image_Viewer.hh"
 #include "Statistics_Tool.hh"
-#include "Data_Mapper_Tool.hh"
 using namespace UA::HiRISE;
 
-#include "Voice_Adapter.hh"
 #include "SpeechHandler.hh"
+#include "Voice_Adapter.hh"
 
 class Mac_Voice_Adapter : Voice_Adapter
 {
-    
-public:    
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const ID;
-	
-    Mac_Voice_Adapter(UA::HiRISE::Image_Viewer* viewer, UA::HiRISE::Statistics_Tools* stattool, UA::HiRISE::Data_Mapper_Tool* mapper);
 
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
+
+    Mac_Voice_Adapter(UA::HiRISE::Image_Viewer *viewer, UA::HiRISE::Statistics_Tools *stattool,
+                      UA::HiRISE::Data_Mapper_Tool *mapper);
 
     void toggle(bool on);
-    
-private:
-    SpeechHandler* speechHandler;
-    
-};
 
+  private:
+    SpeechHandler *speechHandler;
+};
 
 #endif /* HiView_Mac_Voice_Adapter_hh */

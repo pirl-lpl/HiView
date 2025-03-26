@@ -24,23 +24,23 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #ifndef HiView_Voice_Adapter_hh
 #define HiView_Voice_Adapter_hh
 
+#include "Data_Mapper_Tool.hh"
 #include "Image_Viewer.hh"
 #include "Statistics_Tools.hh"
-#include "Data_Mapper_Tool.hh"
 using namespace UA::HiRISE;
-
 
 class Voice_Adapter
 {
 
-public:
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const ID;
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
 
-    Voice_Adapter(UA::HiRISE::Image_Viewer* viewer, UA::HiRISE::Statistics_Tools* stattool, UA::HiRISE::Data_Mapper_Tool* mapper);
+    Voice_Adapter(UA::HiRISE::Image_Viewer *viewer, UA::HiRISE::Statistics_Tools *stattool,
+                  UA::HiRISE::Data_Mapper_Tool *mapper);
     void doFullSize();
     void doFitImage();
     void doZoomIn();
@@ -52,11 +52,10 @@ static const char* const ID;
     void doEnhance();
     void doRestore();
 
-private:
-    Image_Viewer* viewer;
-    Statistics_Tools* stattool;
-    Data_Mapper_Tool* mapper;
+  private:
+    Image_Viewer *viewer;
+    Statistics_Tools *stattool;
+    Data_Mapper_Tool *mapper;
 };
-
 
 #endif /* HiView_Voice_Adapter_hh */

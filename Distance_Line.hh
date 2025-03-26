@@ -24,71 +24,69 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #ifndef HiView_Distance_Line_hh
 #define HiView_Distance_Line_hh
 
-#include	<QWidget>
-#include	<QPoint>
-#include	<QString>
-#include	<QPen>
-
+#include <QPen>
+#include <QPoint>
+#include <QString>
+#include <QWidget>
 
 namespace UA
 {
-	namespace HiRISE
-	{
-		/*
-			The Distance Line allows a line to be painted on top of a parent
-			widget. It will hold 2 QPoints, which will represent a straight
-			line, as well as a String field which will be displayed adjacent
-			to the line. It is suggested that the string field be used to report
-			the distance of the line. The functions are  named in accordance with
-			the QLine function names.
-		*/
-		class Distance_Line : public QWidget
-		{
-			Q_OBJECT
-			
-			public:
-			/***************************************************
-			 *                 Constructors                    *
-			 ***************************************************/
-				Distance_Line(QWidget *parent);
-				
-			/***************************************************
-			 *                    Setters                      *
-			 ***************************************************/
-				void setP1(const QPoint & p);
-				void setP2(const QPoint & p);
-				void setText(QString str);
-				void setColor(const QColor & color);
-				
-			/***************************************************
-			 *                   Accessors                     *
-			 ***************************************************/
-				QPoint p1();
-				QPoint p2();
-				int dx();
-				int dy();
-			/***************************************************
-			 *         Overloaded Protected Functions          *
-			 ***************************************************/	
-			protected:
-				virtual void paintEvent(QPaintEvent *);
-				
-			/***************************************************
-			 *                    Helpers                      *
-			 ***************************************************/
-			private:
-				void update_rect();
-			
-			/***************************************************
-			 *                     Data                        *
-			 ***************************************************/
-				QString Line_Text;
-				QPoint P1, P2;
-				int Dx, Dy, BottomRight_X, BottomRight_Y;
-				QPen Line_Style;
-				
-		};
-	}
-}
+namespace HiRISE
+{
+/*
+    The Distance Line allows a line to be painted on top of a parent
+    widget. It will hold 2 QPoints, which will represent a straight
+    line, as well as a String field which will be displayed adjacent
+    to the line. It is suggested that the string field be used to report
+    the distance of the line. The functions are  named in accordance with
+    the QLine function names.
+*/
+class Distance_Line : public QWidget
+{
+    Q_OBJECT
+
+  public:
+    /***************************************************
+     *                 Constructors                    *
+     ***************************************************/
+    Distance_Line(QWidget *parent);
+
+    /***************************************************
+     *                    Setters                      *
+     ***************************************************/
+    void setP1(const QPoint &p);
+    void setP2(const QPoint &p);
+    void setText(QString str);
+    void setColor(const QColor &color);
+
+    /***************************************************
+     *                   Accessors                     *
+     ***************************************************/
+    QPoint p1();
+    QPoint p2();
+    int dx();
+    int dy();
+    /***************************************************
+     *         Overloaded Protected Functions          *
+     ***************************************************/
+  protected:
+    virtual void paintEvent(QPaintEvent *);
+
+    /***************************************************
+     *                    Helpers                      *
+     ***************************************************/
+  private:
+    void update_rect();
+
+    /***************************************************
+     *                     Data                        *
+     ***************************************************/
+    QString Line_Text;
+    QPoint P1, P2;
+    int Dx, Dy, BottomRight_X, BottomRight_Y;
+    QPen Line_Style;
+};
+} // namespace HiRISE
+} // namespace UA
 
 #endif

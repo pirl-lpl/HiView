@@ -21,88 +21,76 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#include	"Icon_Button.hh"
+#include "Icon_Button.hh"
 
-#include	<QPainter>
-#include	<QPaintEvent>
+#include <QPaintEvent>
+#include <QPainter>
 
-
-#if defined (DEBUG_SECTION)
+#if defined(DEBUG_SECTION)
 /*	DEBUG_SECTION controls
 
-	DEBUG_SECTION report selection options.
-	Define any of the following options to obtain the desired debug reports:
+    DEBUG_SECTION report selection options.
+    Define any of the following options to obtain the desired debug reports:
 */
-#define DEBUG_OFF			0
-#define DEBUG_ALL			-1
-#define DEBUG_CONSTRUCTORS	(1 << 0)
-#define DEBUG_ACCESSORS		(1 << 1)
-#define DEBUG_EVENTS		(1 << 3)
+#define DEBUG_OFF 0
+#define DEBUG_ALL -1
+#define DEBUG_CONSTRUCTORS (1 << 0)
+#define DEBUG_ACCESSORS (1 << 1)
+#define DEBUG_EVENTS (1 << 3)
 
-#define DEBUG_DEFAULT		DEBUG_ALL
+#define DEBUG_DEFAULT DEBUG_ALL
 
-#if (DEBUG_SECTION +0) == 0
-#undef  DEBUG_SECTION
+#if (DEBUG_SECTION + 0) == 0
+#undef DEBUG_SECTION
 #define DEBUG_SECTION DEBUG_OFF
 #endif
 
-#include	"HiView_Utilities.hh"
+#include "HiView_Utilities.hh"
 
-#include	<string>
+#include <string>
 using std::string;
-#include	<iostream>
-using std::clog;
+#include <iostream>
 using std::boolalpha;
-using std::hex;
+using std::clog;
 using std::dec;
+using std::hex;
 
-#endif	//	DEBUG_SECTION
+#endif //	DEBUG_SECTION
 
 namespace UA
 {
 namespace HiRISE
 {
 /*==============================================================================
-	Constants
+    Constants
 */
-const char* const
-	Icon_Button::ID =
-		"UA::HiRISE::Icon_Button ($Revision: 1.4 $ $Date: 2012/03/09 02:13:57 $)";
+const char *const Icon_Button::ID = "UA::HiRISE::Icon_Button ($Revision: 1.4 $ $Date: 2012/03/09 02:13:57 $)";
 
 /*==============================================================================
-	Constructors
+    Constructors
 */
-Icon_Button::Icon_Button
-	(
-	const QIcon&	icon,
-	QWidget*		parent
-	)
-	:	QAbstractButton (parent)
-{setIcon (icon);}
-
-/*==============================================================================
-	Accessors
-*/
-QSize
-Icon_Button::sizeHint () const
-{return iconSize ();}
-
-/*==============================================================================
-	Event Handlers
-*/
-void
-Icon_Button::paintEvent
-	(
-	QPaintEvent*	event
-	)
+Icon_Button::Icon_Button(const QIcon &icon, QWidget *parent) : QAbstractButton(parent)
 {
-QPainter
-	painter (this);
-icon ().paint (&painter, event->rect (), Qt::AlignCenter,
-		isEnabled () ? QIcon::Normal : QIcon::Disabled,
-		isDown () ? QIcon::Off : QIcon::On);
+    setIcon(icon);
 }
 
+/*==============================================================================
+    Accessors
+*/
+QSize Icon_Button::sizeHint() const
+{
+    return iconSize();
+}
 
-}	//	namespace HiRISE
-}	//	namespace UA
+/*==============================================================================
+    Event Handlers
+*/
+void Icon_Button::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    icon().paint(&painter, event->rect(), Qt::AlignCenter, isEnabled() ? QIcon::Normal : QIcon::Disabled,
+                 isDown() ? QIcon::Off : QIcon::On);
+}
+
+} // namespace HiRISE
+} // namespace UA

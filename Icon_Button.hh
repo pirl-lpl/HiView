@@ -24,47 +24,42 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #ifndef HiView_Icon_Button_hh
 #define HiView_Icon_Button_hh
 
-#include	<QAbstractButton>
-
+#include <QAbstractButton>
 
 namespace UA
 {
 namespace HiRISE
 {
 
-class Icon_Button
-:	public QAbstractButton
+class Icon_Button : public QAbstractButton
 {
-//	Qt Object declaration.
-Q_OBJECT
+    //	Qt Object declaration.
+    Q_OBJECT
 
-public:
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const
-	ID;
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
 
-/*==============================================================================
-	Constructors
-*/
-explicit Icon_Button (const QIcon& icon, QWidget* parent = NULL);
+    /*==============================================================================
+        Constructors
+    */
+    explicit Icon_Button(const QIcon &icon, QWidget *parent = NULL);
 
-/*==============================================================================
-	Accessors
-*/
-virtual QSize sizeHint () const;
+    /*==============================================================================
+        Accessors
+    */
+    virtual QSize sizeHint() const;
 
-/*==============================================================================
-	Event Handlers
-*/
-protected:
-
-virtual void paintEvent (QPaintEvent* event);
-
+    /*==============================================================================
+        Event Handlers
+    */
+  protected:
+    virtual void paintEvent(QPaintEvent *event);
 };
 
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif

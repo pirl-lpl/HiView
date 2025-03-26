@@ -25,16 +25,15 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #define HiView_Histogram_Plot_hh
 
 //	Qwt
-#include	"qwt_plot_item.h"
-#include        "qwt_text.h"
+#include "qwt_plot_item.h"
+#include "qwt_text.h"
 
 //	Qt
-#include	<QColor>
+#include <QColor>
 
 //	Forward references.
 class QString;
-//template<typename T> class QVector;
-
+// template<typename T> class QVector;
 
 namespace UA::HiRISE
 {
@@ -42,252 +41,252 @@ namespace UA::HiRISE
 class Count_Sequence;
 
 /**	A <i>Histogram_Plot</i> is a QwtPlotItem that produces a histogram
-	style plot for a graph (QwtPlot) widget.
+    style plot for a graph (QwtPlot) widget.
 
-	Data, in the form of a Count_Sequence, is provided for histogram
-	plotting. Methods are provided to manage the color of the bars,
-	in addition to the QwtPlotItem controls.
+    Data, in the form of a Count_Sequence, is provided for histogram
+    plotting. Methods are provided to manage the color of the bars,
+    in addition to the QwtPlotItem controls.
 
-	@author		Bradford Castalia, UA/HiROC
-	@version	$Revision: 1.5 $
+    @author		Bradford Castalia, UA/HiROC
+    @version	$Revision: 1.5 $
 */
-class Histogram_Plot
-:	public QwtPlotItem
+class Histogram_Plot : public QwtPlotItem
 {
-public:
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
 
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const
-	ID;
+    //!	Histogram plotting attributes.
+    enum Attribute
+    {
+        VERTICAL_BARS = 0,
+        HORIZONTAL_BARS = (1 << 0)
+    };
 
+    /*==============================================================================
+        Defaults
+    */
+    //!	Default {@link bar_color(const QColor&) bar color}.
+    static QColor Default_Bar_Color;
 
-//!	Histogram plotting attributes.
-enum Attribute
-	{
-    VERTICAL_BARS		= 0,
-    HORIZONTAL_BARS		= (1 << 0)
-	};
+    //!	Default layering depth of the plot relative to other plotting layers.
+    static double Default_Plot_Z;
 
-/*==============================================================================
-	Defaults
-*/
-//!	Default {@link bar_color(const QColor&) bar color}.
-static QColor
-	Default_Bar_Color;
+    /*==============================================================================
+        Constructors
+    */
+    /**	Construct a Histogram_Plot with an optional title.
 
-//!	Default layering depth of the plot relative to other plotting layers.
-static double
-	Default_Plot_Z;
+        The initial {@link #Attribute} setting is {@link #VERTICAL_BARS}.
+        The initial {@link bar_color(const QColor&) bar color} is gray.
 
-/*==============================================================================
-	Constructors
-*/
-/**	Construct a Histogram_Plot with an optional title.
+        @param	title	A QString providing the title of the plot.
+    */
+    explicit Histogram_Plot(const QString &title = QString());
 
-	The initial {@link #Attribute} setting is {@link #VERTICAL_BARS}.
-	The initial {@link bar_color(const QColor&) bar color} is gray.
+    /**	Construct a Histogram_Plot with a title.
 
-	@param	title	A QString providing the title of the plot.
-*/
-explicit Histogram_Plot (const QString& title = QString());
+        The inititial {@link #Attribute} setting is {@link #VERTICAL_BARS}.
+        The initial {@link bar_color(const QColor&) bar color} is gray.
 
-/**	Construct a Histogram_Plot with a title.
+        @param	title	A QwtText providing the title of the plot.
+    */
+    explicit Histogram_Plot(const QwtText &title);
 
-	The inititial {@link #Attribute} setting is {@link #VERTICAL_BARS}.
-	The initial {@link bar_color(const QColor&) bar color} is gray.
+    //!	Destructor.
+    virtual ~Histogram_Plot();
 
-	@param	title	A QwtText providing the title of the plot.
-*/
-explicit Histogram_Plot (const QwtText& title);
+    /*==============================================================================
+        Accessors
+    */
+    /**	Assigns a data Count_Sequence to the Histogram_Plot.
 
-//!	Destructor.
-virtual ~Histogram_Plot ();
+        This method will result in a change to the item that may cause the
+        parent plot to be refreshed.
 
-/*==============================================================================
-	Accessors
-*/
-/**	Assigns a data Count_Sequence to the Histogram_Plot.
+        @param	count_sequence	A Count_Sequence to provide data content. The
+            Count_Sequence that is assigned is used to replace the current data
+            content.
+        @return	This Histogram_Plot.
+    */
+    Histogram_Plot &data(const Count_Sequence &count_sequence);
 
-	This method will result in a change to the item that may cause the
-	parent plot to be refreshed.
+    /**	Assigns a data Count_Sequence to the Histogram_Plot.
 
-	@param	count_sequence	A Count_Sequence to provide data content. The
-		Count_Sequence that is assigned is used to replace the current data
-		content.
-	@return	This Histogram_Plot.
-*/
-Histogram_Plot& data (const Count_Sequence& count_sequence);
+        If the specified Count_Sequence is NULL or identical to the
+        current Count_Sequence data content nothing is done.
 
-/**	Assigns a data Count_Sequence to the Histogram_Plot.
+        If the data content Count_Sequence changes the base class is notified
+        that a change to the item occurred which may cause the parent plot to
+        be refreshed.
 
-	If the specified Count_Sequence is NULL or identical to the
-	current Count_Sequence data content nothing is done.
+        <b>WARNING</b>: The ownership of the assigned Count_Sequence
+        is transferred to this Histogram_Plot. The assigned Count_Sequence will
+        be deleted if this method is used with a different Count_Sequence
 
-	If the data content Count_Sequence changes the base class is notified
-	that a change to the item occurred which may cause the parent plot to
-	be refreshed.
+        @param	count_sequence	A Count_Sequence to provide data content.
+            <b>N.B.</b>: The ownership of the Count_Sequence is transferred
+            to this Histogram_Plot. Any previous data content is deleted.
+        @return	This Histogram_Plot.
+        @see	data(const Count_Sequence&)
+    */
+    Histogram_Plot &data(Count_Sequence *count_sequence);
 
-	<b>WARNING</b>: The ownership of the assigned Count_Sequence
-	is transferred to this Histogram_Plot. The assigned Count_Sequence will
-	be deleted if this method is used with a different Count_Sequence
+    /**	Assigns a data vector to the Histogram_Plot.
 
-	@param	count_sequence	A Count_Sequence to provide data content.
-		<b>N.B.</b>: The ownership of the Count_Sequence is transferred
-		to this Histogram_Plot. Any previous data content is deleted.
-	@return	This Histogram_Plot.
-	@see	data(const Count_Sequence&)
-*/
-Histogram_Plot& data (Count_Sequence* count_sequence);
+        The data vector is assigned to the data content Count_Sequence
+        which replace its data values.
 
-/**	Assigns a data vector to the Histogram_Plot.
+        This method will result in a change to the item that may cause the
+        parent plot to be refreshed.
 
-	The data vector is assigned to the data content Count_Sequence
-	which replace its data values.
+        @param	count_sequence	A QVector of unsigned long long values that
+            will replace the current data content.
+        @return	This Histogram_Plot.
+    */
+    Histogram_Plot &data(QVector<unsigned long long> &data_sequence);
 
-	This method will result in a change to the item that may cause the
-	parent plot to be refreshed.
+    /**	Gets a reference to the Count_Sequence data content.
 
-	@param	count_sequence	A QVector of unsigned long long values that
-		will replace the current data content.
-	@return	This Histogram_Plot.
-*/
-Histogram_Plot& data (QVector<unsigned long long>& data_sequence);
+        @return	A Count_Sequence reference to data content.
+    */
+    inline Count_Sequence &data()
+    {
+        return *Data;
+    }
 
-/**	Gets a reference to the Count_Sequence data content.
+    /**	Gets a pointer to the data content vector.
 
-	@return	A Count_Sequence reference to data content.
-*/
-inline Count_Sequence& data ()
-	{return *Data;}
+        <b>WARNING</b>: Direct writable access is provided to the data
+        content of the Histogram_Plot.
 
-/**	Gets a pointer to the data content vector.
+        @return	A QVector<unsigned long long> pointer to data content of this
+            Count_Sequence. <b>N.B.</b>: The data content can be externally
+            modified; however, unless the {@link data() data Count_Sequence}
+            has its {@link Count_Sequence::calculate_max_count() max count
+            value updated} the {@link Count_Sequence::max_count() reported
+            max count value} may be incorrect.
+    */
+    QVector<unsigned long long> *data_vector();
 
-	<b>WARNING</b>: Direct writable access is provided to the data
-	content of the Histogram_Plot.
+    /**	Sets the default color to use for histogram bars.
 
-	@return	A QVector<unsigned long long> pointer to data content of this
-		Count_Sequence. <b>N.B.</b>: The data content can be externally
-		modified; however, unless the {@link data() data Count_Sequence}
-		has its {@link Count_Sequence::calculate_max_count() max count
-		value updated} the {@link Count_Sequence::max_count() reported
-		max count value} may be incorrect.
-*/
-QVector<unsigned long long>* data_vector ();
+        @param	color	The default bar color.
+    */
+    inline static void default_bar_color(const QColor &color)
+    {
+        Default_Bar_Color = color;
+    }
 
-/**	Sets the default color to use for histogram bars.
+    /**	Gets the default color to use for histogram bars.
 
-	@param	color	The default bar color.
-*/
-inline static void default_bar_color (const QColor& color)
-	{Default_Bar_Color = color;}
+        @return	The default bar color.
+    */
+    inline static QColor default_bar_color()
+    {
+        return Default_Bar_Color;
+    }
 
-/**	Gets the default color to use for histogram bars.
+    /**	Sets the color to use for the bars of this Histogram_Plot.
 
-	@return	The default bar color.
-*/
-inline static QColor default_bar_color ()
-	{return Default_Bar_Color;}
+        @param	color	The bar color.
+    */
+    Histogram_Plot &bar_color(const QColor &color);
 
-/**	Sets the color to use for the bars of this Histogram_Plot.
+    /**	Gets the color being uses for the bars of this Histogram_Plot.
 
-	@param	color	The bar color.
-*/
-Histogram_Plot& bar_color (const QColor& color);
+        @return	The bar color.
+    */
+    inline QColor bar_color() const
+    {
+        return Bar_Color;
+    }
 
-/**	Gets the color being uses for the bars of this Histogram_Plot.
+    /**	Sets the default plot depth for histogram bars.
 
-	@return	The bar color.
-*/
-inline QColor bar_color () const
-	{return Bar_Color;}
+        @param	z_depth	The default plotting depth for histogram bars.
+    */
+    inline static void default_plot_z(double z_depth)
+    {
+        Default_Plot_Z = z_depth;
+    }
 
-/**	Sets the default plot depth for histogram bars.
+    /**	Gets the default plot depth for histogram bars.
 
-	@param	z_depth	The default plotting depth for histogram bars.
-*/
-inline static void default_plot_z (double z_depth)
-	{Default_Plot_Z = z_depth;}
+        @return	The default plotting depth for histogram bars.
+    */
+    inline static double default_plot_z()
+    {
+        return Default_Plot_Z;
+    }
 
-/**	Gets the default plot depth for histogram bars.
+    /**	Sets an attribute of the Histogram_Plot.
 
-	@return	The default plotting depth for histogram bars.
-*/
-inline static double default_plot_z ()
-	{return Default_Plot_Z;}
+        @param	attribute	The Attribute to be set.
+        @param	enabled		Whether to enable or disable the attribute.
+        @return	This Histogram_Plot.
+    */
+    Histogram_Plot &attribute_set(Attribute attribute, bool enabled = true);
 
-/**	Sets an attribute of the Histogram_Plot.
+    /**	Tests the setting of a Histogram_Plot attribute.
 
-	@param	attribute	The Attribute to be set.
-	@param	enabled		Whether to enable or disable the attribute.
-	@return	This Histogram_Plot.
-*/
-Histogram_Plot& attribute_set (Attribute attribute, bool enabled = true);
+        @param	attribute	The Attribute to be tested.
+        @return	Whether the attribute is enabled (true) or disabled (false).
+    */
+    bool attribute_is_set(Attribute attribute) const;
 
-/**	Tests the setting of a Histogram_Plot attribute.
+    /*==============================================================================
+        QwtPlotItem virtual methods implementations
+    */
+    /**	Gets the run time type information code for a Histogram_Plot.
 
-	@param	attribute	The Attribute to be tested.
-	@return	Whether the attribute is enabled (true) or disabled (false).
-*/
-bool attribute_is_set (Attribute attribute) const;
+        @return	QwtPlotItem::Rtti_PlotHistogram
+    */
+    virtual int rtti() const;
 
-/*==============================================================================
-	QwtPlotItem virtual methods implementations
-*/
-/**	Gets the run time type information code for a Histogram_Plot.
+    /**	Gets the rectange that bounds the data content.
 
-	@return	QwtPlotItem::Rtti_PlotHistogram
-*/
-virtual int rtti () const;
+        The data content {@link Count_Sequence::boundingRect() bounding box}
+        is reoriented if the {@link #HORIZONTAL_BARS} attribute is set.
 
-/**	Gets the rectange that bounds the data content.
+        @return	A QRectF that describes the bounding box of the
+            data content.
+    */
+    virtual QRectF boundingRect() const;
 
-	The data content {@link Count_Sequence::boundingRect() bounding box}
-	is reoriented if the {@link #HORIZONTAL_BARS} attribute is set.
+    /**	Paints the histogram bars on a canvas region using horizontal
+        and vertical scaling maps.
 
-	@return	A QRectF that describes the bounding box of the
-		data content.
-*/
-virtual QRectF boundingRect () const;
+        @param	painter	The QPainter to use for painting the histogram
+            bars.
+        @param	x_scale_map	A QwtScaleMap to use for mapping horizontal (x)
+            postions to painter positions.
+        @param	y_scale_map	A QwtScaleMap to use for mapping vertical (y)
+            data content values to painter positions.
+        @param	canvas_region	A QRect specifying the limits of the
+            painter canvas to use.
+    */
+    virtual void draw(QPainter *painter, const QwtScaleMap &x_scale_map, const QwtScaleMap &y_scale_map,
+                      const QRectF &canvas_region) const;
 
-/**	Paints the histogram bars on a canvas region using horizontal
-	and vertical scaling maps.
+    /*==============================================================================
+        Helpers
+    */
+  private:
+    void initialize();
 
-	@param	painter	The QPainter to use for painting the histogram
-		bars.
-	@param	x_scale_map	A QwtScaleMap to use for mapping horizontal (x)
-		postions to painter positions.
-	@param	y_scale_map	A QwtScaleMap to use for mapping vertical (y)
-		data content values to painter positions.
-	@param	canvas_region	A QRect specifying the limits of the
-		painter canvas to use.
-*/
-virtual void draw (QPainter* painter,
-	const QwtScaleMap& x_scale_map, const QwtScaleMap& y_scale_map,
-	const QRectF& canvas_region) const;
+    /*==============================================================================
+        Data
+    */
+    Count_Sequence *Data;
 
-/*==============================================================================
-	Helpers
-*/
-private:
+    int Attributes;
 
-void initialize ();
-
-/*==============================================================================
-	Data
-*/
-Count_Sequence
-	*Data;
-
-int
-	Attributes;
-
-QColor
-	Bar_Color;
+    QColor Bar_Color;
 };
 
-
-}	//	namespace UA::HiRISE
-#endif	//	HISTOGRAM_PLOT_HH
+} // namespace UA::HiRISE
+#endif //	HISTOGRAM_PLOT_HH

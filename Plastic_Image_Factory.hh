@@ -24,9 +24,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #ifndef HiView_Plastic_Image_Factory_hh
 #define HiView_Plastic_Image_Factory_hh
 
-#include	<QString>
-#include	<QSize>
-
+#include <QSize>
+#include <QString>
 
 namespace UA
 {
@@ -38,68 +37,61 @@ class Plastic_QImage;
 class JP2_Image;
 
 /**	A <i>Plastic_Image_Factory</i> provides a factory method for
-	creating Plastic_Image objects.
+    creating Plastic_Image objects.
 
-	@see	Plastic_Image
-	@author		Bradford Castalia, UA/HiROC
-	@version	$Revision: 1.3 $
+    @see	Plastic_Image
+    @author		Bradford Castalia, UA/HiROC
+    @version	$Revision: 1.3 $
 */
 class Plastic_Image_Factory
 {
-public:
-/*==============================================================================
-	Constants
-*/
-//!	Class identification name with source code version and date.
-static const char* const
-	ID;
+  public:
+    /*==============================================================================
+        Constants
+    */
+    //!	Class identification name with source code version and date.
+    static const char *const ID;
 
-/*==============================================================================
-	Creators
-*/
-/**	Factory methods to construct a Plastic_Image.
+    /*==============================================================================
+        Creators
+    */
+    /**	Factory methods to construct a Plastic_Image.
 
-*/
-static Plastic_Image* create (const QString& source_name,
-	const QSize& size = QSize (), QString* message = NULL);
+    */
+    static Plastic_Image *create(const QString &source_name, const QSize &size = QSize(), QString *message = NULL);
 
+  private:
+    static Plastic_QImage *create_Plastic_QImage(const QString &source_name, const QSize &size);
 
-private:
+    static JP2_Image *create_JP2_Image(const QString &source_name, const QSize &size);
 
-static Plastic_QImage* create_Plastic_QImage (const QString& source_name,
-	const QSize& size);
+    /*==============================================================================
+        Accessors
+    */
+  public:
+    static QString image_type()
+    {
+        return Type;
+    }
 
-static JP2_Image* create_JP2_Image (const QString& source_name,
-	const QSize& size);
+    static QString error_message()
+    {
+        return Error_Message;
+    }
 
-/*==============================================================================
-	Accessors
-*/
-public:
+    /*==============================================================================
+        Utilities
+    */
+    static bool is_file(const QString &name);
 
-static QString image_type ()
-	{return Type;}
+    /*==============================================================================
+        Data
+    */
+  private:
+    static QString Type, Error_Message;
 
-static QString error_message ()
-	{return Error_Message;}
+}; //	Class Plastic_Image_Factory
 
-/*==============================================================================
-	Utilities
-*/
-static bool is_file (const QString& name);
-
-/*==============================================================================
-	Data
-*/
-private:
-
-static QString
-	Type,
-	Error_Message;
-
-};	//	Class Plastic_Image_Factory
-
-
-}	//	namespace HiRISE
-}	//	namespace UA
+} // namespace HiRISE
+} // namespace UA
 #endif

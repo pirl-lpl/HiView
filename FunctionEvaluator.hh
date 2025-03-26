@@ -1,37 +1,57 @@
 #pragma once
 
-#include <QObject>
-#include <QThread>
-#include <QString>
-#include <QVector>
 #include <QJSEngine>
+#include <QObject>
+#include <QString>
+#include <QThread>
+#include <QVector>
 
 class FunctionEvaluator : public QThread
 {
     Q_OBJECT
 
-public:
+  public:
     FunctionEvaluator(QString input);
 
     void run();
 
-    inline double getSum() { return sum; }
-    inline double getAvg() { return avg; }
-    inline double getMin() { return min; }
-    inline double getMax() { return max; }
-    inline double getCnt() { return cnt; }
-    inline double getMinAtDN() { return min_at; }
-    inline double getMaxAtDN() { return max_at; }
+    inline double getSum()
+    {
+        return sum;
+    }
+    inline double getAvg()
+    {
+        return avg;
+    }
+    inline double getMin()
+    {
+        return min;
+    }
+    inline double getMax()
+    {
+        return max;
+    }
+    inline double getCnt()
+    {
+        return cnt;
+    }
+    inline double getMinAtDN()
+    {
+        return min_at;
+    }
+    inline double getMaxAtDN()
+    {
+        return max_at;
+    }
 
-public slots:
+  public slots:
     void setData(QVector<unsigned long long> *data);
     void setProperty(const QString name, const double value);
 
-signals:
+  signals:
     void runCompleted();
 
-private:
-
+  private:
     void reset();
     void error();
 

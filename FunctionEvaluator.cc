@@ -1,7 +1,7 @@
 #include "FunctionEvaluator.hh"
 
-#include <limits>
 #include <iostream>
+#include <limits>
 using namespace std;
 
 static QString JS_FUNC_NAME = "value";
@@ -21,7 +21,7 @@ void FunctionEvaluator::reset()
     avg = 0.0;
     cnt = 0.0;
     min = numeric_limits<double>::max();
-    max = -min; //C++11 numeric_limits<double>::lowest();
+    max = -min; // C++11 numeric_limits<double>::lowest();
 
     min_at = -1;
     max_at = -1;
@@ -37,26 +37,27 @@ void FunctionEvaluator::error()
 
 void FunctionEvaluator::run()
 {
-    //qDebug() << function;
+    // qDebug() << function;
 
     /* Passing an invalid QScriptValue as the this argument to QScriptValue::call()
      * indicates that the Global Object should be used as the this object;
      * in other words, that the function should be invoked as a global function.
      */
 
-/* moved in qt6 */
+    /* moved in qt6 */
     QJSValue val = engine.evaluate(function), inv = QJSValue();
 
     QJSValue fun = engine.globalObject().property(JS_FUNC_NAME);
 
     reset();
 
-    for (int dn = 0 ; dn < data->size() ; dn++)
+    for (int dn = 0; dn < data->size(); dn++)
     {
         unsigned long long count = data->at(dn);
 
         // skip if no data
-        if (count < 1) continue;
+        if (count < 1)
+            continue;
 
         // SKIP DN = 0 ?
         // SKIP DN = 1, 2, 1022, 1023
@@ -66,7 +67,7 @@ void FunctionEvaluator::run()
         if (val.isError())
         {
             // SHOULD report error and use undefined stats
-            //qDebug() << val.toString();
+            // qDebug() << val.toString();
             error();
             break;
         }
@@ -74,7 +75,7 @@ void FunctionEvaluator::run()
         if (!val.isNumber())
         {
             // SHOULD report error and use undefined stats
-            //qDebug() << val.toString() << " is not an number";
+            // qDebug() << val.toString() << " is not an number";
             error();
             break;
         }
@@ -99,15 +100,15 @@ void FunctionEvaluator::run()
 
     avg = sum / cnt;
 
-/*
-    cout << "*** Statistics ***" << endl;
-    cout << " cnt = " << cnt << endl; // like number of pixels in region
-    cout << " sum = " << sum << endl; // sum of pixel values
-    cout << " min = " << min << " at dn " << min_at << endl; // lowest value from user's function
-    cout << " max = " << max << " at dn " << max_at << endl; // highest value from user's function
-    cout << " avg = " << avg << endl; // average value from user's function
-    cout << endl;
-*/
+    /*
+        cout << "*** Statistics ***" << endl;
+        cout << " cnt = " << cnt << endl; // like number of pixels in region
+        cout << " sum = " << sum << endl; // sum of pixel values
+        cout << " min = " << min << " at dn " << min_at << endl; // lowest value from user's function
+        cout << " max = " << max << " at dn " << max_at << endl; // highest value from user's function
+        cout << " avg = " << avg << endl; // average value from user's function
+        cout << endl;
+    */
     emit runCompleted();
 }
 
