@@ -1,0 +1,99 @@
+Work for alpha2
+1. delete working
+2. code reformat
+3. winspeech compiled
+4. package script for mac, win
+5. metadata handling
+6. script running
+7. draw stretch
+8. icon
+9. no debug output
+10. activity indicator update
+
+Tiled_Image_Display = QWidget subclass
+Navigator_Tool = QDockWidget subclass
+
+Plastic_Image = QImage subclass
+Plastic_QImage = Plastic_Image for a qt-supported image type
+JP2_Image = Plast_Image for JP2s
+
+Plastic_Image
+    Object_Lock QMutex(QMutex::Recursive)
+
+Image_Renderer
+    Rendering_Lock
+    Queue_Lock
+    Ready_Lock
+    Mode_Lock
+Image_Renderer_Thread
+Image_Tile = reference to a portion of an image
+Image_Viewer = QFrame subclass, wrapper for Tiled_Image_Display, scrollbars, etc
+
+Shared_Image
+
+Methods that lock/unlock Rendering_Lock in Image_Renderer
+
+abort
+render
+suspend_rendering
+load_image
+
+
+Methods that lock/unlock Queue_Lock in Image_Renderer
+
+print_render_queue
+print_delete_queue
+source_image
+reference_image
+queue
+is_queued
+rendering_status
+is_rendering
+will_delete
+cancel
+reset
+delete_image
+delete_tiles: is this called by a method that has locked?
+clean_up (!)
+run_rendering (!)
+render (!)
+suspend_rendering
+image
+load_image
+
+Expected to be called from locked:
+add_tile
+clear
+abort
+delete_tile
+
+Methods that lock/unlock Object_Lock in Plastic_Image and inner classes, subclasses
+
+source_name
+metadata
+add_metadata_monitor
+remove_metadata_monitor
+notify_metadata_monitors
+close
+closed
+different_band_map
+source_band
+source_transform
+source_origin
+source_scaling
+image_region
+displayed_size
+source_data_map
+different_data_maps
+selected_region
+display_histogram
+needs_update
+add_rendering_monitor
+rendering_increment_lines
+is_rendering
+
+Update_Locker.start
+Update_Locker.end
+
+JP2_Image.close
+JP2_Image.metadata
