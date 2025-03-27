@@ -3636,6 +3636,8 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 
     //	Spacing.
     ++row;
+    col = 0;
+
     grid_layout->setRowMinimumHeight(row, 10);
 
     label = new QLabel (tr ("&JPIP-to-HTTP URL Hostname:"), this);
@@ -3653,7 +3655,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
         SLOT (JPIP_to_HTTP_hostname (const QString&)));
     connect (JPIP_to_HTTP_Hostname_lineEdit, SIGNAL (editingFinished ()),
         SLOT (JPIP_to_HTTP_hostname_changed ()));
-    grid_layout->addWidget (HTTP_to_JPIP_Hostname_lineEdit, row, col, 1, 5);
+    grid_layout->addWidget (JPIP_to_HTTP_Hostname_lineEdit, row, col, 1, 5);
     //		Reset button.
     col += 5;
     JPIP_to_HTTP_Hostname_Reset_Button =
@@ -3668,7 +3670,6 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
         (col, JPIP_to_HTTP_Hostname_Reset_Button->iconSize ().width ());
 
     //	Spacing.
-    ++row;
     grid_layout->setRowMinimumHeight(row, 10);
 
     //	Server Port.
