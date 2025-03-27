@@ -105,9 +105,7 @@ using std::hex;
 
 #endif //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
@@ -255,8 +253,8 @@ Preferences_Dialog::Preferences_Dialog(QWidget *parent) : QDialog(parent), Show_
     connect(Rendering, SIGNAL(tile_size_changed(int)), SIGNAL(tile_size_changed(int)));
     connect(Rendering, SIGNAL(rendering_increment_lines_changed(int)), SIGNAL(rendering_increment_lines_changed(int)));
 
-    // connect (JPIP, SIGNAL (HTTP_to_JPIP_hostname_changed (const QString&)),
-    //	SIGNAL (HTTP_to_JPIP_hostname_changed (const QString&)));
+    connect (JPIP, SIGNAL (HTTP_to_JPIP_hostname_changed (const QString&)), SIGNAL (HTTP_to_JPIP_hostname_changed (const QString&)));
+    connect (JPIP, SIGNAL (JPIP_to_HTTP_hostname_changed (const QString&)), SIGNAL (JPIP_to_HTTP_hostname_changed (const QString&)));
     connect(JPIP, SIGNAL(JPIP_server_port_changed(int)), SIGNAL(JPIP_server_port_changed(int)));
     connect(JPIP, SIGNAL(JPIP_proxy_changed(const QString &)), SIGNAL(JPIP_proxy_changed(const QString &)));
     connect(JPIP, SIGNAL(JPIP_cache_directory_changed(const QString &)),
@@ -3391,6 +3389,17 @@ QString
     JPIP_Section::Default_HTTP_to_JPIP_Hostname
         = _DEFAULT_HTTP_TO_JPIP_HOSTNAME_;
 
+        const char
+            *JPIP_Section::JPIP_TO_HTTP_HOSTNAME_KEY	= "JPIP_to_HTTP_Hostname";
+
+        #ifndef DEFAULT_JPIP_TO_HTTP_HOSTNAME
+        #define DEFAULT_JPIP_TO_HTTP_HOSTNAME		hirise-pds.lpl.arizona.edu
+        #endif
+        #define _DEFAULT_JPIP_TO_HTTP_HOSTNAME_	AS_STRING(DEFAULT_JPIP_TO_HTTP_HOSTNAME)
+        QString
+            JPIP_Section::Default_JPIP_to_HTTP_Hostname
+                = _DEFAULT_JPIP_TO_HTTP_HOSTNAME_;
+
 const char *JPIP_Section::JPIP_SERVER_PORT_KEY = "JPIP_Server_Port";
 
 #ifndef DEFAULT_JPIP_SERVER_PORT
@@ -3494,7 +3503,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     bool OK;
 
     QString
-        hostname =
+        hostnameH2J =
         HTTP_to_JPIP_Hostname = settings.value (HTTP_TO_JPIP_HOSTNAME_KEY,
             Default_HTTP_to_JPIP_Hostname).toString ();
     #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
@@ -3504,6 +3513,18 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     if (! settings.contains (HTTP_TO_JPIP_HOSTNAME_KEY))
         settings.setValue (HTTP_TO_JPIP_HOSTNAME_KEY,
             Default_HTTP_to_JPIP_Hostname);
+
+        QString
+            hostnameJ2H =
+            JPIP_to_HTTP_Hostname = settings.value (JPIP_TO_HTTP_HOSTNAME_KEY,
+                Default_JPIP_to_HTTP_Hostname).toString ();
+        #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
+        clog << "    " << JPIP_TO_HTTP_HOSTNAME_KEY << " = \""
+                << JPIP_to_HTTP_Hostname << '"' << endl;
+        #endif
+        if (! settings.contains (JPIP_TO_HTTP_HOSTNAME_KEY))
+            settings.setValue (JPIP_TO_HTTP_HOSTNAME_KEY,
+                Default_JPIP_to_HTTP_Hostname);
 
     int port = Port = settings.value(JPIP_SERVER_PORT_KEY, Default_JPIP_Server_Port).toInt(&OK);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
@@ -3612,6 +3633,39 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
         row, col, Qt::AlignLeft);
     grid_layout->setColumnMinimumWidth
         (col, HTTP_to_JPIP_Hostname_Reset_Button->iconSize ().width ());
+
+    //	Spacing.
+    ++row;
+    grid_layout->setRowMinimumHeight(row, 10);
+
+    label = new QLabel (tr ("&JPIP-to-HTTP URL Hostname:"), this);
+    label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget (label, row, col);
+    //		Value.
+    ++col;
+    JPIP_to_HTTP_Hostname_lineEdit = new QLineEdit (JPIP_to_HTTP_Hostname, this);
+    JPIP_to_HTTP_Hostname_lineEdit->setToolTip
+        (tr ("Hostname to convert an JPIP URL for a JP2 file to the HTTP protocol"));
+    #ifndef QT_NO_SHORTCUT
+    label->setBuddy (JPIP_to_HTTP_Hostname_lineEdit);
+    #endif
+    connect (JPIP_to_HTTP_Hostname_lineEdit, SIGNAL (textEdited (const QString&)),
+        SLOT (JPIP_to_HTTP_hostname (const QString&)));
+    connect (JPIP_to_HTTP_Hostname_lineEdit, SIGNAL (editingFinished ()),
+        SLOT (JPIP_to_HTTP_hostname_changed ()));
+    grid_layout->addWidget (HTTP_to_JPIP_Hostname_lineEdit, row, col, 1, 5);
+    //		Reset button.
+    col += 5;
+    JPIP_to_HTTP_Hostname_Reset_Button =
+        new Icon_Button (*Reset_Button_Icon, this);
+    JPIP_to_HTTP_Hostname_Reset_Button->setVisible (false);
+    JPIP_to_HTTP_Hostname_Reset_Button->setFocusPolicy (Qt::NoFocus);
+    connect (JPIP_to_HTTP_Hostname_Reset_Button, SIGNAL (clicked ()),
+        SLOT (JPIP_to_HTTP_hostname_reset ()));
+    grid_layout->addWidget (JPIP_to_HTTP_Hostname_Reset_Button,
+        row, col, Qt::AlignLeft);
+    grid_layout->setColumnMinimumWidth
+        (col, JPIP_to_HTTP_Hostname_Reset_Button->iconSize ().width ());
 
     //	Spacing.
     ++row;
@@ -3822,13 +3876,20 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 
     //	Initialize the GUI widget values.
     HTTP_to_JPIP_Hostname_Pending = Default_HTTP_to_JPIP_Hostname;
-    if (! (OK = HTTP_to_JPIP_hostname_is_valid (hostname)) &&
-        hostname != Default_HTTP_to_JPIP_Hostname)
-        OK = HTTP_to_JPIP_hostname_is_valid (Default_HTTP_to_JPIP_Hostname);
+    if (! (OK = HTTP_to_JPIP_hostname_verify (hostnameH2J)) &&
+        hostnameH2J != Default_HTTP_to_JPIP_Hostname)
+        OK = HTTP_to_JPIP_hostname_verify (Default_HTTP_to_JPIP_Hostname);
     if (! OK &&
         ! Default_HTTP_to_JPIP_Hostname.isEmpty ())
-        HTTP_to_JPIP_hostname_is_valid ("");
+        HTTP_to_JPIP_hostname_verify ("");
 
+        JPIP_to_HTTP_Hostname_Pending = Default_JPIP_to_HTTP_Hostname;
+        if (! (OK = JPIP_to_HTTP_hostname_verify (hostnameJ2H)) &&
+            hostnameJ2H != Default_JPIP_to_HTTP_Hostname)
+            OK = JPIP_to_HTTP_hostname_verify (Default_JPIP_to_HTTP_Hostname);
+        if (! OK &&
+            ! Default_JPIP_to_HTTP_Hostname.isEmpty ())
+            JPIP_to_HTTP_hostname_verify ("");
     JPIP_server_port(port);
 
     Proxy_Pending = Default_JPIP_Proxy;
@@ -3865,9 +3926,20 @@ HTTP_to_JPIP_Hostname_Reset_Button->setVisible (text != HTTP_to_JPIP_Hostname);
 reset_modifier_buttons ();
 }
 
+void
+JPIP_Section::JPIP_to_HTTP_hostname
+    (
+    const QString&	text
+    )
+{
+if (JPIP_to_HTTP_Hostname_lineEdit->text () != text)
+    JPIP_to_HTTP_Hostname_lineEdit->setText (text);
+JPIP_to_HTTP_Hostname_Reset_Button->setVisible (text != JPIP_to_HTTP_Hostname);
+reset_modifier_buttons ();
+}
 
 bool
-JPIP_Section::HTTP_to_JPIP_hostname_is_valid
+JPIP_Section::HTTP_to_JPIP_hostname_verify
     (
     const QString&	hostname
     )
@@ -3879,7 +3951,7 @@ if (hostname.isEmpty () ||
     QHostInfo::fromName (hostname).error () == QHostInfo::NoError ||
     QMessageBox::question ((isVisible () ? this : NULL), Title,
         tr ("A DNS lookup of the \"") + hostname
-        + tr ("\" HTTP-to-JPIP hostname failed.\n\n")
+        + tr ("\" hostname failed.\n\n")
         + tr ("The host may be temporarily unavailable -\n")
         + tr ("for example, a VPN connection may be required.\n\n")
         + tr ("Use the hostname anyway?"),
@@ -3895,26 +3967,67 @@ HTTP_to_JPIP_hostname (HTTP_to_JPIP_Hostname_Pending);
 return accepted;
 }
 
+bool
+JPIP_Section::JPIP_to_HTTP_hostname_verify
+    (
+    const QString&	hostname
+    )
+{
+bool
+    accepted = true;
+
+if (hostname.isEmpty () ||
+    QHostInfo::fromName (hostname).error () == QHostInfo::NoError ||
+    QMessageBox::question ((isVisible () ? this : NULL), Title,
+        tr ("A DNS lookup of the \"") + hostname
+        + tr ("\" hostname failed.\n\n")
+        + tr ("The host may be temporarily unavailable -\n")
+        + tr ("for example, a VPN connection may be required.\n\n")
+        + tr ("Use the hostname anyway?"),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No)
+    == QMessageBox::Yes)
+    JPIP_to_HTTP_Hostname_Pending = hostname;
+else
+    accepted = false;
+
+JPIP_to_HTTP_hostname (JPIP_to_HTTP_Hostname_Pending);
+
+return accepted;
+}
+
 
 void
 JPIP_Section::HTTP_to_JPIP_hostname_changed ()
 {
+QString hostname = HTTP_to_JPIP_Hostname_lineEdit->text();
 //	Avoid redundant editingFinished signals.
-static bool
-    OK = true;
-if (OK &&
-    HTTP_to_JPIP_Hostname_lineEdit->text () != HTTP_to_JPIP_Hostname_Pending &&
-    ! Defaults_Button->hasFocus ())
+
+if (hostname != HTTP_to_JPIP_Hostname_Pending && !Defaults_Button->hasFocus ())
     {
-    OK = false;
-    HTTP_to_JPIP_hostname_is_valid (HTTP_to_JPIP_Hostname_lineEdit->text ());
-    OK = true;
+    HTTP_to_JPIP_hostname_verify (hostname);
+    }
+}
+
+void
+JPIP_Section::JPIP_to_HTTP_hostname_changed ()
+{
+QString hostname = JPIP_to_HTTP_Hostname_lineEdit->text();
+//	Avoid redundant editingFinished signals.
+
+if (hostname != JPIP_to_HTTP_Hostname_Pending && !Defaults_Button->hasFocus ())
+    {
+    JPIP_to_HTTP_hostname_verify (hostname);
     }
 }
 
 void
 JPIP_Section::HTTP_to_JPIP_hostname_reset ()
-{HTTP_to_JPIP_hostname_is_valid (HTTP_to_JPIP_Hostname);}
+{HTTP_to_JPIP_hostname_changed (HTTP_to_JPIP_Hostname);}
+
+void
+JPIP_Section::JPIP_to_HTTP_hostname_reset ()
+{JPIP_to_HTTP_hostname_changed (JPIP_to_HTTP_Hostname);}
 
 void JPIP_Section::JPIP_server_port(int port)
 {
@@ -4109,7 +4222,8 @@ void JPIP_Section::max_source_image_area_MB_reset()
 
 void JPIP_Section::reset()
 {
-    // HTTP_to_JPIP_hostname_reset ();
+    HTTP_to_JPIP_hostname_reset ();
+    JPIP_to_HTTP_hostname_reset ();
     JPIP_server_port_reset();
     JPIP_proxy_reset();
     JPIP_cache_directory_reset();
@@ -4119,7 +4233,8 @@ void JPIP_Section::reset()
 
 void JPIP_Section::defaults()
 {
-    // HTTP_to_JPIP_hostname (Default_HTTP_to_JPIP_Hostname);
+    HTTP_to_JPIP_hostname (Default_HTTP_to_JPIP_Hostname);
+    JPIP_to_HTTP_hostname (Default_HTTP_to_JPIP_Hostname);
     JPIP_server_port(Default_JPIP_Server_Port);
     JPIP_proxy(Default_JPIP_Proxy);
     JPIP_cache_directory(Default_JPIP_Cache_Directory);
@@ -4136,9 +4251,11 @@ void JPIP_Section::reset_modifier_buttons()
 void JPIP_Section::reset_defaults_button()
 {
     Defaults_Button->setEnabled(
-        // HTTP_to_JPIP_Hostname_lineEdit->text ()
-        //		!= Default_HTTP_to_JPIP_Hostname	||
-        Port_spinBox->value() != Default_JPIP_Server_Port || Proxy_lineEdit->text() != Default_JPIP_Proxy ||
+        HTTP_to_JPIP_Hostname_lineEdit->text ()
+    		!= Default_HTTP_to_JPIP_Hostname	||
+      JPIP_to_HTTP_Hostname_lineEdit->text ()
+  		!= Default_JPIP_to_HTTP_Hostname	||
+    Port_spinBox->value() != Default_JPIP_Server_Port || Proxy_lineEdit->text() != Default_JPIP_Proxy ||
         Cache_Directory_lineEdit->text() != Default_JPIP_Cache_Directory ||
         Request_Timeout_spinBox->value() != Default_JPIP_Request_Timeout ||
         Max_Source_Image_Area_MB_spinBox->value() != Default_Max_Source_Image_Area_MB);
@@ -4149,8 +4266,10 @@ void JPIP_Section::changing()
     bool change, changed = false;
 
     //	Text fields manage their Reset_Buttons.
-    // changed |= (HTTP_to_JPIP_Hostname_lineEdit->text ()
-    //		!= HTTP_to_JPIP_Hostname);
+    changed |= (HTTP_to_JPIP_Hostname_lineEdit->text ()
+    		!= HTTP_to_JPIP_Hostname);
+    changed |= (JPIP_to_HTTP_Hostname_lineEdit->text ()
+    		!= JPIP_to_HTTP_Hostname);
     Port_Reset_Button->setVisible(change = (Port_spinBox->value() != Port));
     changed |= change;
     changed |= (Proxy_lineEdit->text() != Proxy);
@@ -4168,8 +4287,10 @@ void JPIP_Section::changing()
 bool JPIP_Section::has_changed() const
 {
     return
-        //	HTTP_to_JPIP_Hostname_lineEdit->text ()
-        //		!= HTTP_to_JPIP_Hostname			||
+        	HTTP_to_JPIP_Hostname_lineEdit->text ()
+        		!= HTTP_to_JPIP_Hostname			||
+         	JPIP_to_HTTP_Hostname_lineEdit->text ()
+         		!= JPIP_to_HTTP_Hostname			||
         Port_spinBox->value() != Port || Proxy_lineEdit->text() != Proxy ||
         Cache_Directory_lineEdit->text() != Cache_Directory || Request_Timeout_spinBox->value() != Request_Timeout ||
         Max_Source_Image_Area_MB_spinBox->value() != Max_Source_Image_Area_MB;
@@ -4189,6 +4310,16 @@ void JPIP_Section::apply()
         //	>>> SIGNAL <<<
         emit HTTP_to_JPIP_hostname_changed (HTTP_to_JPIP_Hostname);
         }
+
+        text = JPIP_to_HTTP_Hostname_lineEdit->text ();
+        if (JPIP_to_HTTP_Hostname != text)
+            {
+            JPIP_to_HTTP_Hostname = text;
+            JPIP_to_HTTP_Hostname_Reset_Button->setVisible (false);
+            settings.setValue (JPIP_TO_HTTP_HOSTNAME_KEY, JPIP_to_HTTP_Hostname);
+            //	>>> SIGNAL <<<
+            emit JPIP_to_HTTP_hostname_changed (JPIP_to_HTTP_Hostname);
+            }
 
     if (Port != Port_spinBox->value())
     {
@@ -4835,5 +4966,4 @@ void Scripts_Section::reset_modifier_buttons()
     Apply_Button->setEnabled(has_changed());
 }
 
-} // namespace HiRISE
-} // namespace UA
+} // namespace UA::HiRISE

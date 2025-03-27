@@ -566,6 +566,7 @@ class JPIP_Section : public QWidget
         Constants
     */
     static const char *HTTP_TO_JPIP_HOSTNAME_KEY;
+    static const char *JPIP_TO_HTTP_HOSTNAME_KEY;
     static const char *JPIP_SERVER_PORT_KEY;
     static const char *JPIP_PROXY_KEY;
     static const char *JPIP_CACHE_DIRECTORY_KEY;
@@ -576,6 +577,7 @@ class JPIP_Section : public QWidget
         Defaults
     */
     static QString Default_HTTP_to_JPIP_Hostname;
+    static QString Default_JPIP_to_HTTP_Hostname;
     static int Default_JPIP_Server_Port;
     static QString Default_JPIP_Proxy;
     static QString Default_JPIP_Cache_Directory;
@@ -592,6 +594,9 @@ class JPIP_Section : public QWidget
     */
     inline QString HTTP_to_JPIP_hostname () const
     {return HTTP_to_JPIP_Hostname;}
+
+    inline QString JPIP_to_HTTP_hostname () const
+    {return JPIP_to_HTTP_Hostname;}
 
     inline int JPIP_server_port() const
     {
@@ -626,6 +631,7 @@ class JPIP_Section : public QWidget
   signals:
 
     void HTTP_to_JPIP_hostname_changed (const QString& hostname);
+    void JPIP_to_HTTP_hostname_changed (const QString& hostname);
     void JPIP_server_port_changed(int port);
     void JPIP_proxy_changed(const QString &proxy);
     void JPIP_cache_directory_changed(const QString &cache_directory);
@@ -646,6 +652,9 @@ class JPIP_Section : public QWidget
     void HTTP_to_JPIP_hostname (const QString& text);
     void HTTP_to_JPIP_hostname_changed ();
     void HTTP_to_JPIP_hostname_reset ();
+    void JPIP_to_HTTP_hostname (const QString& text);
+    void JPIP_to_HTTP_hostname_changed ();
+    void JPIP_to_HTTP_hostname_reset ();
     void JPIP_server_port(int port);
     void JPIP_server_port_reset();
     void JPIP_proxy(const QString &text);
@@ -666,7 +675,8 @@ class JPIP_Section : public QWidget
         Helpers
     */
   private:
-    bool HTTP_to_JPIP_hostname_is_valid (const QString& hostname);
+    bool JPIP_to_HTTP_hostname_verify (const QString& hostname);
+    bool HTTP_to_JPIP_hostname_verify (const QString& hostname);
     bool JPIP_proxy_is_valid(const QString &proxy);
     bool JPIP_cache_directory_is_valid(const QString &cache_directory);
 
@@ -682,6 +692,10 @@ class JPIP_Section : public QWidget
     QString HTTP_to_JPIP_Hostname, HTTP_to_JPIP_Hostname_Pending;
     QLineEdit *HTTP_to_JPIP_Hostname_lineEdit;
     Icon_Button *HTTP_to_JPIP_Hostname_Reset_Button;
+
+    QString JPIP_to_HTTP_Hostname, JPIP_to_HTTP_Hostname_Pending;
+    QLineEdit *JPIP_to_HTTP_Hostname_lineEdit;
+    Icon_Button *JPIP_to_HTTP_Hostname_Reset_Button;
 
     int Port;
     QSpinBox *Port_spinBox;
