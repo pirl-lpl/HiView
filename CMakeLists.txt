@@ -150,7 +150,7 @@ list(LENGTH HEADERS HeaderCount)
 list(LENGTH SOURCES SourceCount)
 message(VERBOSE "Compiling ${HeaderCount} headers and ${SourceCount} Sources")
 
-add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+qt_add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
@@ -166,7 +166,11 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
 # in Function_Nodes.cc and once in Qwt, probably some inheritence issue
 #
 if (MSVC)
-    target_link_options(${PROJECT_NAME} PRIVATE "/FORCE")
+    # TODO disable these for release build
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _DISABLE_VECTOR_ANNOTATION _DISABLE_STL_ANNOTATION)
+    target_compile_options(${PROJECT_NAME} PRIVATE /fsanitize=address /Zi)
+
+    target_link_options(${PROJECT_NAME} PRIVATE /FORCE)
 endif()
 
 if (APPLE)
@@ -181,7 +185,7 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${QWT_INCLUDE_DIR}")
 
-target_link_libraries(${PROJECT_NAME} Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Core5Compat Qt6::Qml QWT
  KDU KDU_AUX idaeim::PVL idaeim::Strings idaeim::Utility PIRL::PIRL++ libJP2::JP2 libJP2::KakaduReaders)
 
 qt_add_resources(${PROJECT_NAME} "${PROJECT_NAME}" PREFIX "/" FILES
