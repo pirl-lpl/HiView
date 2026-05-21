@@ -29,15 +29,12 @@ using namespace UA::HiRISE;
 #include <QImageReader>
 #include <QSizeF>
 #include <QString>
-#include <QStringRef>
 #include <QStyleFactory>
-// #include <QDesktopWidget>
 
 #include <string>
 using std::string;
 #include <iostream>
 using std::cout;
-#include <iomanip>
 using std::endl;
 #include <fstream>
 using std::ifstream;
@@ -98,17 +95,17 @@ extern const char *const ORGANIZATION_NAME = ORG_NAME_STRING;
 
 #ifndef MODULE_VERSION
 #define MODULE_VERSION_STRING ""
-#define _VERSION_ " "
+#define VERSIONID_ " "
 #else
 #define MODULE_VERSION_STRING AS_STRING(MODULE_VERSION)
-#define _VERSION_ " v" MODULE_VERSION_STRING ", "
+#define VERSIONID_ " v" MODULE_VERSION_STRING ", "
 #endif
 //!	Application version identification.
 extern const char *const APPLICATION_VERSION = MODULE_VERSION_STRING;
 
 //!	Application identification with source code version and date.
 extern const char *const APPLICATION_ID =
-    APP_NAME_STRING _VERSION_ __DATE__ " ($Revision: 1.37 $ $Date: 2014/05/27 17:13:51 $)";
+    APP_NAME_STRING VERSIONID_ __DATE__ " ($Revision: 1.37 $ $Date: 2014/05/27 17:13:51 $)";
 
 #ifndef MACHINE
 #define MACHINE_STRING ""
@@ -196,7 +193,7 @@ void usage(int exit_status = BAD_SYNTAX, bool list_descriptions = false)
     cout << "-STYLE <style> | -STYLES" << endl;
     if (list_descriptions)
         cout << "    Sets the application GUI style. Possible values are \"platinum\"," << endl
-             << "    \"motif\" and \"windows\". Some platforms may support additional" << endl
+             << R"(    "motif" and "windows". Some platforms may support additional)" << endl
              << "    styles; use the -styles option to get a list of available styles." << endl
              << endl
              << "    Default: The default style for the platform being used." << endl
@@ -306,8 +303,8 @@ int main(int arg_count, char **arg_list)
                     //	-STYLES
                     cout << "Supported styles -" << endl;
                     QStringList styles(QStyleFactory::keys());
-                    for (int index = 0; index < styles.size(); index++)
-                        cout << "  " << styles.at(index) << endl;
+                    for (const auto & style : styles)
+                        cout << "  " << style << endl;
                     exit(SUCCESS);
                 }
                 else
