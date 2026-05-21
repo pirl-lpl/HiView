@@ -21,12 +21,10 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Application_hh
-#define HiView_Application_hh
+#pragma once
 
 #include <QApplication>
 #include <QString>
-#include <QStringRef>
 
 //	Meta-command filename suffix.
 #ifndef JPIP_PASSTHRU_LINK_SUFFIX
@@ -100,7 +98,7 @@ class HiView_Application : public QApplication
     bool notify(QObject *receiver, QEvent *event);
 #endif
 
-    bool event(QEvent *event);
+    bool event(QEvent *event) override;
 
     /*==============================================================================
         Qt signals:
@@ -123,11 +121,10 @@ class NullEventFilter : public QObject
     Q_OBJECT
 
   protected:
-    inline bool eventFilter(QObject *, QEvent *)
+     bool eventFilter(QObject *, QEvent *) override
     {
         return true;
     }
 };
 
 } // namespace UA::HiRISE
-#endif
