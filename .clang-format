@@ -1,0 +1,6 @@
+Standard: C++17
+BasedOnStyle: Google   # or LLVM, Microsoft, etc.
+IndentWidth: 4
+UseTab: Never
+AccessModifierOffset: -3
+BreakBeforeBraces: Allman

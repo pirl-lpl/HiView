@@ -1,0 +1,95 @@
+CompileFlags:
+  Add:
+    # Target Windows x64 with MSVC-compatible flags
+    - --target=x86_64-pc-windows-msvc
+
+    # Qt6 include paths
+    - -IC:/Qt/6.8.2/msvc2022_64/include
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtCore
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtGui
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtWidgets
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtNetwork
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtQml
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtQuick
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtSql
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtTest
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtXml
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtConcurrent
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtMultimedia
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtOpenGL
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtPrintSupport
+    - -IC:/Qt/6.8.2/msvc2022_64/include/QtSvg
+
+    # Qt defines required for correct header parsing
+    - -DQT_CORE_LIB
+    - -DQT_GUI_LIB
+    - -DQT_WIDGETS_LIB
+    - -DQT_NETWORK_LIB
+    - -DQT_USE_QSTRINGBUILDER   # Optional: more efficient string concatenation
+
+    # C++ standard — adjust if your project uses C++17 or C++23
+    - -std=c++17
+
+    # Suppress noisy warnings from Qt headers
+    - -Wno-unknown-pragmas
+
+  # Remove flags that clangd doesn't understand (common with MSVC-generated
+  # compile_commands.json). Add more here if you see "unknown argument" errors.
+  Remove:
+    - /MP*
+    - /Zc*
+    - /W3
+    - /W4
+    - /WX
+    - /wd*
+    - /EH*
+    - /MD*
+    - /MT*
+    - /GR*
+    - /GL
+    - /fp*
+    - /arch*
+    - /diagnostics*
+    - /permissive*
+    - /bigobj
+    - /utf-8
+    - -fcolor-diagnostics
+
+Diagnostics:
+  # Suppress diagnostics inside Qt and system headers
+  Suppress:
+    - pp_including_mainfile_in_preamble
+  UnusedIncludes: Strict           # Warn on includes not needed by this TU
+  ClangTidy:
+    Add:
+      - modernize-*
+      - readability-*
+      - performance-*
+      - bugprone-*
+    Remove:
+      - bugprone-inc-dec-in-conditions      # allow ++/-- in conditions
+      - modernize-use-trailing-return-type  # Stylistic, often unwanted
+      - readability-identifier-length       # Allow short arg names
+      - readability-implicit-bool-conversion 
+      - readability-magic-numbers           # Too noisy for most projects
+      - readability-named-parameter         # Allow unnamed
+      - performance-avoid-endl              # allow endl
+    CheckOptions:
+      readability-braces-around-statements.ShortStatementLines: "1"
+
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  Designators: Yes
+
+Hover:
+  ShowAKA: Yes                      # Show template aliases resolved types
+
+Index:
+  Background: Build                 # Index in background for fast go-to-definition
+
+# If using compile_commands.json (CMake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON),
+# clangd will pick it up automatically from the build directory.
+# Point clangd at it with --compile-commands-dir=<build_dir> in your editor config,
+# or symlink it to the project root.
