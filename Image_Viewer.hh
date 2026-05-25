@@ -21,13 +21,13 @@
 
  *******************************************************************************/
 
-#ifndef HiView_Image_Viewer_hh
-#define HiView_Image_Viewer_hh
+#pragma once
 
 #include <QFrame>
 
 #include "Projection.hh"
 #include "Tiled_Image_Display.hh"
+#include "qtypes.h"
 
 //	Forward references.
 class QScrollBar;
@@ -41,17 +41,12 @@ class QCursor;
 // template<typename T> class QVector;
 // template<typename T> class QList;
 
-namespace idaeim
-{
-namespace PVL
+namespace idaeim::PVL
 {
 class Aggregate;
 }
-} // namespace idaeim
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class Plastic_Image;
@@ -99,25 +94,25 @@ class Image_Viewer : public QFrame
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
      Types:
      */
-    typedef Tiled_Image_Display::Shared_Image Shared_Image;
-    typedef Tiled_Image_Display::Data_Map Data_Map;
-    typedef Tiled_Image_Display::Histogram Histogram;
+    using Shared_Image = Tiled_Image_Display::Shared_Image;
+    using Data_Map = Tiled_Image_Display::Data_Map;
+    using Histogram = Tiled_Image_Display::Histogram;
 
     /*==============================================================================
      Constants
      */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     //!	Default image display viewport size (default: 512,316).
     static const QSize DEFAULT_IMAGE_DISPLAY_SIZE;
 
     //!	The {@link rendering_status(int) rendering status} values.
-    enum
+    enum : quint8
     {
         NOT_RENDERING = Tiled_Image_Display::NOT_RENDERING,
         RENDERING_BACKGROUND = Tiled_Image_Display::RENDERING_BACKGROUND,
@@ -127,7 +122,7 @@ class Image_Viewer : public QFrame
     };
 
     //!	{@link state_change(int) state change} bit flags.
-    enum
+    enum : quint16
     {
         NO_STATE_CHANGE = Tiled_Image_Display::NO_STATE_CHANGE,
         IMAGE_LOAD_STATE = Tiled_Image_Display::IMAGE_LOAD_STATE,
@@ -143,13 +138,14 @@ class Image_Viewer : public QFrame
         RENDERING_BACKGROUND_STATE = Tiled_Image_Display::RENDERING_BACKGROUND_STATE,
         RENDERING_CANCELED_STATE = Tiled_Image_Display::RENDERING_CANCELED_STATE,
         RENDERING_COMPLETED_STATE = Tiled_Image_Display::RENDERING_COMPLETED_STATE,
-        RENDERING_VISIBLE_TILES_COMPLETED_STATE = Tiled_Image_Display::RENDERING_VISIBLE_TILES_COMPLETED_STATE,
+        RENDERING_VISIBLE_TILES_COMPLETED_STATE =
+            Tiled_Image_Display::RENDERING_VISIBLE_TILES_COMPLETED_STATE,
         COMPLETED_WITHOUT_RENDERING_STATE = Tiled_Image_Display::COMPLETED_WITHOUT_RENDERING_STATE,
         STATE_QUALIFIER_MASK = Tiled_Image_Display::STATE_QUALIFIER_MASK
     };
 
     //!	The image scrolling and scaling {@link control_mode() control modes}.
-    enum
+    enum : quint8
     {
         NO_CONTROL_MODE = 0,
         SHIFT_MODE = (1 << 0),
@@ -172,7 +168,7 @@ class Image_Viewer : public QFrame
      @param	parent	A pointer to the parent QWidget for this widget.
      May be NULL.
      */
-    Image_Viewer(QWidget *parent = NULL);
+    Image_Viewer(QWidget* parent = NULL);
 
     virtual ~Image_Viewer();
 
@@ -202,7 +198,7 @@ class Image_Viewer : public QFrame
      load request was rejected.
      @see	image(const QString&, const QSizeF&)
      */
-    bool image(const QString &source_name, const QSize &display_size);
+    bool image(const QString& source_name, const QSize& display_size);
 
     /**	Load an image into the Image_Viewer.
 
@@ -229,53 +225,31 @@ class Image_Viewer : public QFrame
      load request was rejected.
      @see	image(const QString&, const QSize&)
      */
-    bool image(const QString &source_name, const QSizeF &scaling = QSizeF());
+    bool image(const QString& source_name, const QSizeF& scaling = QSizeF());
 
-    bool image(const Shared_Image &source_image, const QSize &display_size);
-    bool image(const Shared_Image &source_image, const QSizeF &scaling = QSizeF());
-    bool image(const QImage &source_image, const QSize &display_size);
-    bool image(const QImage &source_image, const QSizeF &scaling = QSizeF());
+    bool image(const Shared_Image& source_image, const QSize& display_size);
+    bool image(const Shared_Image& source_image, const QSizeF& scaling = QSizeF());
+    bool image(const QImage& source_image, const QSize& display_size);
+    bool image(const QImage& source_image, const QSizeF& scaling = QSizeF());
 
-    inline Shared_Image image() const
-    {
-        return Image_Display->image();
-    }
+    Shared_Image image() const { return Image_Display->image(); }
 
-    inline static void default_source_image_rendering(bool enabled)
-    {
-        Tiled_Image_Display::default_source_image_rendering(enabled);
-    }
-    inline static bool default_source_image_rendering()
-    {
-        return Tiled_Image_Display::default_source_image_rendering();
-    }
-    inline void source_image_rendering(bool enabled)
-    {
-        Image_Display->source_image_rendering(enabled);
-    }
-    inline bool source_image_rendering()
-    {
-        return Image_Display->source_image_rendering();
-    }
+    static void default_source_image_rendering(bool enabled)
+    { Tiled_Image_Display::default_source_image_rendering(enabled); }
+    static bool default_source_image_rendering()
+    { return Tiled_Image_Display::default_source_image_rendering(); }
+    void source_image_rendering(bool enabled) { Image_Display->source_image_rendering(enabled); }
+    bool source_image_rendering() { return Image_Display->source_image_rendering(); }
 
-    inline int max_source_image_area() const
-    {
-        return (int)(Image_Display->max_source_image_area() >> 20);
-    }
-    inline static void default_max_source_image_area(int area)
-    {
-        Tiled_Image_Display::default_max_source_image_area((unsigned long)area << 20);
-    }
-    inline static int long default_max_source_image_area()
-    {
-        return (int)(Tiled_Image_Display::default_max_source_image_area() >> 20);
-    }
+    int max_source_image_area() const
+    { return (int)(Image_Display->max_source_image_area() >> 20); }
+    static void default_max_source_image_area(int area)
+    { Tiled_Image_Display::default_max_source_image_area((unsigned long)area << 20); }
+    static int long default_max_source_image_area()
+    { return (int)(Tiled_Image_Display::default_max_source_image_area() >> 20); }
 
-    inline QString image_name() const
-    {
-        return Source_Name;
-    }
-    Image_Viewer &image_name(const QString &name)
+    QString image_name() const { return Source_Name; }
+    Image_Viewer& image_name(const QString& name)
     {
         Source_Name = name;
         return *this;
@@ -285,47 +259,23 @@ class Image_Viewer : public QFrame
      World Information
      */
 
-    void projection(Projection *projector);
+    void projection(Projection* projector);
 
     /*------------------------------------------------------------------------------
      Image metadata
      */
-    inline idaeim::PVL::Aggregate *image_metadata() const
-    {
-        return Image_Display->image_metadata();
-    }
+    idaeim::PVL::Aggregate* image_metadata() const { return Image_Display->image_metadata(); }
 
     /*------------------------------------------------------------------------------
      Image geometry
      */
-    inline QSize image_size() const
-    {
-        return Image_Display->image_size();
-    }
-    inline int image_width() const
-    {
-        return Image_Display->image_width();
-    }
-    inline int image_height() const
-    {
-        return Image_Display->image_height();
-    }
-    inline QSize scaled_image_size() const
-    {
-        return Image_Display->scaled_image_size();
-    }
-    inline int image_bands() const
-    {
-        return Image_Display->image_bands();
-    }
-    inline unsigned int *band_map() const
-    {
-        return Image_Display->band_map();
-    }
-    inline int image_data_precision() const
-    {
-        return Image_Display->image_data_precision();
-    }
+    QSize image_size() const { return Image_Display->image_size(); }
+    int image_width() const { return Image_Display->image_width(); }
+    int image_height() const { return Image_Display->image_height(); }
+    QSize scaled_image_size() const { return Image_Display->scaled_image_size(); }
+    int image_bands() const { return Image_Display->image_bands(); }
+    unsigned int* band_map() const { return Image_Display->band_map(); }
+    int image_data_precision() const { return Image_Display->image_data_precision(); }
 
     /*------------------------------------------------------------------------------
      Image origin and region
@@ -342,10 +292,8 @@ class Image_Viewer : public QFrame
      are needed, not rounded to the nearest integer.
      @see displayed_image_region(int, bool)
      */
-    inline QPointF displayed_image_origin(int band = 0) const
-    {
-        return Image_Display->displayed_image_origin(band);
-    }
+    QPointF displayed_image_origin(int band = 0) const
+    { return Image_Display->displayed_image_origin(band); }
 
     /**	Get the region of the image, in image space, that is contained within
      the image display viewport.
@@ -364,10 +312,8 @@ class Image_Viewer : public QFrame
      rounded the the nearest integer.
      @see	image_display_region(int)
      */
-    inline QRectF displayed_image_region(int band = 0) const
-    {
-        return Image_Display->displayed_image_region(band);
-    }
+    QRectF displayed_image_region(int band = 0) const
+    { return Image_Display->displayed_image_region(band); }
 
     /**	Get the region of the image display viewport, in display space, that
      contains the displayed image region.
@@ -390,10 +336,8 @@ class Image_Viewer : public QFrame
      display space, that contains a region of the selected image band.
      @see	displayed_image_region(int)
      */
-    inline QRect image_display_region(int band = 0) const
-    {
-        return Image_Display->image_display_region(band);
-    }
+    QRect image_display_region(int band = 0) const
+    { return Image_Display->image_display_region(band); }
 
     /*------------------------------------------------------------------------------
      Coordinate mapping
@@ -423,10 +367,8 @@ class Image_Viewer : public QFrame
      @see	image_display_region(int)
      @see	map_image_to_display(const QPointF&, int) const
      */
-    inline QPointF map_display_to_image(const QPoint &coordinate, int band = 0) const
-    {
-        return Image_Display->map_display_to_image(coordinate, band);
-    }
+    QPointF map_display_to_image(const QPoint& coordinate, int band = 0) const
+    { return Image_Display->map_display_to_image(coordinate, band); }
 
     /**	Map an image display viewport rectangle to its source image region.
 
@@ -445,10 +387,8 @@ class Image_Viewer : public QFrame
      displayed_image_region(int) displayed image region} for the band.
      @see	map_display_to_image(const QPoint&, int) const
      */
-    inline QRectF map_display_to_image(const QRect &display_region, int band = 0) const
-    {
-        return Image_Display->map_display_to_image(display_region, band);
-    }
+    QRectF map_display_to_image(const QRect& display_region, int band = 0) const
+    { return Image_Display->map_display_to_image(display_region, band); }
 
     /**	Map an image coordinate to its display viewport coordinate.
 
@@ -460,10 +400,8 @@ class Image_Viewer : public QFrame
      coordinate may lie outside the bounds of the display viewport.
      @see	map_display_to_image(const QPoint&, int) const
      */
-    inline QPoint map_image_to_display(const QPointF &coordinate, int band = 0) const
-    {
-        return Image_Display->map_image_to_display(coordinate, band);
-    }
+    QPoint map_image_to_display(const QPointF& coordinate, int band = 0) const
+    { return Image_Display->map_image_to_display(coordinate, band); }
 
     /**	Map an image coordinate to its display viewport coordinate.
 
@@ -479,30 +417,21 @@ class Image_Viewer : public QFrame
      outside the bounds of the display viewport.
      @see	map_image_to_display(const QPointF&, int) const
      */
-    inline QRect map_image_to_display(const QRectF &image_region, int band = 0) const
-    {
-        return Image_Display->map_image_to_display(image_region, band);
-    }
+    QRect map_image_to_display(const QRectF& image_region, int band = 0) const
+    { return Image_Display->map_image_to_display(image_region, band); }
 
     /*------------------------------------------------------------------------------
      Pixel values
      */
-    inline Plastic_Image::Pixel_Datum image_pixel_datum(unsigned int x, unsigned int y, unsigned int band) const
-    {
-        return Image_Display->image_pixel_datum(x, y, band);
-    }
-    inline Plastic_Image::Triplet image_pixel(const QPoint &coordinate) const
-    {
-        return Image_Display->image_pixel(coordinate);
-    }
-    inline QRgb display_value(const QPoint &coordinate) const
-    {
-        return Image_Display->display_value(coordinate);
-    }
-    inline Plastic_Image::Triplet display_pixel(const QPoint coordinate) const
-    {
-        return Image_Display->display_pixel(coordinate);
-    }
+    Plastic_Image::Pixel_Datum image_pixel_datum(unsigned int x, unsigned int y,
+                                                 unsigned int band) const
+    { return Image_Display->image_pixel_datum(x, y, band); }
+    Plastic_Image::Triplet image_pixel(const QPoint& coordinate) const
+    { return Image_Display->image_pixel(coordinate); }
+    QRgb display_value(const QPoint& coordinate) const
+    { return Image_Display->display_value(coordinate); }
+    Plastic_Image::Triplet display_pixel(const QPoint coordinate) const
+    { return Image_Display->display_pixel(coordinate); }
 
     /*------------------------------------------------------------------------------
      Scaling
@@ -514,10 +443,7 @@ class Image_Viewer : public QFrame
      @return	A QSizeF containing the horizontal and vertical scaling
      factors for the specified image band.
      */
-    inline QSizeF image_scaling(int band = 0) const
-    {
-        return Image_Display->image_scaling(band);
-    }
+    QSizeF image_scaling(int band = 0) const { return Image_Display->image_scaling(band); }
 
     /**	Change the current {@link image_scaling(int) image scaling} by adding
      a scaling factor increment.
@@ -542,36 +468,18 @@ class Image_Viewer : public QFrame
      {@link image_scaling(int) image scaling}.
      @return	true if the image scale changed; false otherwise.
      */
-    bool scale_by(const QSizeF &scaling_factors);
+    bool scale_by(const QSizeF& scaling_factors);
 
     bool display_fit_to_image() const;
 
-    inline static double min_scale()
-    {
-        return Tiled_Image_Display::min_scale();
-    }
-    inline static double max_scale()
-    {
-        return Tiled_Image_Display::max_scale();
-    }
+    static double min_scale() { return Tiled_Image_Display::min_scale(); }
+    static double max_scale() { return Tiled_Image_Display::max_scale(); }
 
-    inline static double scaling_minor_increment()
-    {
-        return Scaling_Minor_Increment;
-    }
-    inline static double scaling_major_increment()
-    {
-        return Scaling_Major_Increment;
-    }
+    static double scaling_minor_increment() { return Scaling_Minor_Increment; }
+    static double scaling_major_increment() { return Scaling_Major_Increment; }
 
-    inline static bool default_scaling_immediate()
-    {
-        return Default_Scaling_Immediate;
-    }
-    inline static void default_scaling_immediate(bool enabled)
-    {
-        Default_Scaling_Immediate = enabled;
-    }
+    static bool default_scaling_immediate() { return Default_Scaling_Immediate; }
+    static void default_scaling_immediate(bool enabled) { Default_Scaling_Immediate = enabled; }
 
     /**	Get the list of menu actions for image scaling.
 
@@ -605,28 +513,23 @@ class Image_Viewer : public QFrame
 
      @return	A QList of pointers to the scaling menu actions.
      */
-    QList<QAction *> scale_menu_actions() const;
+    QList<QAction*> scale_menu_actions() const;
 
-    QAction *copy_coordinates_action() const;
+    QAction* copy_coordinates_action() const;
 
     /*------------------------------------------------------------------------------
      Histograms
      */
-    inline bool source_data_histograms(QVector<Histogram *> histograms, const QRect &image_region) const
-    {
-        return Image_Display->source_data_histograms(histograms, image_region);
-    }
-    inline bool display_data_histograms(QVector<Histogram *> histograms, const QRect &display_region) const
+    bool source_data_histograms(QVector<Histogram*> histograms, const QRect& image_region) const
+    { return Image_Display->source_data_histograms(histograms, image_region); }  // TODO std::move
+    bool display_data_histograms(QVector<Histogram*> histograms, const QRect& display_region) const
     {
         return Image_Display->display_data_histograms(histograms, display_region);
-    }
+    }  // TODO std::move
 
     //------------------------------------------------------------------------------
 
-    inline Data_Map **data_maps() const
-    {
-        return Image_Display->data_maps();
-    }
+    Data_Map** data_maps() const { return Image_Display->data_maps(); }
 
     /**	Get the pending state change state of the image display.
 
@@ -636,10 +539,7 @@ class Image_Viewer : public QFrame
      @return A state change code with bit flags indicating the pending
      change to the {@link image_display() image display}.
      */
-    inline int pending_state_change() const
-    {
-        return Image_Display->pending_state_change();
-    }
+    int pending_state_change() const { return Image_Display->pending_state_change(); }
 
     /**	Get the current Image_Viewer control mode state.
 
@@ -670,10 +570,7 @@ class Image_Viewer : public QFrame
 
      @return	An Image_Viewer control mode code.
      */
-    inline int control_mode() const
-    {
-        return Control_Mode;
-    }
+    int control_mode() const { return Control_Mode; }
 
     static QString control_mode_description(int control_mode);
 
@@ -698,7 +595,7 @@ class Image_Viewer : public QFrame
      @param	cursor	A pointer to a QCursor to be used as the default
      image cursor. If NULL the Reticule_Cursor is used.
      */
-    void default_cursor(QCursor *cursor = NULL);
+    void default_cursor(QCursor* cursor = NULL);
 
     /**	Get the preferred size of the display.
 
@@ -711,7 +608,7 @@ class Image_Viewer : public QFrame
 
      @return	A QSize containing the preferred size of the display.
      */
-    virtual QSize sizeHint() const;
+    QSize sizeHint() const override;
 
     /**	Get the size of the display viewport.
 
@@ -743,35 +640,21 @@ class Image_Viewer : public QFrame
      */
     QSize image_display_size() const;
 
-    inline static int rendering_increment_lines()
-    {
-        return Tiled_Image_Display::rendering_increment_lines();
-    }
+    static int rendering_increment_lines()
+    { return Tiled_Image_Display::rendering_increment_lines(); }
 
-    inline static QRgb background_color()
-    {
-        return Tiled_Image_Display::background_color();
-    }
+    static QRgb background_color() { return Tiled_Image_Display::background_color(); }
 
-    inline QSize tile_size() const
-    {
-        return Image_Display->tile_display_size();
-    }
+    QSize tile_size() const { return Image_Display->tile_display_size(); }
 
     /**	Get the Tiled_Image_Display that manages the image display.
 
      @return	A pointer to the Tiled_Image_Display that is managing the
      image display.
      */
-    inline Tiled_Image_Display *image_display() const
-    {
-        return Image_Display;
-    }
+    Tiled_Image_Display* image_display() const { return Image_Display; }
 
-    inline QSlider *scale_slider() const
-    {
-        return Sliding_Scale;
-    }
+    QSlider* scale_slider() const { return Sliding_Scale; }
 
     /*------------------------------------------------------------------------------
      JP2 specific settings.
@@ -811,10 +694,7 @@ class Image_Viewer : public QFrame
      enabled; false otherwise.
      @see	scrollbars(bool)
      */
-    bool scrollbars() const
-    {
-        return Scrollbars_Enabled;
-    }
+    bool scrollbars() const { return Scrollbars_Enabled; }
 
     /*==============================================================================
      Utilities
@@ -833,10 +713,7 @@ class Image_Viewer : public QFrame
      tile is being rendered or is queued {@link #NOT_RENDERING} is
      returned.
      */
-    inline int rendering_status() const
-    {
-        return Image_Display->rendering_status();
-    }
+    int rendering_status() const { return Image_Display->rendering_status(); }
 
     /**	Provide a brief description of a {@link rendering_status(int)
      rendering status} value;
@@ -845,10 +722,8 @@ class Image_Viewer : public QFrame
      @return	A QString that very briefly describes the status value.
      @see	Tiled_Image_Display::rendering_status_description(int)
      */
-    inline static QString rendering_status_description(int status)
-    {
-        return Tiled_Image_Display::rendering_status_description(status);
-    }
+    static QString rendering_status_description(int status)
+    { return Tiled_Image_Display::rendering_status_description(status); }
 
     /**	Provide a brief description of a {@link state_change(int) state
      change} code.
@@ -858,23 +733,18 @@ class Image_Viewer : public QFrame
      indicated by the bit flags of the code value.
      @see	Tiled_Image_Display::state_change_description(int)
      */
-    inline static QString state_change_description(int state)
-    {
-        return Tiled_Image_Display::state_change_description(state);
-    }
+    static QString state_change_description(int state)
+    { return Tiled_Image_Display::state_change_description(state); }
 
-    static QErrorMessage *error_message()
-    {
-        return Error_Message;
-    }
+    static QErrorMessage* error_message() { return Error_Message; }
 
     //	Ownership of the QErrorMesage is NOT transferred.
-    static void error_message(QErrorMessage *dialog);
+    static void error_message(QErrorMessage* dialog);
 
     /*==============================================================================
      Qt signals
      */
-  signals:
+ signals:
 
     /**	Signals the result of an image load request.
 
@@ -907,7 +777,7 @@ class Image_Viewer : public QFrame
      is not within the {@link displayed_image_region(int) displayed
      image region} of the reference band.
      */
-    void image_cursor_moved(const QPoint &display_position, const QPoint &image_position);
+    void image_cursor_moved(const QPoint& display_position, const QPoint& image_position);
 
     /**	Signals the image pixel values at the cursor position.
 
@@ -926,7 +796,8 @@ class Image_Viewer : public QFrame
      Plastic_Image::UNDEFINED_PIXEL_VALUE} if the cursor is not
      located within the displayed image region.
      */
-    void image_pixel_value(const Plastic_Image::Triplet &display_pixel, const Plastic_Image::Triplet &image_pixel);
+    void image_pixel_value(const Plastic_Image::Triplet& display_pixel,
+                           const Plastic_Image::Triplet& image_pixel);
 
     /** Image location change signal progagation.
 
@@ -936,7 +807,7 @@ class Image_Viewer : public QFrame
      image bands moved.
      @see	Iiled_Image_Display::image_moved(const QPoint&, int)
      */
-    void image_moved(const QPoint &image_position, int band);
+    void image_moved(const QPoint& image_position, int band);
 
     /**	Displayed image region size change signal progagation.
 
@@ -944,7 +815,7 @@ class Image_Viewer : public QFrame
      displayed_image_region() displayed image region}.
      @see	Iiled_Image_Display::displayed_image_region_resized(const QSize&)
      */
-    void displayed_image_region_resized(const QSize &region_size);
+    void displayed_image_region_resized(const QSize& region_size);
 
     /**	Image display viewport size change signal progagation.
 
@@ -952,7 +823,7 @@ class Image_Viewer : public QFrame
      size.
      @see	Iiled_Image_Display::display_viewport_resized(const QSize&)
      */
-    void display_viewport_resized(const QSize &viewport_size);
+    void display_viewport_resized(const QSize& viewport_size);
 
     /**	Image scaling change signal progagation.
 
@@ -962,7 +833,7 @@ class Image_Viewer : public QFrame
      if all image bands were scaled.
      @see	Iiled_Image_Display::image_scaled(const QSizeF&, int)
      */
-    void image_scaled(const QSizeF &scaling, int band);
+    void image_scaled(const QSizeF& scaling, int band);
 
     /**	Tile image rendering status signal progagation.
 
@@ -977,7 +848,7 @@ class Image_Viewer : public QFrame
      notice message.
      @see	Iiled_Image_Display::rendering_status_notice(const QString&)
      */
-    void rendering_status_notice(const QString &message);
+    void rendering_status_notice(const QString& message);
 
     /**	 Image display state change signal propagation.
 
@@ -988,9 +859,9 @@ class Image_Viewer : public QFrame
     /*==============================================================================
      Qt slots
      */
-  public slots:
+ public slots:
 
-    bool move_image(const QPoint &origin, int band = -1);
+    bool move_image(const QPoint& origin, int band = -1);
 
     /**	Shift the image in the display by image pixel units.
 
@@ -1004,7 +875,7 @@ class Image_Viewer : public QFrame
      @see	move_image(const QPoint&, int)
      @see	shift_display(const QPoint&, int)
      */
-    bool shift_image(const QSize &offsets, int band = -1);
+    bool shift_image(const QSize& offsets, int band = -1);
 
     /**	Shift the image in the display by display pixel units.
 
@@ -1028,9 +899,9 @@ class Image_Viewer : public QFrame
      @see	move_image(const QPoint&, int)
      @see	shift_image(const QPoint&, int)
      */
-    bool shift_display(const QSize &offsets, int band = -1);
+    bool shift_display(const QSize& offsets, int band = -1);
 
-    bool scale_image(const QSizeF &scaling, const QPoint &center = QPoint(), int band = -1);
+    bool scale_image(const QSizeF& scaling, const QPoint& center = QPoint(), int band = -1);
 
     /**	Scale the image by adding a scaling factor to the current image scaling.
 
@@ -1093,7 +964,7 @@ class Image_Viewer : public QFrame
     void scaling_minor_increment(double increment);
     void scaling_major_increment(double increment);
 
-    bool map_bands(const unsigned int *band_map);
+    bool map_bands(const unsigned int* band_map);
 
     /**	Map the source image data to the display image data.
 
@@ -1108,7 +979,7 @@ class Image_Viewer : public QFrame
      @return	true if the data mapping changed and tile image updates
      have been (or will be) applied.
      */
-    bool map_data(Data_Map **maps = NULL);
+    bool map_data(Data_Map** maps = NULL);
 
     /**	Set the maximum image area to use when loading a JP2 source image.
 
@@ -1166,7 +1037,7 @@ class Image_Viewer : public QFrame
      increased to the minimum.
      */
     void tile_size(int size);
-    void tile_size(const QSize &size);
+    void tile_size(const QSize& size);
 
     void cancel_rendering();
 
@@ -1174,10 +1045,10 @@ class Image_Viewer : public QFrame
      JP2 specific settings.
      */
     void JPIP_request_timeout(int seconds);
-    void JPIP_proxy(const QString &proxy);
-    void JPIP_cache_directory(const QString &pathname);
+    void JPIP_proxy(const QString& proxy);
+    void JPIP_cache_directory(const QString& pathname);
 
-  private slots:
+ private slots:
 
     /**	Handles the {@link Tiled_Image_Display::image_loaded(bool)} signal.
 
@@ -1198,7 +1069,7 @@ class Image_Viewer : public QFrame
      is not within the {@link displayed_image_region(int) displayed
      image region} of the reference band.
      */
-    void cursor_moved(const QPoint &display_position, const QPoint &image_position);
+    void cursor_moved(const QPoint& display_position, const QPoint& image_position);
 
     void scrollbar_value_changed();
 
@@ -1209,23 +1080,23 @@ class Image_Viewer : public QFrame
     /*==============================================================================
      Event Handlers
      */
-  protected:
-    virtual void resizeEvent(QResizeEvent *event);
-    virtual void contextMenuEvent(QContextMenuEvent *event);
+ protected:
+    void resizeEvent(QResizeEvent* event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *event);
-    virtual void mouseReleaseEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
-    virtual void wheelEvent(QWheelEvent *event);
+    void wheelEvent(QWheelEvent* event) override;
 
-    virtual void keyPressEvent(QKeyEvent *event);
-    virtual void keyReleaseEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent* event) override;
+    void keyReleaseEvent(QKeyEvent* event) override;
 
     /*==============================================================================
      Helpers
      */
-  private:
+ private:
     void layout_display(QSize display_size);
 
     void adjust_scrollbars_range();
@@ -1245,32 +1116,31 @@ class Image_Viewer : public QFrame
     /*==============================================================================
      Data
      */
-  private:
     QString Source_Name;
 
-    Tiled_Image_Display *Image_Display;
+    Tiled_Image_Display* Image_Display;
 
     QScrollBar *Horizontal_Scrollbar, *Vertical_Scrollbar;
     static int Horizontal_Scrollbar_Height, Vertical_Scrollbar_Width;
     bool Scrollbars_Enabled;
 
-    QWidget *LRC_Widget;
+    QWidget* LRC_Widget;
 
     static double Scaling_Minor_Increment, Scaling_Major_Increment;
-    QSlider *Sliding_Scale;
+    QSlider* Sliding_Scale;
     static int Sliding_Scale_Width;
-    QLabel *Sliding_Scale_Value;
+    QLabel* Sliding_Scale_Value;
 
-    QMenu *View_Menu;
-    QAction *Scale_Up_Action, *Scale_Down_Action, *Normal_Size_Action, *Fit_to_Window_Action, *Fit_to_Width_Action,
-        *Fit_to_Height_Action, *Copy_Action;
+    QMenu* View_Menu;
+    QAction *Scale_Up_Action, *Scale_Down_Action, *Normal_Size_Action, *Fit_to_Window_Action,
+        *Fit_to_Width_Action, *Fit_to_Height_Action, *Copy_Action;
     QPoint Menu_Position;
 
     int Control_Mode, Times_Copied;
     QPoint Mouse_Drag_Image_Position;
-    QCursor *Default_Cursor;
+    QCursor* Default_Cursor;
 
-    Projection *Projector;
+    Projection* Projector;
 
     /*
      Flag to block unnecessary and undesirable image updates as a result
@@ -1286,9 +1156,7 @@ class Image_Viewer : public QFrame
      */
     bool Block_Image_Updates;
 
-    static QErrorMessage *Error_Message;
+    static QErrorMessage* Error_Message;
 };
 
-} // namespace HiRISE
-} // namespace UA
-#endif
+}  // namespace UA::HiRISE

@@ -32,15 +32,13 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QPointF>
 #include <QRectF>
 #include <QTimer>
-
 #include <stdexcept>
 using std::invalid_argument;
 #include <sstream>
-using std::ostringstream;
-#include <iomanip>
 using std::endl;
+using std::ostringstream;
 
-#if defined(DEBUG_SECTION)
+#ifdef DEBUG_SECTION
 /*	DEBUG_SECTION controls
 
     DEBUG_SECTION report selection options.
@@ -62,9 +60,9 @@ using std::endl;
 #define DEBUG_SECTION DEBUG_OFF
 #endif
 
-#include "HiView_Utilities.hh"
-
 #include <string>
+
+#include "HiView_Utilities.hh"
 using std::string;
 #include <iostream>
 using std::boolalpha;
@@ -72,16 +70,14 @@ using std::clog;
 using std::dec;
 using std::hex;
 
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const Activity_Indicator::ID =
+const char* const Activity_Indicator::ID =
     "UA::HiRISE::Activity_Indicator ($Revision: 1.15 $ $Date: 2012/03/09 02:13:55 $)";
 
 /*==============================================================================
@@ -107,12 +103,10 @@ int Activity_Indicator::Default_Indicator_Size = PROGRESS_INDICATOR_SIZE,
     Activity_Indicator::Default_Update_Interval = PROGRESS_INDICATOR_UPDATE_INTERVAL,
     Activity_Indicator::Default_Interval_Degrees = PROGRESS_INDICATOR_INTERVAL_DEGREES;
 
-#ifndef PROGRESS_INDICATOR_HEAD_COLOR
-#define PROGRESS_INDICATOR_HEAD_COLOR 0xFFFFFF
-#endif
-#ifndef PROGRESS_INDICATOR_TAIL_COLOR
-#define PROGRESS_INDICATOR_TAIL_COLOR 0x777777
-#endif
+constexpr QRgb PROGRESS_INDICATOR_HEAD_COLOR = 0xFFFFFF;
+
+constexpr QRgb PROGRESS_INDICATOR_TAIL_COLOR = 0x777777;
+
 #ifndef PROGRESS_INDICATOR_RIPPLES
 #define PROGRESS_INDICATOR_RIPPLES 7
 #endif
@@ -120,26 +114,30 @@ int Activity_Indicator::Default_Indicator_Size = PROGRESS_INDICATOR_SIZE,
 #ifndef PROGRESS_INDICATOR_OFF_COLOR
 #define PROGRESS_INDICATOR_OFF_COLOR 0
 #endif
-#ifndef PROGRESS_INDICATOR_1_COLOR
-#define PROGRESS_INDICATOR_1_COLOR 0xFF0000
-#endif
-#ifndef PROGRESS_INDICATOR_2_COLOR
-#define PROGRESS_INDICATOR_2_COLOR 0x7777FF
-#endif
-QColor Activity_Indicator::Default_State_Color[TOTAL_STATE_CONDITIONS] = {QColor((QRgb)PROGRESS_INDICATOR_OFF_COLOR),
-                                                                          QColor((QRgb)PROGRESS_INDICATOR_1_COLOR),
-                                                                          QColor((QRgb)PROGRESS_INDICATOR_2_COLOR)};
 
-#define NO_PROGRESS -999
+constexpr QRgb PROGRESS_INDICATOR_1_COLOR = 0xFF0000;
+
+constexpr QRgb PROGRESS_INDICATOR_2_COLOR = 0x7777FF;
+
+QColor Activity_Indicator::Default_State_Color[TOTAL_STATE_CONDITIONS] = {
+    QColor((QRgb)PROGRESS_INDICATOR_OFF_COLOR), QColor((QRgb)PROGRESS_INDICATOR_1_COLOR),
+    QColor((QRgb)PROGRESS_INDICATOR_2_COLOR)};
+
+#define NO_PROGRESS (-999)
 
 /*==============================================================================
     Constructors
 */
-Activity_Indicator::Activity_Indicator(int indicator_size, QWidget *parent)
+Activity_Indicator::Activity_Indicator(int indicator_size, QWidget* parent)
     : QWidget(parent),
-      Indicator_Size(indicator_size < PROGRESS_INDICATOR_MIN_SIZE ? Default_Indicator_Size : indicator_size),
-      Start_Delay(Default_Start_Delay), Update_Interval(Default_Update_Interval),
-      Interval_Degrees(Default_Interval_Degrees), State(STATE_OFF), Progress(NO_PROGRESS), State_Lock()
+      Indicator_Size(indicator_size < PROGRESS_INDICATOR_MIN_SIZE ? Default_Indicator_Size
+                                                                  : indicator_size),
+      Start_Delay(Default_Start_Delay),
+      Update_Interval(Default_Update_Interval),
+      Interval_Degrees(Default_Interval_Degrees),
+      State(STATE_OFF),
+      Progress(NO_PROGRESS),
+      State_Lock()
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << ">>> Activity_Indicator: " << indicator_size << endl;
@@ -150,9 +148,13 @@ Activity_Indicator::Activity_Indicator(int indicator_size, QWidget *parent)
 #endif
 }
 
-Activity_Indicator::Activity_Indicator(QWidget *parent)
-    : QWidget(parent), Indicator_Size(Default_Indicator_Size), Start_Delay(Default_Start_Delay),
-      Update_Interval(Default_Update_Interval), Interval_Degrees(Default_Interval_Degrees), State(STATE_OFF),
+Activity_Indicator::Activity_Indicator(QWidget* parent)
+    : QWidget(parent),
+      Indicator_Size(Default_Indicator_Size),
+      Start_Delay(Default_Start_Delay),
+      Update_Interval(Default_Update_Interval),
+      Interval_Degrees(Default_Interval_Degrees),
+      State(STATE_OFF),
       Progress(NO_PROGRESS)
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
@@ -181,12 +183,9 @@ void Activity_Indicator::initialize()
 
 Activity_Indicator::~Activity_Indicator()
 {
-    if (State_Color)
-        delete[] State_Color;
-    if (Indicator)
-        delete Indicator;
-    if (Update_Timer)
-        delete Update_Timer;
+    delete[] State_Color;
+    delete Indicator;
+    delete Update_Timer;
 }
 
 /*==============================================================================
@@ -205,7 +204,7 @@ void Activity_Indicator::default_indicator_size(int size)
     Default_Indicator_Size = size;
 }
 
-Activity_Indicator &Activity_Indicator::indicator_size(int size)
+Activity_Indicator& Activity_Indicator::indicator_size(int size)
 {
     if (size < PROGRESS_INDICATOR_MIN_SIZE)
     {
@@ -228,37 +227,30 @@ Activity_Indicator &Activity_Indicator::indicator_size(int size)
     return *this;
 }
 
-QSize Activity_Indicator::sizeHint() const
-{
-    return QSize(Indicator_Size, Indicator_Size);
-}
+QSize Activity_Indicator::sizeHint() const { return QSize(Indicator_Size, Indicator_Size); }
 
 void Activity_Indicator::default_start_delay(int delay)
 {
-    if ((Default_Start_Delay = delay) < 0)
-        Default_Start_Delay = 0;
+    if ((Default_Start_Delay = delay) < 0) Default_Start_Delay = 0;  // NOLINT
 }
 
-Activity_Indicator &Activity_Indicator::start_delay(int delay)
+Activity_Indicator& Activity_Indicator::start_delay(int delay)
 {
     State_Lock.lock();
-    if ((Start_Delay = delay) < 0)
-        Start_Delay = 0;
+    if ((Start_Delay = delay) < 0) Start_Delay = 0;  // NOLINT
     State_Lock.unlock();
     return *this;
 }
 
 void Activity_Indicator::default_update_interval(int interval)
 {
-    if ((Default_Update_Interval = interval) < 0)
-        Default_Update_Interval = 0;
+    if ((Default_Update_Interval = interval) < 0) Default_Update_Interval = 0;  // NOLINT
 }
 
-Activity_Indicator &Activity_Indicator::update_interval(int interval)
+Activity_Indicator& Activity_Indicator::update_interval(int interval)
 {
     State_Lock.lock();
-    if ((Update_Interval = interval) < 0)
-        Update_Interval = 0;
+    if ((Update_Interval = interval) < 0) Update_Interval = 0;  // NOLINT
     if (State > STATE_OFF && Update_Timer->isActive())
     {
         Update_Timer->stop();
@@ -271,15 +263,13 @@ Activity_Indicator &Activity_Indicator::update_interval(int interval)
 
 void Activity_Indicator::default_interval_degrees(int degrees)
 {
-    if ((Default_Interval_Degrees = degrees) < 1)
-        Default_Interval_Degrees = 1;
+    if ((Default_Interval_Degrees = degrees) < 1) Default_Interval_Degrees = 1;  // NOLINT
 }
 
-Activity_Indicator &Activity_Indicator::interval_degrees(int degrees)
+Activity_Indicator& Activity_Indicator::interval_degrees(int degrees)
 {
     State_Lock.lock();
-    if ((Interval_Degrees = degrees) < 1)
-        Interval_Degrees = 1;
+    if ((Interval_Degrees = degrees) < 1) Interval_Degrees = 1;  // NOLINT
     State_Lock.unlock();
     return *this;
 }
@@ -300,8 +290,7 @@ void Activity_Indicator::default_state_color(int condition, QColor color)
 
 QColor Activity_Indicator::default_state_color(int condition)
 {
-    if (condition >= 0 && condition < TOTAL_STATE_CONDITIONS)
-        return Default_State_Color[condition];
+    if (condition >= 0 && condition < TOTAL_STATE_CONDITIONS) return Default_State_Color[condition];
 
     ostringstream message;
     message << ID << endl
@@ -310,10 +299,11 @@ QColor Activity_Indicator::default_state_color(int condition)
     throw invalid_argument(message.str());
 }
 
-Activity_Indicator &Activity_Indicator::state_color(int condition, QColor color)
+Activity_Indicator& Activity_Indicator::state_color(int condition, QColor color)
 {
 #if ((DEBUG_SECTION) & DEBUG_STATE)
-    clog << ">>> Activity_Indicator::state_color: " << condition << " color 0x" << hex << color.rgba() << dec << endl;
+    clog << ">>> Activity_Indicator::state_color: " << condition << " color 0x" << hex
+         << color.rgba() << dec << endl;
 #endif
     if (condition < 0 || condition >= TOTAL_STATE_CONDITIONS)
     {
@@ -342,8 +332,7 @@ Activity_Indicator &Activity_Indicator::state_color(int condition, QColor color)
 
 QColor Activity_Indicator::state_color(int condition) const
 {
-    if (condition >= 0 && condition < TOTAL_STATE_CONDITIONS)
-        return State_Color[condition];
+    if (condition >= 0 && condition < TOTAL_STATE_CONDITIONS) return State_Color[condition];
 
     ostringstream message;
     message << ID << endl
@@ -360,13 +349,11 @@ void Activity_Indicator::state(int condition)
 #if ((DEBUG_SECTION) & DEBUG_STATE)
     clog << ">>> Activity_Indicator::state: " << condition << endl;
 #endif
-    if (condition < 0)
-        condition = 0;
-    else if (condition >= TOTAL_STATE_CONDITIONS)
-        condition = TOTAL_STATE_CONDITIONS - 1;
+    if (condition < 0) condition = 0;
+    else if (condition >= TOTAL_STATE_CONDITIONS) condition = TOTAL_STATE_CONDITIONS - 1;
     if (condition != State)
     {
-        int old_condition = State;
+        int const old_condition = State;
         State = condition;
 #if ((DEBUG_SECTION) & DEBUG_STATE)
         clog << "    old state " << old_condition << endl;
@@ -409,10 +396,7 @@ void Activity_Indicator::state(int condition)
 #endif
 }
 
-void Activity_Indicator::cancel()
-{
-    state(STATE_OFF);
-}
+void Activity_Indicator::cancel() { state(STATE_OFF); }
 
 void Activity_Indicator::interval()
 {
@@ -420,7 +404,7 @@ void Activity_Indicator::interval()
     clog << ">>> Activity_Indicator::interval" << endl;
 #endif
     State_Lock.lock();
-    int interval_degrees = Interval_Degrees, update_interval = Update_Interval;
+    int const interval_degrees = Interval_Degrees, update_interval = Update_Interval;
     State_Lock.unlock();
 
     if (Progress == NO_PROGRESS)
@@ -440,8 +424,7 @@ void Activity_Indicator::interval()
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
         clog << "    progress = " << Progress << endl;
 #endif
-        if ((Progress += interval_degrees) >= 360)
-            Progress = 0;
+        if ((Progress += interval_degrees) >= 360) Progress = 0;  // NOLINT
         update();
     }
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
@@ -452,7 +435,7 @@ void Activity_Indicator::interval()
 /*==============================================================================
     Event Handlers
 */
-void Activity_Indicator::paintEvent(QPaintEvent *)
+void Activity_Indicator::paintEvent(QPaintEvent*)
 {
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_EVENTS))
     clog << ">>> Activity_Indicator::paintEvent" << endl;
@@ -467,11 +450,11 @@ void Activity_Indicator::paintEvent(QPaintEvent *)
 
     QPainter painter(this);
     painter.setViewport(0, 0, Indicator_Size, Indicator_Size);
-    int origin = -Indicator_Size >> 1;
+    int const origin = -Indicator_Size >> 1;
     painter.setWindow(origin, origin, Indicator_Size, Indicator_Size);
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_EVENTS))
-    clog << "    window = " << origin << "x, " << origin << "y, " << Indicator_Size << "w, " << Indicator_Size << "h "
-         << endl;
+    clog << "    window = " << origin << "x, " << origin << "y, " << Indicator_Size << "w, "
+         << Indicator_Size << "h " << endl;
 #endif
     if (Progress > 0)
     {
@@ -491,15 +474,14 @@ void Activity_Indicator::paintEvent(QPaintEvent *)
 #endif
 }
 
-void Activity_Indicator::mousePressEvent(QMouseEvent *event)
+void Activity_Indicator::mousePressEvent(QMouseEvent* event)
 {
-    if (State == STATE_OFF)
-        return;
+    if (State == STATE_OFF) return;
 
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
     clog << ">>> Activity_Indicator::mousePressEvent: " << event->pos() << endl;
 #endif
-    int diameter = Indicator_Size >> 1, radius = diameter >> 1;
+    int const diameter = Indicator_Size >> 1, radius = diameter >> 1;
     if (QRect(radius, radius, diameter, diameter).contains(event->pos()))
     {
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
@@ -513,17 +495,16 @@ void Activity_Indicator::mousePressEvent(QMouseEvent *event)
 #endif
 }
 
-void Activity_Indicator::mouseReleaseEvent(QMouseEvent *event)
+void Activity_Indicator::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (State == STATE_OFF)
-        return;
+    if (State == STATE_OFF) return;
 
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
     clog << ">>> Activity_Indicator::mouseReleaseEvent: " << event->pos() << endl;
 #endif
     set_indicator_state(Indicator, State, false);
     update();
-    int diameter = Indicator_Size >> 1, radius = diameter >> 1;
+    int const diameter = Indicator_Size >> 1, radius = diameter >> 1;
     if (QRect(radius, radius, diameter, diameter).contains(event->pos()))
     {
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
@@ -540,36 +521,36 @@ void Activity_Indicator::mouseReleaseEvent(QMouseEvent *event)
 /*==============================================================================
     Indicator
 */
-QPixmap *Activity_Indicator::indicator()
+QPixmap* Activity_Indicator::indicator() const
 {
 #if ((DEBUG_SECTION) & DEBUG_INDICATOR)
-    clog << ">>> Activity_Indicator::indicator" << endl << "    Indicator_Size = " << Indicator_Size << endl;
+    clog << ">>> Activity_Indicator::indicator" << endl
+         << "    Indicator_Size = " << Indicator_Size << endl;
 #endif
-    QPixmap *pixmap = new QPixmap(Indicator_Size, Indicator_Size);
+    auto* pixmap = new QPixmap(Indicator_Size, Indicator_Size);
     pixmap->fill(Qt::transparent);
 
     QPainter painter(pixmap);
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setPen(QPen(Qt::transparent));
-    QPointF origin(Indicator_Size / 2.0, Indicator_Size / 2.0);
+    QPointF const origin(Indicator_Size / 2.0, Indicator_Size / 2.0);
     QConicalGradient conical_gradient(origin, -90.0);
 #if ((DEBUG_SECTION) & DEBUG_INDICATOR)
     clog << "    " << PROGRESS_INDICATOR_RIPPLES << " ripples" << endl;
 #endif
     if (PROGRESS_INDICATOR_RIPPLES > 0)
     {
-        double increment = 1.0 / (PROGRESS_INDICATOR_RIPPLES << 1), stop_point = 0.0;
+        double const increment = 1.0 / (PROGRESS_INDICATOR_RIPPLES << 1);
+        double stop_point = 0.0;
 #if ((DEBUG_SECTION) & DEBUG_INDICATOR)
         clog << "      increment = " << increment << endl;
 #endif
         while (true)
         {
             conical_gradient.setColorAt(stop_point, QColor((QRgb)PROGRESS_INDICATOR_HEAD_COLOR));
-            if ((stop_point += increment) > 1.0)
-                break;
+            if ((stop_point += increment) > 1.0) break;  // NOLINT
             conical_gradient.setColorAt(stop_point, QColor((QRgb)PROGRESS_INDICATOR_TAIL_COLOR));
-            if ((stop_point += increment) > 1.0)
-                break;
+            if ((stop_point += increment) > 1.0) break;  // NOLINT
         }
         conical_gradient.setColorAt(1.0, QColor((QRgb)PROGRESS_INDICATOR_HEAD_COLOR));
     }
@@ -579,7 +560,7 @@ QPixmap *Activity_Indicator::indicator()
         conical_gradient.setColorAt(1.0, QColor((QRgb)PROGRESS_INDICATOR_TAIL_COLOR));
     }
     painter.setBrush(conical_gradient);
-    QRectF region(1.0, 1.0, Indicator_Size - 2, Indicator_Size - 2);
+    QRectF const region(1.0, 1.0, Indicator_Size - 2, Indicator_Size - 2);
 #if ((DEBUG_SECTION) & DEBUG_INDICATOR)
     clog << "    indicator region = " << region << endl;
 #endif
@@ -591,40 +572,40 @@ QPixmap *Activity_Indicator::indicator()
     return pixmap;
 }
 
-void Activity_Indicator::set_indicator_state(QPixmap *pixmap, int condition, bool pressed)
+void Activity_Indicator::set_indicator_state(QPixmap* pixmap, int condition, bool pressed)
 {
 #if ((DEBUG_SECTION) & DEBUG_INDICATOR)
-    clog << ">>> Activity_Indicator::set_indicator_state: " << condition << ", pressed = " << boolalpha << pressed
-         << endl;
+    clog << ">>> Activity_Indicator::set_indicator_state: " << condition
+         << ", pressed = " << boolalpha << pressed << endl;
 #endif
     State_Lock.lock();
 
-    if (condition < 0)
-        condition = 0;
-    else if (condition >= TOTAL_STATE_CONDITIONS)
-        condition = TOTAL_STATE_CONDITIONS - 1;
+    if (condition < 0) condition = 0;
+    else if (condition >= TOTAL_STATE_CONDITIONS) condition = TOTAL_STATE_CONDITIONS - 1;
 
     QPainter painter(pixmap);
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setPen(QPen(Qt::transparent));
     painter.setBrush(Qt::white);
-    int side = qMin(pixmap->width(), pixmap->height());
+    int const side = qMin(pixmap->width(), pixmap->height());
     //	Intended state circle expanded by one pixel.
     double diameter = (side / 2.0) + 2.0;
-    QRectF region((pixmap->width() - diameter) / 2.0, (pixmap->height() - diameter) / 2.0, diameter, diameter);
+    QRectF region((pixmap->width() - diameter) / 2.0, (pixmap->height() - diameter) / 2.0, diameter,
+                  diameter);
 //	Clear the existing state circle.
 #if ((DEBUG_SECTION) & DEBUG_INDICATOR)
-    clog << "      pixmap size = " << pixmap->size() << endl << "     clear circle = " << region << endl;
+    clog << "      pixmap size = " << pixmap->size() << endl
+         << "     clear circle = " << region << endl;
 #endif
     painter.drawEllipse(region);
 
     QColor color = State_Color[condition];
-    if (pressed)
-        color = color.lighter();
+    if (pressed) color = color.lighter();
     painter.setBrush(color);
     //	Intended size.
     diameter -= 2.0;
-    region.setRect((pixmap->width() - diameter) / 2.0, (pixmap->height() - diameter) / 2.0, diameter, diameter);
+    region.setRect((pixmap->width() - diameter) / 2.0, (pixmap->height() - diameter) / 2.0,
+                   diameter, diameter);
 #if ((DEBUG_SECTION) & DEBUG_INDICATOR)
     clog << "    state circle = " << region << ", color 0x" << hex << color.rgba() << dec << endl;
 #endif
@@ -636,5 +617,4 @@ void Activity_Indicator::set_indicator_state(QPixmap *pixmap, int condition, boo
 #endif
 }
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE

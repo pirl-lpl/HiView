@@ -21,8 +21,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Window_hh
-#define HiView_Window_hh
+#pragma once
 
 #include <QMainWindow>
 
@@ -30,7 +29,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include "Distance_Line.hh"
 #include "Image_Viewer.hh"
 
-#ifdef __APPLE__
+#ifdef Q_OS_MACOS
 #include "Mac_Voice_Adapter.hh"
 #endif
 
@@ -83,20 +82,20 @@ class HiView_Window : public QMainWindow
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Types:
     */
-    typedef Image_Viewer::Shared_Image Shared_Image;
-    typedef Data_Mapper_Tool::Data_Map Data_Map;
+    using Shared_Image = Image_Viewer::Shared_Image;
+    using Data_Map = Data_Mapper_Tool::Data_Map;
 
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
-    enum Layout_Restoration
+    enum Layout_Restoration : quint8
     {
         DO_NOT_RESTORE_LAYOUT,
         RESTORE_LAYOUT,
@@ -106,20 +105,17 @@ class HiView_Window : public QMainWindow
     /*==============================================================================
         Constructors
     */
-    HiView_Window(const QString &source_name, const QSizeF &scaling = QSizeF(),
-                  Layout_Restoration restore_layout = PREFERENCES_RESTORE_LAYOUT, QWidget *parent = NULL,
-                  Qt::WindowFlags flags = Qt::Widget);
+    HiView_Window(const QString& source_name, const QSizeF& scaling = QSizeF(),
+                  Layout_Restoration restore_layout = PREFERENCES_RESTORE_LAYOUT,
+                  QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::Widget);
 
     virtual ~HiView_Window();
 
     /*==============================================================================
         Accessors
     */
-  public:
-    QString source_name()
-    {
-        return Source_Name;
-    }
+
+    QString source_name() { return Source_Name; }
 
     /**	Get the selected image source region.
 
@@ -153,12 +149,12 @@ class HiView_Window : public QMainWindow
         @see	selected_source_region() const
         @see	selected_display_region() const
     */
-    inline bool has_selected_region() const
-    {
-        return !Selected_Image_Region.isEmpty() || Selection_Modification;
-    }
+    bool has_selected_region() const
+    { return !Selected_Image_Region.isEmpty() || Selection_Modification; }
 
-  protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
+
+ protected:
     /**	Initiate loading of a named image source with an intitial scaling.
 
         If the initial scaling is invalid  - i.e. either the
@@ -177,7 +173,7 @@ class HiView_Window : public QMainWindow
         @return	true if the load request to the Image_Viewer was accepted;
             false otherwise.
     */
-    bool load_image(const QString &source_name, const QSizeF &scaling = QSizeF());
+    bool load_image(const QString& source_name, const QSizeF& scaling = QSizeF());
 
     /**	Initiate loading of a named image source fit to a display size.
 
@@ -191,7 +187,7 @@ class HiView_Window : public QMainWindow
         @return	true if the load request to the Image_Viewer was accepted;
             false otherwise.
     */
-    bool load_image(const QString &source_name, const QSize &display_size);
+    bool load_image(const QString& source_name, const QSize& display_size);
 
     /**	Initiate loading of an in-memory image with an initial scaling.
 
@@ -211,7 +207,7 @@ class HiView_Window : public QMainWindow
             false otherwise.
         @see	load_image(const QString&, const QSizeF&)
     */
-    bool load_image(const QImage &image, const QSizeF &scaling = QSizeF());
+    bool load_image(const QImage& image, const QSizeF& scaling = QSizeF());
 
     /**	Initiate loading of an in-memory image fit to a display size.
 
@@ -224,7 +220,7 @@ class HiView_Window : public QMainWindow
         @return	true if the load request to the Image_Viewer was accepted;
             false otherwise.
     */
-    bool load_image(const QImage &image, const QSize &display_size);
+    bool load_image(const QImage& image, const QSize& display_size);
 
     /**	Initiate loading of an image from an HTTP URL.
 
@@ -236,29 +232,25 @@ class HiView_Window : public QMainWindow
         @param	source_name	A QString that provides an HTTP URL. It is presumed
             that the URL has already been vetted as not for a JP2 source.
     */
-    void load_URL(const QString &source_name);
+    void load_URL(const QString& source_name);
 
     /**	Get the image rendering status.
 
         @return An {@link Image_Viewer::rendering_status() image rendering
             status code}.
     */
-    inline int rendering_status() const
-    {
-        return Image_View->rendering_status();
-    }
+    int rendering_status() const { return Image_View->rendering_status(); }
 
     /*==============================================================================
         GUI elements
     */
-  protected:
     void create_menus();
     void update_window_fit_action();
 
     void create_source_selections();
-    void display_image_name(const QString &source_name);
-    void add_source_selection(const QString &name);
-    void remove_source_selection(const QString &name);
+    void display_image_name(const QString& source_name);
+    void add_source_selection(const QString& name);
+    void remove_source_selection(const QString& name);
 
     void create_image_viewer();
 
@@ -273,37 +265,33 @@ class HiView_Window : public QMainWindow
     /*==============================================================================
         Event Handlers
     */
-    virtual void resizeEvent(QResizeEvent *event);
+    void resizeEvent(QResizeEvent* event) override;
 
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dropEvent(QDropEvent *event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *event);
-    virtual void mouseReleaseEvent(QMouseEvent *event);
-    virtual void mouseDoubleClickEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
 
-    virtual void closeEvent(QCloseEvent *event);
-
-    bool eventFilter(QObject *object, QEvent *event);
+    void closeEvent(QCloseEvent* event) override;
 
     /*==============================================================================
         Qt slots
     */
-  public slots:
 
-    void open(const QString &source_name);
-    void open_file();
-    void open_URL();
+    Q_SLOT void open(const QString& source_name);
+    Q_SLOT void open_file();
+    Q_SLOT void open_URL();
 
     bool save_image();
 
-  private slots:
+ private:
+    Q_SLOT void source_selections(const QStringList& source_list);
 
-    void source_selections(const QStringList &source_list);
-
-    bool load_image(QNetworkReply *network_reply);
-    void continue_startup();
+    Q_SLOT bool load_image(QNetworkReply* network_reply);
+    Q_SLOT void continue_startup();
 
     /**	Receives notification when the {@link
         PDS_Metadata::fetched(idaeim::PVL::Aggregate*) PDS metadata fetch
@@ -325,7 +313,7 @@ class HiView_Window : public QMainWindow
             metadata that was fetched. This will be NULL if no metadata was
             obtained.
     */
-    void PDS_metadata(idaeim::PVL::Aggregate *metadata);
+    void PDS_metadata(idaeim::PVL::Aggregate* metadata);
 
     void save_image_done(bool completed);
 
@@ -340,9 +328,9 @@ class HiView_Window : public QMainWindow
     void activity_indicator_clicked(int status);
     void image_loaded(bool successful);
 
-    void image_moved(const QPoint &image_position, int band);
-    void image_cursor_moved(const QPoint &display_position, const QPoint &image_position);
-    void displayed_image_region_resized(const QSize &region_size);
+    void image_moved(const QPoint& image_position, int band);
+    void image_cursor_moved(const QPoint& display_position, const QPoint& image_position);
+    void displayed_image_region_resized(const QSize& region_size);
 
     /**	Handles the {@link Image_Viewer::state_change(int) state change}
         signal from the Image_Viewer.
@@ -379,32 +367,31 @@ class HiView_Window : public QMainWindow
     void fit_window_to_image();
 
     void view_status_bar(bool enabled);
-    void show_status_message(const QString &message);
-    void status_message_changed(const QString &message);
+    void show_status_message(const QString& message);
+    void status_message_changed(const QString& message);
 
     void help();
-    void help_documentation(const QString &location);
+    void help_documentation(const QString& location);
     void about();
 
-    void tool_context_menu_requested(QDockWidget *tool, QContextMenuEvent *event);
+    void tool_context_menu_requested(QDockWidget* tool, QContextMenuEvent* event);
     void tool_position();
 
     void toggle_distance_tool(bool enable);
-    void line_color(const QColor &color);
-#ifdef __APPLE__
+    void line_color(const QColor& color);
+#ifdef Q_OS_MACOS
     void recognizer_toggled(bool enable);
 #endif
 
     /*==============================================================================
         Helpers
     */
-  private:
     void save_layout();
     void restore_layout();
 
     bool load_initial_source();
     void load_image_start();
-    void load_image_failed(const QString &reason = QString());
+    void load_image_failed(const QString& reason = QString());
 
     void reset_metadata();
 
@@ -416,7 +403,7 @@ class HiView_Window : public QMainWindow
     void reset_region_overlay();
     void update_line();
     void reset_line();
-    int selection_modification(const QPoint &image_position);
+    int selection_modification(const QPoint& image_position);
     void set_selection_cursor(int selection);
 
     /**	Conditionally refresh the Statistics Tools.
@@ -475,45 +462,46 @@ class HiView_Window : public QMainWindow
     */
     bool statistics_are_visible() const;
 
-    void make_way_for(QDockWidget *tool);
-    bool vertically_overlapping_docks(Qt::DockWidgetArea this_dock, Qt::DockWidgetArea that_dock) const;
-    void resize_tool(QDockWidget *tool);
+    void make_way_for(QDockWidget* tool);
+    bool vertically_overlapping_docks(Qt::DockWidgetArea this_dock,
+                                      Qt::DockWidgetArea that_dock) const;
+    void resize_tool(QDockWidget* tool);
 
-    static bool URL_source(QString &source_name);
-    bool JPIP_source(QString &source_name) const;
+    static bool URL_source(QString& source_name);
+    bool JPIP_source(QString& source_name) const;
 
     /*==============================================================================
         Data
     */
-  private:
     //	Configuration/Preferences.
-    Preferences_Dialog *Preferences;
+    Preferences_Dialog* Preferences;
 
     //	Menus.
-    QMenu *File_Menu;
+    QMenu* File_Menu;
     QAction *Open_File_Action, *Open_URL_Action, *Save_Action, *Preferences_Action, *Quit_Action;
 
     QMenu *Tools_Menu, *View_Menu, *Scale_Menu;
-    QAction *Distance_Tool_Action, *View_Image_Info_Action, *View_Image_Metadata_Action, *View_Navigator_Action,
-        *View_Statistics_Action, *View_Data_Mapper_Action, *Auto_Resize_Action, *Fit_to_Image_Action,
-        *View_Status_Bar_Action, *View_Tooltips_Action;
+    QAction *Distance_Tool_Action, *View_Image_Info_Action, *View_Image_Metadata_Action,
+        *View_Navigator_Action, *View_Statistics_Action, *View_Data_Mapper_Action,
+        *Auto_Resize_Action, *Fit_to_Image_Action, *View_Status_Bar_Action, *View_Tooltips_Action;
 
-#ifdef __APPLE__
-    QAction *View_SpeechRecog_Action;
+#ifdef Q_OS_MACOS
+    QAction* View_SpeechRecog_Action;
 #endif
 
-    QMenu *Data_Map_Menu;
+    QMenu* Data_Map_Menu;
 
-    QMenu *Help_Menu;
+    QMenu* Help_Menu;
     QAction *Help_Action, *About_Action;
-    About_HiView_Dialog *About_Dialog;
+    About_HiView_Dialog* About_Dialog;
 
-    QMenu *Tool_Position_Menu;
-    QAction *Floating_Position, *Left_Position, *Right_Position, *Top_Position, *Bottom_Position, *Close_Position;
-    QDockWidget *Selected_Tool;
+    QMenu* Tool_Position_Menu;
+    QAction *Floating_Position, *Left_Position, *Right_Position, *Top_Position, *Bottom_Position,
+        *Close_Position;
+    QDockWidget* Selected_Tool;
 
     //	Source selection list.
-    QComboBox *Source_Selections;
+    QComboBox* Source_Selections;
 
     QString Source_Directory, Source_Name, Source_Name_Loading;
 
@@ -523,69 +511,68 @@ class HiView_Window : public QMainWindow
     bool Image_Loading;
 
     //	Network access for image loading from HTTP URL.
-    QNetworkAccessManager *Network_Access_Manager;
-    QNetworkReply *Network_Reply;
+    QNetworkAccessManager* Network_Access_Manager;
+    QNetworkReply* Network_Reply;
 
     //	Rendering activity indicator.
-    Activity_Indicator *Image_Activity_Indicator;
+    Activity_Indicator* Image_Activity_Indicator;
 
     //	Image info panel.
-    Image_Info_Panel *Image_Info;
-    Location_Mapper *Location;
+    Image_Info_Panel* Image_Info;
+    Location_Mapper* Location;
 
     //	Image viewer.
-    Image_Viewer *Image_View;
+    Image_Viewer* Image_View;
 
     //	Region selection.
     QRectF Selected_Image_Region;
     //	A selection modifiction mode, or zero if no modification in progress.
     int Selection_Modification;
     QPointF Selection_Start;
-    QRubberBand *Region_Overlay;
-    QLabel *Selected_Area;
+    QRubberBand* Region_Overlay;
+    QLabel* Selected_Area;
     QString Selected_Area_Text;
 
     //	Image metadata dialog.
-    Metadata_Dialog *Image_Metadata_Dialog;
-    PDS_Metadata *Metadata;
+    Metadata_Dialog* Image_Metadata_Dialog;
+    PDS_Metadata* Metadata;
 
     // distance tool
     QColor Line_Color;
-    Distance_Line *Line;
+    Distance_Line* Line;
     QPoint Image_Line_X;
     QLine Image_Line;
     bool Distance_Tool;
     bool P1_Set;
 
     //	Image navigator tool.
-    Navigator_Tool *Navigator;
+    Navigator_Tool* Navigator;
     bool Navigator_Fit;
 
     //	Image statistics tools.
-    Statistics_Tools *Statistics;
+    Statistics_Tools* Statistics;
     bool Statistics_Refresh_Needed;
 
     //	Source-to-Display data mapping tool.
-    Data_Mapper_Tool *Data_Mapper;
-    Data_Map **Data_Maps;
+    Data_Mapper_Tool* Data_Mapper;
+    Data_Map** Data_Maps;
 
     //	Open file selection dialog.
-    QFileDialog *Open_File_Dialog;
+    QFileDialog* Open_File_Dialog;
 
     //	Save image dialog.
-    Save_Image_Dialog *Image_Save_Dialog;
-    Save_Image_Thread *Image_Save_Thread;
-    Plastic_Image *Image_Saved;
+    Save_Image_Dialog* Image_Save_Dialog;
+    Save_Image_Thread* Image_Save_Thread;
+    Plastic_Image* Image_Saved;
 
-#ifdef __APPLE__
-    Mac_Voice_Adapter *adapter;
+#ifdef Q_OS_MACOS
+    Mac_Voice_Adapter* adapter;
 #endif
 
     static bool Restore_Layout;
 
     //	Shared error message dialog.
-    static QErrorMessage *Error_Message;
+    static QErrorMessage* Error_Message;
 };
 
-} // namespace UA::HiRISE
-#endif
+}  // namespace UA::HiRISE

@@ -52,18 +52,19 @@ class HiView_Application : public QApplication
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     /*==============================================================================
         Constructor
     */
-    HiView_Application(int &argc, char **argv);
+    HiView_Application(int& argc, char** argv);
 
+    [[nodiscard]] QString requestedPathname() const { return Requested_Pathname; }
     /*==============================================================================
         Utilities
     */
@@ -72,14 +73,14 @@ class HiView_Application : public QApplication
         @param A QString representing a file pathname
         @return true if the input looks like a Jpip Pass-thru Link.
     */
-    static bool is_jpip_passthru_link(const QString &input);
+    static bool is_jpip_passthru_link(const QString& input);
 
     /** Parses an input source pathname to retrieve the Jpip Pass-thru Link.
 
         @param A QString representing a file pathname
         @return The Jpip Pass-thru Link, or empty string if the parse fails.
     */
-    static QString parse_jpip_passthru_link(const QString &input);
+    static QString parse_jpip_passthru_link(const QString& input);
 
 /*==============================================================================
     Qt events:
@@ -95,24 +96,25 @@ class HiView_Application : public QApplication
         whatever the base QApplication::event method returns.
 */
 #ifdef DEBUG_SECTION
-    bool notify(QObject *receiver, QEvent *event);
+    bool notify(QObject* receiver, QEvent* event);
 #endif
-
-    bool event(QEvent *event) override;
 
     /*==============================================================================
         Qt signals:
     */
-  signals:
 
-    /**	Signals the occurance of a QEvent::FileOpen {@link event(QEvent*) event}.
+    /**	Signals the occurance of a QEvent::FileOpen {@link event(QEvent*)
+       event}.
 
         @param	The file pathname associated with the QFileOpenEvent.
         @see	event(QEvent*)
     */
-    void file_open_request(const QString &pathname);
+    Q_SIGNAL void file_open_request(const QString& pathname);
 
-  public:
+ protected:
+    bool event(QEvent* event) override;
+
+ private:
     QString Requested_Pathname;
 };
 
@@ -120,11 +122,8 @@ class NullEventFilter : public QObject
 {
     Q_OBJECT
 
-  protected:
-     bool eventFilter(QObject *, QEvent *) override
-    {
-        return true;
-    }
+ public:
+    bool eventFilter(QObject*, QEvent*) override { return true; }
 };
 
-} // namespace UA::HiRISE
+}  // namespace UA::HiRISE

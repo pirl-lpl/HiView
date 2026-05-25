@@ -22,16 +22,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 *******************************************************************************/
 
-#ifndef UA_HiRISE_Coordinate_hh
-#define UA_HiRISE_Coordinate_hh
+#pragma once
 
 class QString;
 
 #include <iosfwd>
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /**	A <i>Coordinate</i> holds the X,Y values of a location in a
     two-dimensional coordinate system.
@@ -41,12 +38,12 @@ namespace HiRISE
 */
 class Coordinate
 {
-  public:
+ public:
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     /*==============================================================================
         Constructors
@@ -76,19 +73,19 @@ class Coordinate
             representation. In this case the coordinate will be left with
             zero values.
     */
-    explicit Coordinate(const QString &coordinate);
+    explicit Coordinate(const QString& coordinate);
 
     /**	Copies a Coordinate.
 
         @param	coordinate	The Coordinate to be copied.
     */
-    Coordinate(const Coordinate &coordinate);
+    Coordinate(const Coordinate& coordinate);
 
     /**	Assigns another Coordinate to this Coordinate.
 
         @param	coordinate	The Coordinate to be assigned.
     */
-    Coordinate &operator=(const Coordinate &coordinate);
+    Coordinate& operator=(const Coordinate& coordinate);
 
     /*==============================================================================
         Data
@@ -96,7 +93,7 @@ class Coordinate
     //!	Coordinate values.
     double X, Y;
 
-}; //	End of Coordinate class.
+};  //	End of Coordinate class.
 
 /*==============================================================================
     Utilities
@@ -115,8 +112,6 @@ class Coordinate
     @param	coordinate	A Coordinate reference.
     @return	The stream reference.
 */
-std::ostream &operator<<(std::ostream &stream, const Coordinate &coordinate);
+std::ostream& operator<<(std::ostream& stream, const Coordinate& coordinate);
 
-} // namespace HiRISE
-} // namespace UA
-#endif
+}  // namespace UA::HiRISE

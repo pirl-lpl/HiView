@@ -23,8 +23,6 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include "About_HiView_Dialog.hh"
 
-#include "Icon_Button.hh"
-
 #include <QAction>
 #include <QApplication>
 #include <QHBoxLayout>
@@ -35,6 +33,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
+
+#include "Icon_Button.hh"
 
 #if defined(DEBUG_SECTION)
 /*	DEBUG_SECTION controls
@@ -54,23 +54,21 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #define DEBUG_SECTION DEBUG_OFF
 #endif
 
-#include "HiView_Utilities.hh"
-
 #include <iomanip>
 #include <iostream>
+
+#include "HiView_Utilities.hh"
 using std::boolalpha;
 using std::clog;
 using std::endl;
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const About_HiView_Dialog::ID =
+const char* const About_HiView_Dialog::ID =
     "UA::HiRISE::About_HiView_Dialog ($Revision: 1.4 $ $Date: 2012/03/09 02:13:54 $)";
 
 #ifndef ABOUT_HIVIEW_DIALOG_MARGIN
@@ -99,7 +97,7 @@ About_HiView_Dialog::About_HiView_Dialog()
     //	Allow non-modal (show instead of exec) operation.
     setModal(false);
 
-    QVBoxLayout *dialog_layout = new QVBoxLayout(this);
+    auto* dialog_layout = new QVBoxLayout(this);
     dialog_layout->setAlignment(Qt::AlignTop);
     dialog_layout->setContentsMargins(0, 0, 0, 0);
     dialog_layout->setSpacing(0);
@@ -114,13 +112,13 @@ About_HiView_Dialog::About_HiView_Dialog()
     clog << "      size " << background.size() << endl;
 #endif
     QPainter painter(&background);
-    QLabel *content;
+    QLabel* content;
 
 //	Application logo.
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "    Application logo" << endl;
 #endif
-    QPixmap logo(":/Images/HiView_Icon.png");
+    QPixmap const logo(":/Images/HiView_Icon.png");
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "      size " << logo.size() << endl
          << "    draw HiView logo onto the background image" << endl
@@ -131,8 +129,8 @@ About_HiView_Dialog::About_HiView_Dialog()
 //	Content text.
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "    Content text" << endl
-         << "      size " << (background.width() - (logo.width() + ABOUT_HIVIEW_DIALOG_MARGIN)) << "w, "
-         << (background.height() - (ABOUT_HIVIEW_DIALOG_MARGIN * 2)) << 'h' << endl
+         << "      size " << (background.width() - (logo.width() + ABOUT_HIVIEW_DIALOG_MARGIN))
+         << "w, " << (background.height() - (ABOUT_HIVIEW_DIALOG_MARGIN * 2)) << 'h' << endl
          << "      default font family = " << font().defaultFamily() << endl;
 #endif
     content = new QLabel(tr(
@@ -146,10 +144,11 @@ About_HiView_Dialog::About_HiView_Dialog()
     content->setWordWrap(true);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "    render content text label onto the background image" << endl
-         << "      at " << logo.width() << "x, " << (ABOUT_HIVIEW_DIALOG_MARGIN + ABOUT_HIVIEW_DIALOG_TEXT_Y_OFFSET)
-         << 'y' << endl;
+         << "      at " << logo.width() << "x, "
+         << (ABOUT_HIVIEW_DIALOG_MARGIN + ABOUT_HIVIEW_DIALOG_TEXT_Y_OFFSET) << 'y' << endl;
 #endif
-    content->render(&painter, QPoint(logo.width(), ABOUT_HIVIEW_DIALOG_MARGIN + ABOUT_HIVIEW_DIALOG_TEXT_Y_OFFSET));
+    content->render(&painter, QPoint(logo.width(), ABOUT_HIVIEW_DIALOG_MARGIN +
+                                                       ABOUT_HIVIEW_DIALOG_TEXT_Y_OFFSET));
     delete content;
 
 //	Primary panel label image.
@@ -161,19 +160,19 @@ About_HiView_Dialog::About_HiView_Dialog()
     dialog_layout->addWidget(content);
 
     //	Buttons panel.
-    QHBoxLayout *horizontal_layout = new QHBoxLayout;
+    auto* horizontal_layout = new QHBoxLayout;
     horizontal_layout->setContentsMargins(10, 5, 5, 5);
 
 //	Close button.
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "    Close button" << endl;
 #endif
-    QPushButton *close_button = new QPushButton(tr("Close"));
+    auto* close_button = new QPushButton(tr("Close"));
     connect(close_button, SIGNAL(clicked()), SLOT(close()));
     horizontal_layout->addWidget(close_button);
 
     //	Close action.
-    QAction *action = new QAction(tr("Close Window"), this);
+    auto* action = new QAction(tr("Close Window"), this);
     action->setShortcut(tr("Ctrl+W"));
     connect(action, SIGNAL(triggered()), SLOT(close()));
     addAction(action);
@@ -197,15 +196,16 @@ About_HiView_Dialog::About_HiView_Dialog()
 //	Credits panel.
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "    Credits panel" << endl
-         << "      label column width = " << (logo.width() - HIVIEW_LOGO_MARGIN + ABOUT_HIVIEW_DIALOG_CREDITS_X_OFFSET)
-         << endl
+         << "      label column width = "
+         << (logo.width() - HIVIEW_LOGO_MARGIN + ABOUT_HIVIEW_DIALOG_CREDITS_X_OFFSET) << endl
          << "      cell spacing = " << HIVIEW_LOGO_MARGIN << endl;
 #endif
-    content = new QLabel(tr(
+    content = new QLabel(
+        tr(
 #include "Credits.html"
-                             )
-                             .arg(logo.width() - HIVIEW_LOGO_MARGIN + ABOUT_HIVIEW_DIALOG_CREDITS_X_OFFSET)
-                             .arg(HIVIEW_LOGO_MARGIN));
+            )
+            .arg(logo.width() - HIVIEW_LOGO_MARGIN + ABOUT_HIVIEW_DIALOG_CREDITS_X_OFFSET)
+            .arg(HIVIEW_LOGO_MARGIN));
     content->setStyleSheet("background:transparent;");
     content->setContentsMargins(0, 0, 0, 0);
     //	Enable links to be opened in the user's web browser.
@@ -245,5 +245,4 @@ void About_HiView_Dialog::expand_button_toggled(bool down)
 #endif
 }
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE

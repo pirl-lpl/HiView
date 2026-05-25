@@ -25,7 +25,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "Coordinate.hh"
 
 #include <QString>
-
 #include <string>
 using std::string;
 #include <ostream>
@@ -33,51 +32,44 @@ using std::ostream;
 #include <sstream>
 using std::ostringstream;
 #include <stdexcept>
-using std::invalid_argument;
-#include <iomanip>
 using std::endl;
+using std::invalid_argument;
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const Coordinate::ID = "UA::HiRISE::Coordinate ($Revision: 1.1 $ $Date: 2012/09/16 07:50:51 $)";
+const char* const Coordinate::ID =
+    "UA::HiRISE::Coordinate ($Revision: 1.1 $ $Date: 2012/09/16 07:50:51 $)";
 
 /*==============================================================================
     Constructors
 */
-Coordinate::Coordinate() : X(0.0), Y(0.0)
-{
-}
+Coordinate::Coordinate() : X(0.0), Y(0.0) {}
 
-Coordinate::Coordinate(double x, double y) : X(x), Y(y)
-{
-}
+Coordinate::Coordinate(double x, double y) : X(x), Y(y) {}
 
-Coordinate::Coordinate(const Coordinate &coordinate) : X(coordinate.X), Y(coordinate.Y)
-{
-}
+Coordinate::Coordinate(const Coordinate& coordinate) : X(coordinate.X), Y(coordinate.Y) {}
 
-Coordinate::Coordinate(const QString &coordinate) : X(0.0), Y(0.0)
+Coordinate::Coordinate(const QString& coordinate) : X(0.0), Y(0.0)
 {
     double x(0.0), y(0.0);
     bool OK(false);
     QString value;
-    int index, separator_index = coordinate.indexOf(',');
+    auto index = 0;
+    auto separator_index = coordinate.indexOf(',');
     if (separator_index > 0)
     {
         value = coordinate.left(separator_index);
-        if ((index = value.indexOf('x', Qt::CaseInsensitive) >= 0))
+        if ((index = value.indexOf('x', Qt::CaseInsensitive) >= 0))  // NOLINT
             value = value.left(index);
         value = value.trimmed();
         x = value.toDouble(&OK);
         if (OK)
         {
             value = coordinate.right(coordinate.size() - separator_index - 1);
-            if ((index = value.indexOf('y', Qt::CaseInsensitive) >= 0))
+            if ((index = value.indexOf('y', Qt::CaseInsensitive) >= 0))  // NOLINT
                 value = value.left(index);
             value = value.trimmed();
             y = value.toDouble(&OK);
@@ -96,7 +88,7 @@ Coordinate::Coordinate(const QString &coordinate) : X(0.0), Y(0.0)
     }
 }
 
-Coordinate &Coordinate::operator=(const Coordinate &coordinate)
+Coordinate& Coordinate::operator=(const Coordinate& coordinate)
 {
     if (&coordinate != this)
     {
@@ -109,10 +101,7 @@ Coordinate &Coordinate::operator=(const Coordinate &coordinate)
 /*==============================================================================
     Utilities
 */
-std::ostream &operator<<(std::ostream &stream, const Coordinate &coordinate)
-{
-    return stream << coordinate.X << "x, " << coordinate.Y << 'y';
-}
+std::ostream& operator<<(std::ostream& stream, const Coordinate& coordinate)
+{ return stream << coordinate.X << "x, " << coordinate.Y << 'y'; }
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE

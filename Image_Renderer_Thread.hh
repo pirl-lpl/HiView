@@ -21,17 +21,14 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Image_Renderer_Thread_hh
-#define HiView_Image_Renderer_Thread_hh
+#pragma once
+
+#include <QThread>
 
 #include "Image_Renderer.hh"
 #include "Synchronized_Event.hh"
 
-#include <QThread>
-
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward reference.
 class JP2_Image;
@@ -40,18 +37,17 @@ class JP2_Image;
  */
 class Image_Renderer_Thread : public Image_Renderer, public QThread
 {
-  public:
+ public:
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     /*==============================================================================
         Constructors
     */
-  public:
-    explicit Image_Renderer_Thread(QObject *parent = NULL);
+    explicit Image_Renderer_Thread(QObject* parent = nullptr);
 
     virtual ~Image_Renderer_Thread();
 
@@ -82,7 +78,7 @@ class Image_Renderer_Thread : public Image_Renderer, public QThread
         @return	true	if the thread has finished running; false if the
             thread had not exited by the time the method returned.
     */
-    virtual bool finish(int cancel_options = WAIT_UNTIL_DONE);
+    bool finish(int cancel_options = WAIT_UNTIL_DONE) override;
 
     /**	Start the rendering loop.
 
@@ -103,7 +99,7 @@ class Image_Renderer_Thread : public Image_Renderer, public QThread
         @see	render()
         @see	stop_rendering(bool)
     */
-    virtual void start_rendering();
+    void start_rendering() override;
 
     /**	Suspend the rendering loop.
 
@@ -129,9 +125,9 @@ class Image_Renderer_Thread : public Image_Renderer, public QThread
             rendering to complete timed out.
         @see	stop_rendering(bool)
     */
-    virtual bool suspend_rendering(bool wait = false);
+    bool suspend_rendering(bool wait = false) override;
 
-  protected:
+ protected:
     /**	Run the thread.
 
         This method is called by the base QThread class when its start method
@@ -143,7 +139,7 @@ class Image_Renderer_Thread : public Image_Renderer, public QThread
         application; use the {@link start_rendering()} or start method
         instead.
     */
-    virtual void run();
+    void run() override;
 
     /**	Run the rendering loop.
 
@@ -155,7 +151,7 @@ class Image_Renderer_Thread : public Image_Renderer, public QThread
         start_rendering()} or start method to start the thread and the
         rendering loop again.
     */
-    virtual void run_rendering();
+    void run_rendering() override;
 
     /**	Test if the rendering loop is ready to continue.
 
@@ -173,16 +169,14 @@ class Image_Renderer_Thread : public Image_Renderer, public QThread
             finish} running the rendering loop and thread execution is to
             stop; true otherwise.
     */
-    virtual bool is_ready();
+    bool is_ready() override;
 
     /*==============================================================================
         Data
     */
-  private:
+ private:
     //!	The thread's ready to run condition.
     Synchronized_Event Ready_Event;
 };
 
-} // namespace HiRISE
-} // namespace UA
-#endif
+}  // namespace UA::HiRISE

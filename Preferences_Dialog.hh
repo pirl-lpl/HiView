@@ -21,8 +21,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Preferences_Dialog_hh
-#define HiView_Preferences_Dialog_hh
+#pragma once
 
 #include <QComboBox>
 #include <QDialog>
@@ -47,9 +46,7 @@ class QFileDialog;
 class QEvent;
 class QCloseEvent;
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class Icon_Button;
@@ -63,27 +60,27 @@ class General_Section : public QWidget
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
-    static const char *RESTORE_LAYOUT_KEY;
+    static const char* RESTORE_LAYOUT_KEY;
     //!	Obsolete.
-    static const char *RESTORE_WINDOW_POSITIONS_KEY;
+    static const char* RESTORE_WINDOW_POSITIONS_KEY;
 
-    static const char *RESTORE_LAST_SOURCE_KEY;
+    static const char* RESTORE_LAST_SOURCE_KEY;
 
-    static const char *BAND_NUMBERS_INDEXED_KEY;
+    static const char* BAND_NUMBERS_INDEXED_KEY;
 
-    static const char *GET_PDS_LABEL_KEY;
+    static const char* GET_PDS_LABEL_KEY;
 
-    static const char *DOCUMENTATION_LOCATION_KEY;
+    static const char* DOCUMENTATION_LOCATION_KEY;
 
-    static const char *RESTORE_LONGITUDE_FORMAT_KEY;
+    static const char* RESTORE_LONGITUDE_FORMAT_KEY;
 
-    static const char *RESTORE_LONGITUDE_DIRECTION_KEY;
+    static const char* RESTORE_LONGITUDE_DIRECTION_KEY;
 
-    static const char *RESTORE_LATITUDE_FORMAT_KEY;
+    static const char* RESTORE_LATITUDE_FORMAT_KEY;
 
     /*==============================================================================
         Defaults
@@ -98,97 +95,76 @@ class General_Section : public QWidget
 
     static int Default_Coordinate_Format;
 
-    static const char *Default_Documentation_Search_Locations[];
+    static const char* Default_Documentation_Search_Locations[];
     static QStringList Documentation_Search_Locations;
     static const QString Default_Documentation_Filename;
 
     /*==============================================================================
         Constructor
     */
-    General_Section(QWidget *parent = NULL);
+    General_Section(QWidget* parent = NULL);
 
     /*==============================================================================
         Accessors
     */
-    inline bool restore_layout() const
-    {
-        return Restore_Layout;
-    }
+    bool restore_layout() const { return Restore_Layout; }
 
-    inline bool restore_last_source() const
-    {
-        return Restore_Last_Source;
-    }
+    bool restore_last_source() const { return Restore_Last_Source; }
 
-    inline bool band_numbers_indexed() const
-    {
-        return Band_Numbers_Indexed;
-    }
+    bool band_numbers_indexed() const { return Band_Numbers_Indexed; }
 
-    inline bool get_PDS_metadata() const
-    {
-        return Get_PDS_Metadata;
-    }
+    bool get_PDS_metadata() const { return Get_PDS_Metadata; }
 
-    inline QString documentation_location() const
-    {
-        return Documentation_Location;
-    }
+    QString documentation_location() const { return Documentation_Location; }
 
-    inline static const QString &default_documentation_filename()
-    {
-        return Default_Documentation_Filename;
-    }
+    static const QString& default_documentation_filename()
+    { return Default_Documentation_Filename; }
 
     bool has_changed() const;
 
     /*==============================================================================
         Signals
     */
-  signals:
 
-    void band_numbers_indexed_changed(bool indexed);
+    Q_SIGNAL void band_numbers_indexed_changed(bool indexed);
 
-    void documentation_location_changed(const QString &location);
+    Q_SIGNAL void documentation_location_changed(const QString& location);
 
-    void longitude_direction_changed(int direction);
+    Q_SIGNAL void longitude_direction_changed(int direction);
 
-    void longitude_units_changed(int units);
+    Q_SIGNAL void longitude_units_changed(int units);
 
-    void latitude_units_changed(int units);
+    Q_SIGNAL void latitude_units_changed(int units);
 
     /*==============================================================================
         Slots:
     */
-  public slots:
 
-    void reset();
-    void defaults();
-    void apply();
+    Q_SLOT void reset();
+    Q_SLOT void defaults();
+    Q_SLOT void apply();
 
-  private slots:
+ private:
+    Q_SLOT void restore_layout(bool enabled);
+    Q_SLOT void restore_last_source(bool enabled);
 
-    void restore_layout(bool enabled);
-    void restore_last_source(bool enabled);
+    Q_SLOT void band_numbers_indexed(bool indexed);
 
-    void band_numbers_indexed(bool indexed);
+    Q_SLOT void longitude_format(int format);
+    Q_SLOT void longitude_direction(int direction);
+    Q_SLOT void latitude_format(int format);
 
-    void longitude_format(int format);
-    void longitude_direction(int direction);
-    void latitude_format(int format);
+    Q_SLOT void get_PDS_metadata(bool enabled);
 
-    void get_PDS_metadata(bool enabled);
-
-    void documentation_location(const QString &location);
-    void documentation_location_changed();
-    bool find_documentation_location();
-    void documentation_location_reset();
+    Q_SLOT void documentation_location(const QString& location);
+    Q_SLOT void documentation_location_changed();
+    Q_SLOT bool find_documentation_location();
+    Q_SLOT void documentation_location_reset();
 
     /*==============================================================================
         Helpers
     */
-  private:
-    bool documentation_location_is_valid(const QString &location);
+    bool documentation_location_is_valid(const QString& location);
 
     void reset_modifier_buttons();
     void reset_defaults_button();
@@ -196,24 +172,23 @@ class General_Section : public QWidget
     /*==============================================================================
         Data
     */
-  private:
     QString Title;
 
     bool Restore_Layout;
-    QCheckBox *Restore_Layout_CheckBox;
+    QCheckBox* Restore_Layout_CheckBox;
 
     bool Restore_Last_Source;
-    QCheckBox *Restore_Last_Source_CheckBox;
+    QCheckBox* Restore_Last_Source_CheckBox;
 
     bool Band_Numbers_Indexed;
-    QRadioButton *Band_Numbers_Indexed_Button;
+    QRadioButton* Band_Numbers_Indexed_Button;
 
     bool Get_PDS_Metadata;
-    QCheckBox *Get_PDS_Metadata_CheckBox;
+    QCheckBox* Get_PDS_Metadata_CheckBox;
 
     QString Documentation_Location, Documentation_Location_Pending;
-    QLineEdit *Documentation_Location_lineEdit;
-    Icon_Button *Documentation_Location_Reset_Button;
+    QLineEdit* Documentation_Location_lineEdit;
+    Icon_Button* Documentation_Location_Reset_Button;
 
     QPushButton *Defaults_Button, *Apply_Button;
 
@@ -230,12 +205,12 @@ class Sources_Section : public QWidget
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
-    static const char *SOURCE_LIST_CAPACITY_KEY;
-    static const char *SOURCE_LIST_KEY;
+    static const char* SOURCE_LIST_CAPACITY_KEY;
+    static const char* SOURCE_LIST_KEY;
 
     /*==============================================================================
         Defaults
@@ -246,20 +221,14 @@ class Sources_Section : public QWidget
     /*==============================================================================
         Constructor
     */
-    Sources_Section(QWidget *parent = NULL);
+    Sources_Section(QWidget* parent = NULL);
 
     /*==============================================================================
         Accessors
     */
-    inline int source_list_capacity() const
-    {
-        return Capacity;
-    }
+    int source_list_capacity() const { return Capacity; }
 
-    inline const QStringList &source_list() const
-    {
-        return *Source_List;
-    }
+    const QStringList& source_list() const { return *Source_List; }
 
     /**	Set the source list.
 
@@ -284,55 +253,49 @@ class Sources_Section : public QWidget
         @param	list	A QStringList reference that contains the new source
             list.
     */
-    void source_list(const QStringList &list);
+    void source_list(const QStringList& list);
 
     bool has_changed() const;
 
     /*==============================================================================
         Signals
     */
-  signals:
-
-    void source_list_capacity_changed(int capacity);
-    void source_list_changed(const QStringList &list);
+    Q_SIGNAL void source_list_capacity_changed(int capacity);
+    Q_SIGNAL void source_list_changed(const QStringList& list);
 
     /*==============================================================================
         Slots:
     */
-  public slots:
+    Q_SLOT void reset();
+    Q_SLOT void defaults();
+    Q_SLOT void apply();
 
-    void reset();
-    void defaults();
-    void apply();
-
-  private slots:
-
-    void source_list_capacity(int capacity);
-    void source_list_capacity_change();
-    void source_list_capacity_reset();
-    void source_list_reset();
-    void source_list_selection_changed();
-    void source_list_changed(QListWidgetItem *item = NULL);
-    void source_list_edit_item();
-    void source_list_remove_items();
+ private:
+    Q_SLOT void source_list_capacity(int capacity);
+    Q_SLOT void source_list_capacity_change();
+    Q_SLOT void source_list_capacity_reset();
+    Q_SLOT void source_list_reset();
+    Q_SLOT void source_list_selection_changed();
+    Q_SLOT void source_list_changed(QListWidgetItem* item = NULL);
+    Q_SLOT void source_list_edit_item();
+    Q_SLOT void source_list_remove_items();
 
     //	Handles value changing from Capacity_spinBox.
-    void reset_modifier_buttons();
+    Q_SLOT void reset_modifier_buttons();
 
     /*==============================================================================
         Data
     */
-  private:
     QString Title;
 
     int Capacity;
-    QSpinBox *Capacity_spinBox;
-    Icon_Button *Capacity_Reset_Button;
-    QLabel *Entries;
+    QSpinBox* Capacity_spinBox;
+    Icon_Button* Capacity_Reset_Button;
+    QLabel* Entries;
 
-    QStringList *Source_List;
-    QListWidget *Source_List_Widget;
-    Icon_Button *Source_List_Reset_Button;
+    QStringList* Source_List;
+    QListWidget* Source_List_Widget;
+    Icon_Button* Source_List_Reset_Button;
     QPushButton *Edit_Button, *Remove_Button;
 
     QPushButton *Defaults_Button, *Apply_Button;
@@ -346,24 +309,24 @@ class Rendering_Section : public QWidget
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
-    static const char *INITIAL_SCALE_KEY;
-    static const char *MAX_SCALE_KEY;
-    static const char *MIN_SCALE_KEY;
-    static const char *SCALING_MAJOR_INCREMENT_KEY;
-    static const char *SCALING_MINOR_INCREMENT_KEY;
+    static const char* INITIAL_SCALE_KEY;
+    static const char* MAX_SCALE_KEY;
+    static const char* MIN_SCALE_KEY;
+    static const char* SCALING_MAJOR_INCREMENT_KEY;
+    static const char* SCALING_MINOR_INCREMENT_KEY;
 
-    static const char *CONTRAST_STRETCH_UPPER_KEY;
-    static const char *CONTRAST_STRETCH_LOWER_KEY;
+    static const char* CONTRAST_STRETCH_UPPER_KEY;
+    static const char* CONTRAST_STRETCH_LOWER_KEY;
 
-    static const char *TILE_SIZE_KEY;
-    static const char *RENDERING_INCREMENT_LINES_KEY;
-    static const char *BACKGROUND_COLOR_KEY;
+    static const char* TILE_SIZE_KEY;
+    static const char* RENDERING_INCREMENT_LINES_KEY;
+    static const char* BACKGROUND_COLOR_KEY;
 
-    static const char *LINE_COLOR_KEY;
+    static const char* LINE_COLOR_KEY;
 
     /*==============================================================================
         Defaults
@@ -384,118 +347,90 @@ class Rendering_Section : public QWidget
     /*==============================================================================
         Constructor
     */
-    Rendering_Section(QWidget *parent = NULL);
+    Rendering_Section(QWidget* parent = nullptr);
 
     /*==============================================================================
         Accessors
     */
-    inline double initial_scale() const
-    {
-        return Initial_Scale;
-    }
+    double initial_scale() const { return Initial_Scale; }
 
-    inline double min_scale() const
-    {
-        return Min_Scale;
-    }
+    double min_scale() const { return Min_Scale; }
 
-    inline double max_scale() const
-    {
-        return Max_Scale;
-    }
+    double max_scale() const { return Max_Scale; }
 
-    inline double scaling_minor_increment() const
-    {
-        return Scaling_Minor_Increment;
-    }
+    double scaling_minor_increment() const { return Scaling_Minor_Increment; }
 
-    inline double scaling_major_increment() const
-    {
-        return Scaling_Major_Increment;
-    }
+    double scaling_major_increment() const { return Scaling_Major_Increment; }
 
     double contrast_stretch_upper(int band) const;
     double contrast_stretch_lower(int band) const;
 
-    inline int tile_size() const
-    {
-        return Tile_Size;
-    }
+    int tile_size() const { return Tile_Size; }
 
-    inline int rendering_increment_lines() const
-    {
-        return Rendering_Increment_Lines;
-    }
+    int rendering_increment_lines() const { return Rendering_Increment_Lines; }
 
-    inline QRgb background_color() const
-    {
-        return Background_Color;
-    }
+    QRgb background_color() const { return Background_Color; }
 
     bool has_changed() const;
 
     /*==============================================================================
         Signals
     */
-  signals:
+    Q_SIGNAL void min_scale_changed(double scaling);
+    Q_SIGNAL void max_scale_changed(double scaling);
+    Q_SIGNAL void scaling_minor_increment_changed(double increment);
+    Q_SIGNAL void scaling_major_increment_changed(double increment);
 
-    void min_scale_changed(double scaling);
-    void max_scale_changed(double scaling);
-    void scaling_minor_increment_changed(double increment);
-    void scaling_major_increment_changed(double increment);
+    Q_SIGNAL void contrast_stretch_upper_changed(double percent, int band);
+    Q_SIGNAL void contrast_stretch_lower_changed(double percent, int band);
 
-    void contrast_stretch_upper_changed(double percent, int band);
-    void contrast_stretch_lower_changed(double percent, int band);
-
-    void background_color_changed(QRgb color);
-    void line_color_changed(const QColor &color);
-    void tile_size_changed(int size);
-    void rendering_increment_lines_changed(int lines);
+    Q_SIGNAL void background_color_changed(QRgb color);
+    Q_SIGNAL void line_color_changed(const QColor& color);
+    Q_SIGNAL void tile_size_changed(int size);
+    Q_SIGNAL void rendering_increment_lines_changed(int lines);
 
     /*==============================================================================
         Slots:
     */
-  public slots:
 
-    void reset();
-    void defaults();
-    void apply();
+    Q_SLOT void reset();
+    Q_SLOT void defaults();
+    Q_SLOT void apply();
 
-  private slots:
+ private:
+    Q_SLOT void initial_scale_change();
+    Q_SLOT void initial_scale_reset();
+    Q_SLOT void min_scale_change();
+    Q_SLOT void min_scale_reset();
+    Q_SLOT void max_scale_change();
+    Q_SLOT void max_scale_reset();
+    Q_SLOT void scaling_minor_increment_change();
+    Q_SLOT void scaling_minor_increment_reset();
+    Q_SLOT void scaling_major_increment_change();
+    Q_SLOT void scaling_major_increment_reset();
 
-    void initial_scale_change();
-    void initial_scale_reset();
-    void min_scale_change();
-    void min_scale_reset();
-    void max_scale_change();
-    void max_scale_reset();
-    void scaling_minor_increment_change();
-    void scaling_minor_increment_reset();
-    void scaling_major_increment_change();
-    void scaling_major_increment_reset();
+    Q_SLOT void contrast_stretch_change();
+    Q_SLOT void contrast_stretch_reset();
 
-    void contrast_stretch_change();
-    void contrast_stretch_reset();
+    Q_SLOT void background_color(const QString& text);
+    Q_SLOT void background_color_changed();
+    Q_SLOT void select_background_color();
+    Q_SLOT void background_color_reset();
+    Q_SLOT void line_color(const QString& text);
+    Q_SLOT void line_color_changed();
+    Q_SLOT void select_line_color();
+    Q_SLOT void line_color_reset();
+    Q_SLOT void tile_size_change();
+    Q_SLOT void tile_size_reset();
+    Q_SLOT void rendering_increment_lines_change();
+    Q_SLOT void rendering_increment_lines_reset();
 
-    void background_color(const QString &text);
-    void background_color_changed();
-    void select_background_color();
-    void background_color_reset();
-    void line_color(const QString &text);
-    void line_color_changed();
-    void select_line_color();
-    void line_color_reset();
-    void tile_size_change();
-    void tile_size_reset();
-    void rendering_increment_lines_change();
-    void rendering_increment_lines_reset();
-
-    void changing();
+    Q_SLOT void changing();
 
     /*==============================================================================
         Helpers
     */
-  private:
+
     void initial_scale(double scaling);
     void min_scale(double scaling);
     void max_scale(double scaling);
@@ -505,10 +440,10 @@ class Rendering_Section : public QWidget
     void contrast_stretch_upper(double percent, int band);
     void contrast_stretch_lower(double percent, int band);
 
-    bool background_color_is_valid(const QString &color);
-    bool line_color_is_valid(const QString &color_spec);
+    bool background_color_is_valid(const QString& color);
+    bool line_color_is_valid(const QString& color_spec);
     static QString color_text(QRgb color);
-    static QRgb color_value(const QString &text);
+    static QRgb color_value(const QString& text);
     void tile_size(int size);
     void rendering_increment_lines(int lines);
 
@@ -518,7 +453,6 @@ class Rendering_Section : public QWidget
     /*==============================================================================
         Data
     */
-  private:
     QString Title;
 
     double Initial_Scale, Min_Scale, Max_Scale, Scaling_Minor_Increment, Scaling_Major_Increment,
@@ -532,25 +466,27 @@ class Rendering_Section : public QWidget
         *Contrast_Stretch_Upper_Reset_Button[3], *Contrast_Stretch_Lower_Reset_Button[3];
 
     int Tile_Size;
-    QSpinBox *Tile_Size_spinBox;
-    Icon_Button *Tile_Size_Reset_Button;
+    QSpinBox* Tile_Size_spinBox;
+    Icon_Button* Tile_Size_Reset_Button;
 
     int Rendering_Increment_Lines;
-    QSpinBox *Rendering_Increment_Lines_spinBox;
-    Icon_Button *Rendering_Increment_Lines_Reset_Button;
+    QSpinBox* Rendering_Increment_Lines_spinBox;
+    Icon_Button* Rendering_Increment_Lines_Reset_Button;
 
     QRgb Background_Color;
     QString Background_Color_Text, Background_Color_Text_Pending, Default_Background_Color_Text;
-    QLineEdit *Background_Color_lineEdit;
-    Icon_Button *Background_Color_Reset_Button;
-    QPushButton *Background_Color_Select_Button;
+    QLineEdit* Background_Color_lineEdit;
+    Icon_Button* Background_Color_Reset_Button;
+    QPushButton* Background_Color_Select_Button;
 
     QString Line_Color_Text, Line_Color_Text_Pending, Default_Line_Color_Text;
-    QLineEdit *Line_Color_lineEdit;
-    Icon_Button *Line_Color_Reset_Button;
-    QPushButton *Line_Color_Select_Button;
+    QLineEdit* Line_Color_lineEdit;
+    Icon_Button* Line_Color_Reset_Button;
+    QPushButton* Line_Color_Select_Button;
 
     QPushButton *Defaults_Button, *Apply_Button;
+
+    bool m_updatingScale;
 };
 
 /*=*****************************************************************************
@@ -561,17 +497,17 @@ class JPIP_Section : public QWidget
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
-    static const char *HTTP_TO_JPIP_HOSTNAME_KEY;
-    static const char *JPIP_TO_HTTP_HOSTNAME_KEY;
-    static const char *JPIP_SERVER_PORT_KEY;
-    static const char *JPIP_PROXY_KEY;
-    static const char *JPIP_CACHE_DIRECTORY_KEY;
-    static const char *JPIP_REQUEST_TIMEOUT_KEY;
-    static const char *MAX_SOURCE_IMAGE_AREA_MB_KEY;
+    static const char* HTTP_TO_JPIP_HOSTNAME_KEY;
+    static const char* JPIP_TO_HTTP_HOSTNAME_KEY;
+    static const char* JPIP_SERVER_PORT_KEY;
+    static const char* JPIP_PROXY_KEY;
+    static const char* JPIP_CACHE_DIRECTORY_KEY;
+    static const char* JPIP_REQUEST_TIMEOUT_KEY;
+    static const char* MAX_SOURCE_IMAGE_AREA_MB_KEY;
 
     /*==============================================================================
         Defaults
@@ -587,98 +523,76 @@ class JPIP_Section : public QWidget
     /*==============================================================================
         Constructor
     */
-    JPIP_Section(QWidget *parent = NULL);
+    JPIP_Section(QWidget* parent = NULL);
 
     /*==============================================================================
         Accessors
     */
-    inline QString HTTP_to_JPIP_hostname () const
-    {return HTTP_to_JPIP_Hostname;}
+    QString HTTP_to_JPIP_hostname() const { return HTTP_to_JPIP_Hostname; }
 
-    inline QString JPIP_to_HTTP_hostname () const
-    {return JPIP_to_HTTP_Hostname;}
+    QString JPIP_to_HTTP_hostname() const { return JPIP_to_HTTP_Hostname; }
 
-    inline int JPIP_server_port() const
-    {
-        return Port;
-    }
+    int JPIP_server_port() const { return Port; }
 
-    inline QString JPIP_proxy() const
-    {
-        return Proxy;
-    }
+    QString JPIP_proxy() const { return Proxy; }
 
-    inline QString JPIP_cache_directory() const
-    {
-        return Cache_Directory;
-    }
+    QString JPIP_cache_directory() const { return Cache_Directory; }
 
-    inline int JPIP_request_timeout() const
-    {
-        return Request_Timeout;
-    }
+    int JPIP_request_timeout() const { return Request_Timeout; }
 
-    inline int max_source_image_area_MB() const
-    {
-        return Max_Source_Image_Area_MB;
-    }
+    int max_source_image_area_MB() const { return Max_Source_Image_Area_MB; }
 
     bool has_changed() const;
 
     /*==============================================================================
         Signals
     */
-  signals:
 
-    void HTTP_to_JPIP_hostname_changed (const QString& hostname);
-    void JPIP_to_HTTP_hostname_changed (const QString& hostname);
-    void JPIP_server_port_changed(int port);
-    void JPIP_proxy_changed(const QString &proxy);
-    void JPIP_cache_directory_changed(const QString &cache_directory);
-    void JPIP_request_timeout_changed(int seconds);
-    void max_source_image_area_MB_changed(int area);
+    Q_SIGNAL void HTTP_to_JPIP_hostname_changed(const QString& hostname);
+    Q_SIGNAL void JPIP_to_HTTP_hostname_changed(const QString& hostname);
+    Q_SIGNAL void JPIP_server_port_changed(int port);
+    Q_SIGNAL void JPIP_proxy_changed(const QString& proxy);
+    Q_SIGNAL void JPIP_cache_directory_changed(const QString& cache_directory);
+    Q_SIGNAL void JPIP_request_timeout_changed(int seconds);
+    Q_SIGNAL void max_source_image_area_MB_changed(int area);
 
     /*==============================================================================
         Slots:
     */
-  public slots:
+    Q_SLOT void reset();
+    Q_SLOT void defaults();
+    Q_SLOT void apply();
 
-    void reset();
-    void defaults();
-    void apply();
+ private:
+    Q_SLOT void HTTP_to_JPIP_hostname(const QString& text);
+    Q_SLOT void HTTP_to_JPIP_hostname_changed();
+    Q_SLOT void HTTP_to_JPIP_hostname_reset();
+    Q_SLOT void JPIP_to_HTTP_hostname(const QString& text);
+    Q_SLOT void JPIP_to_HTTP_hostname_changed();
+    Q_SLOT void JPIP_to_HTTP_hostname_reset();
+    Q_SLOT void JPIP_server_port(int port);
+    Q_SLOT void JPIP_server_port_reset();
+    Q_SLOT void JPIP_proxy(const QString& text);
+    Q_SLOT void JPIP_proxy_changed();
+    Q_SLOT void JPIP_proxy_reset();
+    Q_SLOT void JPIP_cache_directory(const QString& text);
+    Q_SLOT void JPIP_cache_directory_changed();
+    Q_SLOT void select_JPIP_cache_directory();
+    Q_SLOT void JPIP_cache_directory_reset();
+    Q_SLOT void JPIP_request_timeout(int seconds);
+    Q_SLOT void JPIP_request_timeout_reset();
+    Q_SLOT void max_source_image_area_MB(int area);
+    Q_SLOT void max_source_image_area_MB_reset();
 
-  private slots:
-
-    void HTTP_to_JPIP_hostname (const QString& text);
-    void HTTP_to_JPIP_hostname_changed ();
-    void HTTP_to_JPIP_hostname_reset ();
-    void JPIP_to_HTTP_hostname (const QString& text);
-    void JPIP_to_HTTP_hostname_changed ();
-    void JPIP_to_HTTP_hostname_reset ();
-    void JPIP_server_port(int port);
-    void JPIP_server_port_reset();
-    void JPIP_proxy(const QString &text);
-    void JPIP_proxy_changed();
-    void JPIP_proxy_reset();
-    void JPIP_cache_directory(const QString &text);
-    void JPIP_cache_directory_changed();
-    void select_JPIP_cache_directory();
-    void JPIP_cache_directory_reset();
-    void JPIP_request_timeout(int seconds);
-    void JPIP_request_timeout_reset();
-    void max_source_image_area_MB(int area);
-    void max_source_image_area_MB_reset();
-
-    void changing();
+    Q_SLOT void changing();
 
     /*==============================================================================
         Helpers
     */
-  private:
-    bool JPIP_to_HTTP_hostname_verify (const QString& hostname);
-    bool HTTP_to_JPIP_hostname_verify (const QString& hostname);
-    bool JPIP_proxy_is_valid(const QString &proxy);
-    bool JPIP_cache_directory_is_valid(const QString &cache_directory);
+    bool JPIP_to_HTTP_hostname_verify(const QString& hostname);
+    bool HTTP_to_JPIP_hostname_verify(const QString& hostname);
+    bool JPIP_proxy_is_valid(const QString& proxy);
+    bool JPIP_cache_directory_is_valid(const QString& cache_directory);
 
     void reset_modifier_buttons();
     void reset_defaults_button();
@@ -686,41 +600,41 @@ class JPIP_Section : public QWidget
     /*==============================================================================
         Data
     */
-  private:
+
     QString Title;
 
     QString HTTP_to_JPIP_Hostname, HTTP_to_JPIP_Hostname_Pending;
-    QLineEdit *HTTP_to_JPIP_Hostname_lineEdit;
-    Icon_Button *HTTP_to_JPIP_Hostname_Reset_Button;
+    QLineEdit* HTTP_to_JPIP_Hostname_lineEdit;
+    Icon_Button* HTTP_to_JPIP_Hostname_Reset_Button;
 
     QString JPIP_to_HTTP_Hostname, JPIP_to_HTTP_Hostname_Pending;
-    QLineEdit *JPIP_to_HTTP_Hostname_lineEdit;
-    Icon_Button *JPIP_to_HTTP_Hostname_Reset_Button;
+    QLineEdit* JPIP_to_HTTP_Hostname_lineEdit;
+    Icon_Button* JPIP_to_HTTP_Hostname_Reset_Button;
 
     int Port;
-    QSpinBox *Port_spinBox;
-    Icon_Button *Port_Reset_Button;
+    QSpinBox* Port_spinBox;
+    Icon_Button* Port_Reset_Button;
 
     QString Proxy, Proxy_Pending;
-    QLineEdit *Proxy_lineEdit;
-    Icon_Button *Proxy_Reset_Button;
+    QLineEdit* Proxy_lineEdit;
+    Icon_Button* Proxy_Reset_Button;
 
     QString Cache_Directory, Cache_Directory_Pending;
-    QLineEdit *Cache_Directory_lineEdit;
-    Icon_Button *Cache_Directory_Reset_Button;
-    QPushButton *Cache_Directory_Select_Button;
+    QLineEdit* Cache_Directory_lineEdit;
+    Icon_Button* Cache_Directory_Reset_Button;
+    QPushButton* Cache_Directory_Select_Button;
 
     int Request_Timeout;
-    QSpinBox *Request_Timeout_spinBox;
-    Icon_Button *Request_Timeout_Reset_Button;
+    QSpinBox* Request_Timeout_spinBox;
+    Icon_Button* Request_Timeout_Reset_Button;
 
     int Max_Source_Image_Area_MB;
-    QSpinBox *Max_Source_Image_Area_MB_spinBox;
-    Icon_Button *Max_Source_Image_Area_MB_Reset_Button;
+    QSpinBox* Max_Source_Image_Area_MB_spinBox;
+    Icon_Button* Max_Source_Image_Area_MB_Reset_Button;
 
     QPushButton *Defaults_Button, *Apply_Button;
 
-    QFileDialog *File_Selection_Dialog;
+    QFileDialog* File_Selection_Dialog;
 };
 
 /*=*****************************************************************************
@@ -731,12 +645,12 @@ class Graphs_Section : public QWidget
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
-    static const char *SELECTION_SENSITIVITY_KEY;
-    static const char *CANVAS_COLOR_KEY;
+    static const char* SELECTION_SENSITIVITY_KEY;
+    static const char* CANVAS_COLOR_KEY;
 
     /*==============================================================================
         Defaults
@@ -747,59 +661,49 @@ class Graphs_Section : public QWidget
     /*==============================================================================
         Constructor
     */
-    Graphs_Section(QWidget *parent = NULL);
+    Graphs_Section(QWidget* parent = nullptr);
 
     /*==============================================================================
         Accessors
     */
-    inline int selection_sensitivity() const
-    {
-        return Selection_Sensitivity;
-    }
+    int selection_sensitivity() const { return Selection_Sensitivity; }
 
-    inline QRgb canvas_color() const
-    {
-        return Canvas_Color;
-    }
+    QRgb canvas_color() const { return Canvas_Color; }
 
     bool has_changed() const;
 
     /*==============================================================================
         Signals
     */
-  signals:
 
-    void selection_sensitivity_changed(int sensitivity);
-    void canvas_color_changed(QRgb color);
+    Q_SIGNAL void selection_sensitivity_changed(int sensitivity);
+    Q_SIGNAL void canvas_color_changed(QRgb color);
 
     /*==============================================================================
         Slots:
     */
-  public slots:
 
-    void reset();
-    void defaults();
-    void apply();
+    Q_SLOT void reset();
+    Q_SLOT void defaults();
+    Q_SLOT void apply();
 
-  private slots:
+ private:
+    Q_SLOT void selection_sensitivity(int size);
+    Q_SLOT void selection_sensitivity_change();
+    Q_SLOT void selection_sensitivity_reset();
+    Q_SLOT void canvas_color(const QString& text);
+    Q_SLOT void canvas_color_changed();
+    Q_SLOT void select_canvas_color();
+    Q_SLOT void canvas_color_reset();
 
-    void selection_sensitivity(int size);
-    void selection_sensitivity_change();
-    void selection_sensitivity_reset();
-    void canvas_color(const QString &text);
-    void canvas_color_changed();
-    void select_canvas_color();
-    void canvas_color_reset();
-
-    void changing();
+    Q_SLOT void changing();
 
     /*==============================================================================
         Helpers
     */
-  private:
-    bool canvas_color_is_valid(const QString &color);
+    bool canvas_color_is_valid(const QString& color);
     static QString color_text(QRgb color);
-    static QRgb color_value(const QString &text);
+    static QRgb color_value(const QString& text);
 
     void reset_modifier_buttons();
     void reset_defaults_button();
@@ -807,18 +711,17 @@ class Graphs_Section : public QWidget
     /*==============================================================================
         Data
     */
-  private:
     QString Title;
 
     int Selection_Sensitivity;
-    QSpinBox *Selection_Sensitivity_spinBox;
-    Icon_Button *Selection_Sensitivity_Reset_Button;
+    QSpinBox* Selection_Sensitivity_spinBox;
+    Icon_Button* Selection_Sensitivity_Reset_Button;
 
     QRgb Canvas_Color;
     QString Canvas_Color_Text, Canvas_Color_Text_Pending, Default_Canvas_Color_Text;
-    QLineEdit *Canvas_Color_lineEdit;
-    Icon_Button *Canvas_Color_Reset_Button;
-    QPushButton *Canvas_Color_Select_Button;
+    QLineEdit* Canvas_Color_lineEdit;
+    Icon_Button* Canvas_Color_Reset_Button;
+    QPushButton* Canvas_Color_Select_Button;
 
     QPushButton *Defaults_Button, *Apply_Button;
 };
@@ -831,12 +734,12 @@ class Scripts_Section : public QWidget
     //	Qt Object Declaration
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
-    static const char *CURRENT_SCRIPT_KEY;
-    static const char *SHOW_SCRIPT_KEY;
+    static const char* CURRENT_SCRIPT_KEY;
+    static const char* SHOW_SCRIPT_KEY;
 
     /*==============================================================================
         Defaults
@@ -846,7 +749,7 @@ class Scripts_Section : public QWidget
     /*==============================================================================
         Constructor
     */
-    Scripts_Section(QWidget *parent = NULL);
+    Scripts_Section(QWidget* parent = nullptr);
 
     /*==============================================================================
         Accessors
@@ -855,20 +758,19 @@ class Scripts_Section : public QWidget
     /*==============================================================================
         Signals
     */
-  signals:
-    void script_changed(const QString &Script);
-    void show_script_changed(bool show_script);
+    Q_SIGNAL void script_changed(const QString& Script);
+    Q_SIGNAL void show_script_changed(bool show_script);
     /*==============================================================================
         Slots
     */
-  public slots:
-    void apply();
-    void defaults();
-    void variables_updated(QStringList &pds_variables);
-  private slots:
-    void show_script(bool enabled);
-    void script_edited();
-    void add_variable(QListWidgetItem *variable);
+    Q_SLOT void apply();
+    Q_SLOT void defaults();
+    Q_SLOT void variables_updated(QStringList& pds_variables);
+
+ private:
+    Q_SLOT void show_script(bool enabled);
+    Q_SLOT void script_edited();
+    Q_SLOT void add_variable(QListWidgetItem* variable);
 
     /*==============================================================================
         Helpers
@@ -879,19 +781,18 @@ class Scripts_Section : public QWidget
     /*==============================================================================
         Data
     */
-  private:
     QString Title;
     QString Script;
     QStringList Variables;
 
-    QTextEdit *Script_TextEdit;
-    QListWidget *Variables_ListWidget;
-    QCheckBox *Show_Script_CheckBox;
+    QTextEdit* Script_TextEdit;
+    QListWidget* Variables_ListWidget;
+    QCheckBox* Show_Script_CheckBox;
 
     bool Show_Script;
 
-    QPushButton *Defaults_Button;
-    QPushButton *Apply_Button;
+    QPushButton* Defaults_Button;
+    QPushButton* Apply_Button;
 };
 
 /*******************************************************************************
@@ -902,46 +803,37 @@ class Preferences_Dialog : public QDialog
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
-    static const char *LAYOUT_GEOMETRY_SECTION;
+    static const char* LAYOUT_GEOMETRY_SECTION;
 
     static const double INITIAL_SCALE_AUTO_FIT;
 
     /*==============================================================================
         Statics
     */
-    static Help_Docs *Docs_Helper;
+    static Help_Docs* Docs_Helper;
 
     /*==============================================================================
         Constructor
     */
-    Preferences_Dialog(QWidget *parent = NULL);
+    Preferences_Dialog(QWidget* parent = nullptr);
 
     ~Preferences_Dialog();
 
     /*==============================================================================
         Accessors
     */
-    inline void show_tooltips(bool enabled)
-    {
-        Show_Tooltips = enabled;
-    }
+    void show_tooltips(bool enabled) { Show_Tooltips = enabled; }
 
-    inline bool show_tooltips() const
-    {
-        return Show_Tooltips;
-    }
+    bool show_tooltips() const { return Show_Tooltips; }
 
-    inline static Help_Docs *help_docs()
-    {
-        return Docs_Helper;
-    }
+    static Help_Docs* help_docs() { return Docs_Helper; }
 
     bool has_changed() const;
 
@@ -951,215 +843,136 @@ class Preferences_Dialog : public QDialog
 
     //	General:
 
-    inline bool restore_layout() const
-    {
-        return General->restore_layout();
-    }
+    bool restore_layout() const { return General->restore_layout(); }
 
-    inline bool restore_last_source() const
-    {
-        return General->restore_last_source();
-    }
+    bool restore_last_source() const { return General->restore_last_source(); }
 
-    inline bool band_numbers_indexed() const
-    {
-        return General->band_numbers_indexed();
-    }
+    bool band_numbers_indexed() const { return General->band_numbers_indexed(); }
 
-    inline bool get_PDS_metadata() const
-    {
-        return General->get_PDS_metadata();
-    }
+    bool get_PDS_metadata() const { return General->get_PDS_metadata(); }
 
-    inline QString documentation_location() const
-    {
-        return General->documentation_location();
-    }
+    QString documentation_location() const { return General->documentation_location(); }
 
-    inline const QString &default_documentation_filename()
-    {
-        return General->default_documentation_filename();
-    }
+    static const QString& default_documentation_filename()
+    { return UA::HiRISE::General_Section::default_documentation_filename(); }
 
     //	Sources:
-    inline int source_list_capacity() const
-    {
-        return Sources->source_list_capacity();
-    }
+    int source_list_capacity() const { return Sources->source_list_capacity(); }
 
-    inline const QStringList &source_list() const
-    {
-        return Sources->source_list();
-    }
+    const QStringList& source_list() const { return Sources->source_list(); }
 
-    inline void source_list(const QStringList &list)
-    {
-        Sources->source_list(list);
-    }
+    void source_list(const QStringList& list) { Sources->source_list(list); }
 
     //	Rendering:
 
-    inline double initial_scale() const
-    {
-        return Rendering->initial_scale();
-    }
+    double initial_scale() const { return Rendering->initial_scale(); }
 
-    inline double min_scale() const
-    {
-        return Rendering->min_scale();
-    }
+    double min_scale() const { return Rendering->min_scale(); }
 
-    inline double max_scale() const
-    {
-        return Rendering->max_scale();
-    }
+    double max_scale() const { return Rendering->max_scale(); }
 
-    inline double scaling_minor_increment() const
-    {
-        return Rendering->scaling_minor_increment();
-    }
+    double scaling_minor_increment() const { return Rendering->scaling_minor_increment(); }
 
-    inline double scaling_major_increment() const
-    {
-        return Rendering->scaling_major_increment();
-    }
+    double scaling_major_increment() const { return Rendering->scaling_major_increment(); }
 
-    inline double contrast_stretch_upper(int band) const
-    {
-        return Rendering->contrast_stretch_upper(band);
-    }
+    double contrast_stretch_upper(int band) const
+    { return Rendering->contrast_stretch_upper(band); }
 
-    inline double contrast_stretch_lower(int band) const
-    {
-        return Rendering->contrast_stretch_lower(band);
-    }
+    double contrast_stretch_lower(int band) const
+    { return Rendering->contrast_stretch_lower(band); }
 
-    inline QRgb background_color() const
-    {
-        return Rendering->background_color();
-    }
+    QRgb background_color() const { return Rendering->background_color(); }
 
-    inline int tile_size() const
-    {
-        return Rendering->tile_size();
-    }
+    int tile_size() const { return Rendering->tile_size(); }
 
-    inline int rendering_increment_lines() const
-    {
-        return Rendering->rendering_increment_lines();
-    }
+    int rendering_increment_lines() const { return Rendering->rendering_increment_lines(); }
 
     //	JPIP:
 
-    inline QString HTTP_to_JPIP_hostname () const
-    {return JPIP->HTTP_to_JPIP_hostname ();}
+    QString HTTP_to_JPIP_hostname() const { return JPIP->HTTP_to_JPIP_hostname(); }
 
-    inline int JPIP_server_port() const
-    {
-        return JPIP->JPIP_server_port();
-    }
+    int JPIP_server_port() const { return JPIP->JPIP_server_port(); }
 
-    inline QString JPIP_proxy() const
-    {
-        return JPIP->JPIP_proxy();
-    }
+    QString JPIP_proxy() const { return JPIP->JPIP_proxy(); }
 
-    inline QString JPIP_cache_directory() const
-    {
-        return JPIP->JPIP_cache_directory();
-    }
+    QString JPIP_cache_directory() const { return JPIP->JPIP_cache_directory(); }
 
-    inline int JPIP_request_timeout() const
-    {
-        return JPIP->JPIP_request_timeout();
-    }
+    int JPIP_request_timeout() const { return JPIP->JPIP_request_timeout(); }
 
-    inline int max_source_image_area_MB() const
-    {
-        return JPIP->max_source_image_area_MB();
-    }
+    int max_source_image_area_MB() const { return JPIP->max_source_image_area_MB(); }
 
     //	Graphs
 
-    inline int selection_sensitivity() const
-    {
-        return Graphs->selection_sensitivity();
-    }
+    int selection_sensitivity() const { return Graphs->selection_sensitivity(); }
 
-    inline QRgb canvas_color() const
-    {
-        return Graphs->canvas_color();
-    }
+    QRgb canvas_color() const { return Graphs->canvas_color(); }
 
     /*==============================================================================
         Utilities
     */
-    static void save(const QString &key, const QVariant &value);
+    static void save(const QString& key, const QVariant& value);
 
     static QString color_text(QRgb color);
-    static QRgb color_value(const QString &text);
+    static QRgb color_value(const QString& text);
 
     /*==============================================================================
         Signals
     */
-  signals:
 
-    void band_numbers_indexed_changed(bool indexed);
-    void documentation_location_changed(const QString &location);
-    void longitude_direction_changed(int direction);
-    void longitude_units_changed(int units);
-    void latitude_units_changed(int units);
+    Q_SIGNAL void band_numbers_indexed_changed(bool indexed);
+    Q_SIGNAL void documentation_location_changed(const QString& location);
+    Q_SIGNAL void longitude_direction_changed(int direction);
+    Q_SIGNAL void longitude_units_changed(int units);
+    Q_SIGNAL void latitude_units_changed(int units);
 
-    void source_list_capacity_changed(int capacity);
-    void source_list_changed(const QStringList &list);
+    Q_SIGNAL void source_list_capacity_changed(int capacity);
+    Q_SIGNAL void source_list_changed(const QStringList& list);
 
-    void min_scale_changed(double scaling);
-    void max_scale_changed(double scaling);
-    void scaling_minor_increment_changed(double increment);
-    void scaling_major_increment_changed(double increment);
-    void contrast_stretch_upper_changed(double percent, int band);
-    void contrast_stretch_lower_changed(double percent, int band);
-    void background_color_changed(QRgb color);
-    void line_color_changed(const QColor &color);
-    void tile_size_changed(int size);
-    void rendering_increment_lines_changed(int lines);
+    Q_SIGNAL void min_scale_changed(double scaling);
+    Q_SIGNAL void max_scale_changed(double scaling);
+    Q_SIGNAL void scaling_minor_increment_changed(double increment);
+    Q_SIGNAL void scaling_major_increment_changed(double increment);
+    Q_SIGNAL void contrast_stretch_upper_changed(double percent, int band);
+    Q_SIGNAL void contrast_stretch_lower_changed(double percent, int band);
+    Q_SIGNAL void background_color_changed(QRgb color);
+    Q_SIGNAL void line_color_changed(const QColor& color);
+    Q_SIGNAL void tile_size_changed(int size);
+    Q_SIGNAL void rendering_increment_lines_changed(int lines);
 
-    // void HTTP_to_JPIP_hostname_changed (const QString& proxy);
-    void JPIP_server_port_changed(int port);
-    void JPIP_proxy_changed(const QString &proxy);
-    void JPIP_cache_directory_changed(const QString &cache_directory);
-    void JPIP_request_timeout_changed(int seconds);
-    void max_source_image_area_MB_changed(int area);
+    // Q_SIGNAL void HTTP_to_JPIP_hostname_changed (const QString& proxy);
+    Q_SIGNAL void JPIP_server_port_changed(int port);
+    Q_SIGNAL void JPIP_proxy_changed(const QString& proxy);
+    Q_SIGNAL void JPIP_cache_directory_changed(const QString& cache_directory);
+    Q_SIGNAL void JPIP_request_timeout_changed(int seconds);
+    Q_SIGNAL void max_source_image_area_MB_changed(int area);
 
-    void selection_sensitivity_changed(int sensitivity);
-    void canvas_color_changed(QRgb color);
+    Q_SIGNAL void selection_sensitivity_changed(int sensitivity);
+    Q_SIGNAL void canvas_color_changed(QRgb color);
 
-    void script_changed(const QString &Script);
-    void show_script_changed(bool show_script);
-    void variables_updated(QStringList &variables);
+    Q_SIGNAL void script_changed(const QString& Script);
+    Q_SIGNAL void show_script_changed(bool show_script);
+    Q_SIGNAL void variables_updated(QStringList& variables);
 
     /*==============================================================================
         Event Handlers
     */
-  protected:
-    bool eventFilter(QObject *object, QEvent *event);
+ protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
 
-    virtual void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent* event) override;
 
     /*==============================================================================
         Data
     */
-  private:
-    General_Section *General;
-    Sources_Section *Sources;
-    Rendering_Section *Rendering;
-    JPIP_Section *JPIP;
-    Graphs_Section *Graphs;
-    Scripts_Section *Scripts;
+ private:
+    General_Section* General;
+    Sources_Section* Sources;
+    Rendering_Section* Rendering;
+    JPIP_Section* JPIP;
+    Graphs_Section* Graphs;
+    Scripts_Section* Scripts;
 
     bool Show_Tooltips;
 };
 
-} // namespace HiRISE
-} // namespace UA
-#endif
+}  // namespace UA::HiRISE

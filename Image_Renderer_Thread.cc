@@ -43,57 +43,55 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #define DEBUG_SECTION DEBUG_OFF
 #endif
 
-#include "HiView_Utilities.hh"
-
 #include <iostream>
+
+#include "HiView_Utilities.hh"
 using std::clog;
 #include <iomanip>
 using std::boolalpha;
 using std::endl;
 using std::flush;
 
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const Image_Renderer_Thread::ID =
+const char* const Image_Renderer_Thread::ID =
     "UA::HiRISE::Image_Renderer_Thread ($Revision: 1.17 $ $Date: 2012/03/09 02:13:58 $)";
 
 /*==============================================================================
     Constructors
 */
-Image_Renderer_Thread::Image_Renderer_Thread(QObject *parent) : Image_Renderer(parent), QThread(parent)
+Image_Renderer_Thread::Image_Renderer_Thread(QObject* parent)
+    : Image_Renderer(parent), QThread(parent)
 {
     Image_Renderer::setObjectName("Image_Renderer_Thread");
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread @ " << (void *)this << ": "
-                         << object_pathname((Image_Renderer *)this) << endl
+    LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread @ " << (void*)this << ": "
+                         << object_pathname((Image_Renderer*)this) << endl
                          << "    start the thread ..." << endl));
 #endif
     //	Start the the thread running which will start the rendering loop.
     start();
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCKED_LOGGING((clog << "<<< Image_Renderer_Thread @ " << (void *)this << endl));
+    LOCKED_LOGGING((clog << "<<< Image_Renderer_Thread @ " << (void*)this << endl));
 #endif
 }
 
 Image_Renderer_Thread::~Image_Renderer_Thread()
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCKED_LOGGING((clog << ">>> ~Image_Renderer_Thread @ " << (void *)this << endl));
+    LOCKED_LOGGING((clog << ">>> ~Image_Renderer_Thread @ " << (void*)this << endl));
 #endif
     /*	>>> WARNING <<< This Image_Renderer_Thread is destroyed BEFORE the
         base Image_Renderer.
     */
-    if (!Finish)
-        finish(WAIT_UNTIL_DONE | FORCE_CANCEL);
+    if (!Finish) finish(WAIT_UNTIL_DONE | FORCE_CANCEL);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCKED_LOGGING((clog << "<<< ~Image_Renderer_Thread @ " << (void *)this << endl));
+    LOCKED_LOGGING((clog << "<<< ~Image_Renderer_Thread @ " << (void*)this << endl));
 #endif
 }
 
@@ -103,7 +101,7 @@ Image_Renderer_Thread::~Image_Renderer_Thread()
 void Image_Renderer_Thread::run()
 {
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
-    void *thread_ID = (void *)QThread::currentThreadId();
+    void* thread_ID = (void*)QThread::currentThreadId();
     LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread::run " << thread_ID << endl));
 #endif
     Runnable = true;
@@ -113,22 +111,21 @@ void Image_Renderer_Thread::run()
     //	Start the rendering loop. This will not return until finish is called.
     render();
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
-    LOCKED_LOGGING((clog << "<<< Image_Renderer_Thread::run: exiting thread " << thread_ID << endl));
+    LOCKED_LOGGING(
+        (clog << "<<< Image_Renderer_Thread::run: exiting thread " << thread_ID << endl));
 #endif
 }
 
 /*==============================================================================
     Rendering
 */
-void Image_Renderer_Thread::run_rendering()
-{
-}
+void Image_Renderer_Thread::run_rendering() {}
 
 bool Image_Renderer_Thread::is_ready()
 {
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
-    void *thread_ID = (void *)QThread::currentThreadId();
-    QString pathname(object_pathname(static_cast<Image_Renderer *>(this)));
+    void* thread_ID = (void*)QThread::currentThreadId();
+    QString pathname(object_pathname(static_cast<Image_Renderer*>(this)));
     LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread::is_ready " << thread_ID << endl
                          << "    in " << pathname << endl
                          << ">>> Image_Renderer_Thread::is_ready "
@@ -137,9 +134,10 @@ bool Image_Renderer_Thread::is_ready()
     Ready_Lock.lock();
     if (Suspended)
     {
-#if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_SIGNALS))
-        LOCKED_LOGGING((clog << "^^^ Image_Renderer_Thread::is_ready " << thread_ID << ": emit status " << NOT_RENDERING
-                             << " - " << status_description(NOT_RENDERING) << endl
+#if ((DEBUG_SECTION) & DEBUG_RENDER)
+        LOCKED_LOGGING((clog << "^^^ Image_Renderer_Thread::is_ready " << thread_ID
+                             << ": emit status " << NOT_RENDERING << " - "
+                             << status_description(NOT_RENDERING) << endl
                              << "    in " << pathname << endl));
 #endif
         //	>>> SIGNAL <<<
@@ -147,12 +145,14 @@ bool Image_Renderer_Thread::is_ready()
 
 //	Wait for new rendering operations to become available.
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
-        LOCKED_LOGGING((clog << "xxx Image_Renderer_Thread::is_ready " << thread_ID << ": wait for Ready_Event" << endl
+        LOCKED_LOGGING((clog << "xxx Image_Renderer_Thread::is_ready " << thread_ID
+                             << ": wait for Ready_Event" << endl
                              << "    in " << pathname << endl));
 #endif
         Ready_Event.wait(&Ready_Lock);
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
-        LOCKED_LOGGING((clog << "+++ Image_Renderer_Thread::is_ready " << thread_ID << ": reset Ready_Event" << endl
+        LOCKED_LOGGING((clog << "+++ Image_Renderer_Thread::is_ready " << thread_ID
+                             << ": reset Ready_Event" << endl
                              << "    in " << pathname << endl));
 #endif
         Suspended = false;
@@ -160,7 +160,8 @@ bool Image_Renderer_Thread::is_ready()
     }
     bool continue_rendering = !Finish;
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
-    LOCKED_LOGGING((clog << "    Image_Renderer_Thread::is_ready " << thread_ID << ": unlock Ready_Lock" << endl
+    LOCKED_LOGGING((clog << "    Image_Renderer_Thread::is_ready " << thread_ID
+                         << ": unlock Ready_Lock" << endl
                          << "    in " << pathname << endl));
 #endif
     Ready_Lock.unlock();
@@ -175,8 +176,8 @@ bool Image_Renderer_Thread::is_ready()
 void Image_Renderer_Thread::start_rendering()
 {
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_SIGNALS | DEBUG_STATUS))
-    void *thread_ID = (void *)QThread::currentThreadId();
-    QString pathname(object_pathname(static_cast<Image_Renderer *>(this)));
+    void* thread_ID = (void*)QThread::currentThreadId();
+    QString pathname(object_pathname(static_cast<Image_Renderer*>(this)));
 #endif
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
     LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread::start_rendering " << thread_ID << endl
@@ -204,20 +205,19 @@ void Image_Renderer_Thread::start_rendering()
 bool Image_Renderer_Thread::suspend_rendering(bool wait)
 {
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
-    void *thread_ID = (void *)QThread::currentThreadId();
-    QString pathname(object_pathname(static_cast<Image_Renderer *>(this)));
-    LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread::suspend_rendering " << thread_ID << ": wait = " << boolalpha
-                         << wait << endl
+    void* thread_ID = (void*)QThread::currentThreadId();
+    QString pathname(object_pathname(static_cast<Image_Renderer*>(this)));
+    LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread::suspend_rendering " << thread_ID
+                         << ": wait = " << boolalpha << wait << endl
                          << "    in " << pathname << endl));
 #endif
     bool ready_locked = Ready_Lock.tryLock(), done = Image_Renderer::suspend_rendering(wait);
     Ready_Event.reset();
-    if (ready_locked)
-        Ready_Lock.unlock();
+    if (ready_locked) Ready_Lock.unlock();
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
     LOCKED_LOGGING((clog << "    in " << pathname << endl
-                         << "<<< Image_Renderer_Thread::suspend_rendering " << thread_ID << ": " << boolalpha << done
-                         << endl));
+                         << "<<< Image_Renderer_Thread::suspend_rendering " << thread_ID << ": "
+                         << boolalpha << done << endl));
 #endif
     return done;
 }
@@ -225,11 +225,11 @@ bool Image_Renderer_Thread::suspend_rendering(bool wait)
 bool Image_Renderer_Thread::finish(int cancel_options)
 {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDER))
-    void *thread_ID = (void *)QThread::currentThreadId();
-    QString pathname(object_pathname(static_cast<Image_Renderer *>(this))),
+    void* thread_ID = (void*)QThread::currentThreadId();
+    QString pathname(object_pathname(static_cast<Image_Renderer*>(this))),
         description(cancel_options_descriptions(cancel_options));
-    LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread::finish " << thread_ID << ": " << cancel_options << " - "
-                         << description << endl));
+    LOCKED_LOGGING((clog << ">>> Image_Renderer_Thread::finish " << thread_ID << ": "
+                         << cancel_options << " - " << description << endl));
 #endif
     //	Finish any rendering operations; this will set Finish true.
     Image_Renderer::finish(cancel_options);
@@ -244,7 +244,8 @@ bool Image_Renderer_Thread::finish(int cancel_options)
         {
 //	Wait for the thread to finish.
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDER))
-            LOCKED_LOGGING((clog << "    Image_Renderer_Thread::finish " << thread_ID << ": wait up to " << Wait_Seconds
+            LOCKED_LOGGING((clog << "    Image_Renderer_Thread::finish " << thread_ID
+                                 << ": wait up to " << Wait_Seconds
                                  << " seconds for rendering thread to finish" << endl));
 #endif
             wait(Wait_Seconds * 1000);
@@ -252,11 +253,10 @@ bool Image_Renderer_Thread::finish(int cancel_options)
     }
     bool finished = isFinished();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDER))
-    LOCKED_LOGGING(
-        (clog << "<<< Image_Renderer_Thread::finish " << thread_ID << ": " << boolalpha << finished << endl));
+    LOCKED_LOGGING((clog << "<<< Image_Renderer_Thread::finish " << thread_ID << ": " << boolalpha
+                         << finished << endl));
 #endif
     return finished;
 }
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE

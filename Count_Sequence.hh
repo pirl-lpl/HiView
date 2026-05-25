@@ -21,9 +21,10 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Count_Sequence_hh
-#define HiView_Count_Sequence_hh
+#pragma once
 
+#include <QPointF>
+#include <QRectF>
 #include <QVector>
 
 //	Qwt
@@ -45,7 +46,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
     /*==============================================================================
         Constructors
     */
-  public:
+ public:
     /**	Constructs an empty Count_Sequence.
      */
     Count_Sequence();
@@ -59,7 +60,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @param	increment	The new {@link increment(double) increment}
             of the sequence.
     */
-    Count_Sequence(const Count_Sequence &count_sequence, double base = 0.0, double increment = 1.0);
+    Count_Sequence(const Count_Sequence& count_sequence, double base = 0.0, double increment = 1.0);
 
     /**	Constructs a Count_Sequence from a data vector, optionally setting the
         new sequence {@link base(double) base} and {@link increment(double)
@@ -70,7 +71,8 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @param	increment	The new {@link increment(double) increment}
             of the sequence.
     */
-    Count_Sequence(const QVector<unsigned long long> &data_sequence, double base = 0.0, double increment = 1.0);
+    Count_Sequence(const QVector<unsigned long long>& data_sequence, double base = 0.0,
+                   double increment = 1.0);
 
     /**	Constructs a Count_Sequence from a data array, optionally setting the
         new sequence {@link base(double) base} and {@link increment(double)
@@ -82,7 +84,8 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @param	increment	The new {@link increment(double) increment}
             of the sequence.
     */
-    Count_Sequence(const unsigned long long *data_sequence, int size, double base = 0.0, double increment = 1.0);
+    Count_Sequence(const unsigned long long* data_sequence, int size, double base = 0.0,
+                   double increment = 1.0);
 
     //!	Destructor.
     virtual ~Count_Sequence();
@@ -101,7 +104,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @return	This Count_Sequence.
         @see	data(const Count_Sequence&)
     */
-    Count_Sequence &operator=(const Count_Sequence &count_sequence);
+    Count_Sequence& operator=(const Count_Sequence& count_sequence);
 
     /**	Sets the Count_Sequence data from the data of another Count_Sequence.
 
@@ -115,7 +118,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @see	operator=(const Count_Sequence&)
         @see	data()
     */
-    Count_Sequence &data(const Count_Sequence &count_sequence);
+    Count_Sequence& data(const Count_Sequence& count_sequence);
 
     /**	Sets the Count_Sequence data from a data vector.
 
@@ -128,7 +131,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @see	data(const Count_Sequence&)
         @see	data()
     */
-    Count_Sequence &data(const QVector<unsigned long long> &data_sequence);
+    Count_Sequence& data(const QVector<unsigned long long>& data_sequence);
 
     /**	Sets the Count_Sequence data from a data array.
 
@@ -141,7 +144,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @return	This Count_Sequence.
         @see	data()
     */
-    Count_Sequence &data(const unsigned long long *data_sequence, int size);
+    Count_Sequence& data(const unsigned long long* data_sequence, int size);
 
     /**	Gets a reference to the data content of this Count_Sequence.
 
@@ -151,10 +154,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
             updating the max count value} is should be done after any
             external data changes.
     */
-    QVector<unsigned long long> &data()
-    {
-        return Data;
-    }
+    QVector<unsigned long long>& data() { return Data; }
 
     /**	Sets the number of data values in the Count_Sequence.
 
@@ -177,7 +177,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @return	This Count_Sequence.
         @see	x()
     */
-    inline Count_Sequence &base(double base_value)
+    Count_Sequence& base(double base_value)
     {
         Base = base_value;
         return *this;
@@ -188,10 +188,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @return	The base value of the Count_Sequence.
         @see	base(double)
     */
-    inline double base() const
-    {
-        return Base;
-    }
+    double base() const { return Base; }
 
     /**	Sets the Count_Sequence increment amount.
 
@@ -202,7 +199,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @return	This Count_Sequence.
         @see	x()
     */
-    inline Count_Sequence &increment(double increment_amount)
+    Count_Sequence& increment(double increment_amount)
     {
         Increment = increment_amount;
         return *this;
@@ -213,20 +210,14 @@ class Count_Sequence : public QwtSeriesData<QPointF>
         @return	The increment amount of the Count_Sequence.
         @see	increment(double)
     */
-    inline double increment() const
-    {
-        return Increment;
-    }
+    double increment() const { return Increment; }
 
     /**	Gets the maximum data content value.
 
         @return	The maximum data content value.
         @see	calculate_max_count()
     */
-    inline unsigned long long max_count() const
-    {
-        return Max_Count;
-    }
+    unsigned long long max_count() const { return Max_Count; }
 
     /**	Recalculates the {@link max_count() maximum data content value}.
 
@@ -248,7 +239,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
             the new Count_Sequence is transferred to the caller which is
             reposible for disposing of the object.
     */
-    virtual QwtSeriesData *copy() const;
+    virtual QwtSeriesData* copy() const;
 
     /**	Gets the data content size of the Count_Sequence.
 
@@ -296,7 +287,7 @@ class Count_Sequence : public QwtSeriesData<QPointF>
     /*==============================================================================
         Data
     */
-  private:
+ private:
     QVector<unsigned long long> Data;
 
     unsigned long long Max_Count;
@@ -304,5 +295,4 @@ class Count_Sequence : public QwtSeriesData<QPointF>
     double Base, Increment;
 };
 
-} // namespace UA::HiRISE
-#endif
+}  // namespace UA::HiRISE

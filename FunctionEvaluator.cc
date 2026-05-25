@@ -1,9 +1,10 @@
 #include "FunctionEvaluator.hh"
 
-#include <iostream>
 #include <limits>
 using namespace std;
 
+namespace UA::HiRISE
+{
 static QString JS_FUNC_NAME = "value";
 static QString JS_FUNC_ARGS = "dn";
 
@@ -21,7 +22,7 @@ void FunctionEvaluator::reset()
     avg = 0.0;
     cnt = 0.0;
     min = numeric_limits<double>::max();
-    max = -min; // C++11 numeric_limits<double>::lowest();
+    max = -min;  // C++11 numeric_limits<double>::lowest();
 
     min_at = -1;
     max_at = -1;
@@ -56,8 +57,7 @@ void FunctionEvaluator::run()
         unsigned long long count = data->at(dn);
 
         // skip if no data
-        if (count < 1)
-            continue;
+        if (count < 1) continue;
 
         // SKIP DN = 0 ?
         // SKIP DN = 1, 2, 1022, 1023
@@ -104,20 +104,16 @@ void FunctionEvaluator::run()
         cout << "*** Statistics ***" << endl;
         cout << " cnt = " << cnt << endl; // like number of pixels in region
         cout << " sum = " << sum << endl; // sum of pixel values
-        cout << " min = " << min << " at dn " << min_at << endl; // lowest value from user's function
-        cout << " max = " << max << " at dn " << max_at << endl; // highest value from user's function
-        cout << " avg = " << avg << endl; // average value from user's function
-        cout << endl;
+        cout << " min = " << min << " at dn " << min_at << endl; // lowest value from user's
+       function cout << " max = " << max << " at dn " << max_at << endl; // highest value from
+       user's function cout << " avg = " << avg << endl; // average value from user's function cout
+       << endl;
     */
     emit runCompleted();
 }
 
-void FunctionEvaluator::setData(QVector<unsigned long long> *data)
-{
-    this->data = data;
-}
+void FunctionEvaluator::setData(QVector<unsigned long long>* data) { this->data = data; }
 
 void FunctionEvaluator::setProperty(const QString name, const double value)
-{
-    engine.globalObject().setProperty(name, value);
-}
+{ engine.globalObject().setProperty(name, value); }
+}  // namespace UA::HiRISE

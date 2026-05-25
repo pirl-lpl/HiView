@@ -6,52 +6,33 @@
 #include <QThread>
 #include <QVector>
 
+namespace UA::HiRISE
+{
 class FunctionEvaluator : public QThread
 {
     Q_OBJECT
 
-  public:
+ public:
     FunctionEvaluator(QString input);
 
-    void run();
+    void run() override;
 
-    inline double getSum()
-    {
-        return sum;
-    }
-    inline double getAvg()
-    {
-        return avg;
-    }
-    inline double getMin()
-    {
-        return min;
-    }
-    inline double getMax()
-    {
-        return max;
-    }
-    inline double getCnt()
-    {
-        return cnt;
-    }
-    inline double getMinAtDN()
-    {
-        return min_at;
-    }
-    inline double getMaxAtDN()
-    {
-        return max_at;
-    }
+    double getSum() const { return sum; }
+    double getAvg() const { return avg; }
+    double getMin() const { return min; }
+    double getMax() const { return max; }
+    double getCnt() const { return cnt; }
+    double getMinAtDN() const { return min_at; }
+    double getMaxAtDN() const { return max_at; }
 
-  public slots:
-    void setData(QVector<unsigned long long> *data);
-    void setProperty(const QString name, const double value);
+ public slots:
+    void setData(QVector<unsigned long long>* data);
+    void setProperty(QString name, double value);
 
-  signals:
+ signals:
     void runCompleted();
 
-  private:
+ private:
     void reset();
     void error();
 
@@ -67,5 +48,6 @@ class FunctionEvaluator : public QThread
 
     QJSEngine engine;
 
-    QVector<unsigned long long> *data;
+    QVector<unsigned long long>* data;
 };
+}  // namespace UA::HiRISE

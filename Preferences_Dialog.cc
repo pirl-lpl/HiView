@@ -31,8 +31,6 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #define QT_USE_FAST_CONCATENATION
 #define QT_USE_FAST_OPERATOR_PLUS
-#include <QString>
-
 #include <QAction>
 #include <QApplication>
 #include <QButtonGroup>
@@ -61,19 +59,18 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QSettings>
 #include <QSizePolicy>
 #include <QSpinBox>
+#include <QString>
 #include <QStringList>
 #include <QTabWidget>
 #include <QUrl>
 #include <QVBoxLayout>
-
 #include <stdexcept>
 using std::invalid_argument;
 #include <sstream>
-using std::ostringstream;
-#include <iomanip>
 using std::endl;
+using std::ostringstream;
 
-#if defined(DEBUG_SECTION)
+#ifdef DEBUG_SECTION
 /*	DEBUG_SECTION controls
 
     DEBUG_SECTION report selection options.
@@ -103,14 +100,14 @@ using std::dec;
 using std::hex;
 #endif
 
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
 namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const Preferences_Dialog::ID =
+const char* const Preferences_Dialog::ID =
     "UA::HiRISE::Preferences_Dialog ($Revision: 1.60 $ $Date: 2016/01/07 22:13:14 $)";
 
 #ifndef DEFAULT_VIEW_TOOLTIPS
@@ -119,14 +116,14 @@ const char *const Preferences_Dialog::ID =
 
 #define HORIZONTAL_SPACING 5
 
-const char *Preferences_Dialog::LAYOUT_GEOMETRY_SECTION = "Layout_Geometry";
+const char* Preferences_Dialog::LAYOUT_GEOMETRY_SECTION = "Layout_Geometry";
 
 const double Preferences_Dialog::INITIAL_SCALE_AUTO_FIT = 0.0;
 
 /*==============================================================================
     Statics
 */
-Help_Docs *Preferences_Dialog::Docs_Helper;
+Help_Docs* Preferences_Dialog::Docs_Helper;
 
 /*==============================================================================
     Application configuration parameters
@@ -142,7 +139,8 @@ Help_Docs *Preferences_Dialog::Docs_Helper;
 /*==============================================================================
     Constructor
 */
-Preferences_Dialog::Preferences_Dialog(QWidget *parent) : QDialog(parent), Show_Tooltips(DEFAULT_VIEW_TOOLTIPS)
+Preferences_Dialog::Preferences_Dialog(QWidget* parent)
+    : QDialog(parent), Show_Tooltips(DEFAULT_VIEW_TOOLTIPS)
 {
     setObjectName("Preferences_Dialog");
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
@@ -171,7 +169,7 @@ Preferences_Dialog::Preferences_Dialog(QWidget *parent) : QDialog(parent), Show_
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "    QTabWidget sections -" << endl;
 #endif
-    QTabWidget *sections = new QTabWidget(this);
+    QTabWidget* sections = new QTabWidget(this);
     sections->setTabShape(QTabWidget::Rounded);
 
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
@@ -218,7 +216,7 @@ Preferences_Dialog::Preferences_Dialog(QWidget *parent) : QDialog(parent), Show_
 
     sections->setCurrentIndex(0);
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    auto* layout = new QVBoxLayout;
     layout->addWidget(sections);
     setLayout(layout);
 
@@ -227,16 +225,19 @@ Preferences_Dialog::Preferences_Dialog(QWidget *parent) : QDialog(parent), Show_
         Connect the signals after the section objects have been instantiated
         to avoid unnecessary signals being seen from setup operations.
     */
-    connect(General, SIGNAL(band_numbers_indexed_changed(bool)), SIGNAL(band_numbers_indexed_changed(bool)));
-    connect(General, SIGNAL(documentation_location_changed(const QString &)),
-            SIGNAL(documentation_location_changed(const QString &)));
-    connect(General, SIGNAL(longitude_direction_changed(int)), SIGNAL(longitude_direction_changed(int)));
+    connect(General, SIGNAL(band_numbers_indexed_changed(bool)),
+            SIGNAL(band_numbers_indexed_changed(bool)));
+    connect(General, SIGNAL(documentation_location_changed(const QString&)),
+            SIGNAL(documentation_location_changed(const QString&)));
+    connect(General, &General_Section::longitude_direction_changed, this,
+            &Preferences_Dialog::longitude_direction_changed);
     connect(General, SIGNAL(longitude_units_changed(int)), SIGNAL(longitude_units_changed(int)));
     connect(General, SIGNAL(latitude_units_changed(int)), SIGNAL(latitude_units_changed(int)));
 
-    connect(Sources, SIGNAL(source_list_capacity_changed(int)), SIGNAL(source_list_capacity_changed(int)));
-    connect(Sources, SIGNAL(source_list_changed(const QStringList &)),
-            SIGNAL(source_list_changed(const QStringList &)));
+    connect(Sources, SIGNAL(source_list_capacity_changed(int)),
+            SIGNAL(source_list_capacity_changed(int)));
+    connect(Sources, SIGNAL(source_list_changed(const QStringList&)),
+            SIGNAL(source_list_changed(const QStringList&)));
 
     connect(Rendering, SIGNAL(min_scale_changed(double)), SIGNAL(min_scale_changed(double)));
     connect(Rendering, SIGNAL(max_scale_changed(double)), SIGNAL(max_scale_changed(double)));
@@ -248,28 +249,39 @@ Preferences_Dialog::Preferences_Dialog(QWidget *parent) : QDialog(parent), Show_
             SIGNAL(contrast_stretch_upper_changed(double, int)));
     connect(Rendering, SIGNAL(contrast_stretch_lower_changed(double, int)),
             SIGNAL(contrast_stretch_lower_changed(double, int)));
-    connect(Rendering, SIGNAL(background_color_changed(QRgb)), SIGNAL(background_color_changed(QRgb)));
-    connect(Rendering, SIGNAL(line_color_changed(const QColor &)), SIGNAL(line_color_changed(const QColor &)));
+    connect(Rendering, SIGNAL(background_color_changed(QRgb)),
+            SIGNAL(background_color_changed(QRgb)));
+    connect(Rendering, SIGNAL(line_color_changed(const QColor&)),
+            SIGNAL(line_color_changed(const QColor&)));
     connect(Rendering, SIGNAL(tile_size_changed(int)), SIGNAL(tile_size_changed(int)));
-    connect(Rendering, SIGNAL(rendering_increment_lines_changed(int)), SIGNAL(rendering_increment_lines_changed(int)));
+    connect(Rendering, SIGNAL(rendering_increment_lines_changed(int)),
+            SIGNAL(rendering_increment_lines_changed(int)));
 
-    connect (JPIP, SIGNAL (HTTP_to_JPIP_hostname_changed (const QString&)), SIGNAL (HTTP_to_JPIP_hostname_changed (const QString&)));
-    connect (JPIP, SIGNAL (JPIP_to_HTTP_hostname_changed (const QString&)), SIGNAL (JPIP_to_HTTP_hostname_changed (const QString&)));
+    connect(JPIP, SIGNAL(HTTP_to_JPIP_hostname_changed(const QString&)),
+            SIGNAL(HTTP_to_JPIP_hostname_changed(const QString&)));
+    connect(JPIP, SIGNAL(JPIP_to_HTTP_hostname_changed(const QString&)),
+            SIGNAL(JPIP_to_HTTP_hostname_changed(const QString&)));
     connect(JPIP, SIGNAL(JPIP_server_port_changed(int)), SIGNAL(JPIP_server_port_changed(int)));
-    connect(JPIP, SIGNAL(JPIP_proxy_changed(const QString &)), SIGNAL(JPIP_proxy_changed(const QString &)));
-    connect(JPIP, SIGNAL(JPIP_cache_directory_changed(const QString &)),
-            SIGNAL(JPIP_cache_directory_changed(const QString &)));
-    connect(JPIP, SIGNAL(JPIP_request_timeout_changed(int)), SIGNAL(JPIP_request_timeout_changed(int)));
-    connect(JPIP, SIGNAL(max_source_image_area_MB_changed(int)), SIGNAL(max_source_image_area_MB_changed(int)));
+    connect(JPIP, SIGNAL(JPIP_proxy_changed(const QString&)),
+            SIGNAL(JPIP_proxy_changed(const QString&)));
+    connect(JPIP, SIGNAL(JPIP_cache_directory_changed(const QString&)),
+            SIGNAL(JPIP_cache_directory_changed(const QString&)));
+    connect(JPIP, SIGNAL(JPIP_request_timeout_changed(int)),
+            SIGNAL(JPIP_request_timeout_changed(int)));
+    connect(JPIP, SIGNAL(max_source_image_area_MB_changed(int)),
+            SIGNAL(max_source_image_area_MB_changed(int)));
 
-    connect(Graphs, SIGNAL(selection_sensitivity_changed(int)), SIGNAL(selection_sensitivity_changed(int)));
+    connect(Graphs, SIGNAL(selection_sensitivity_changed(int)),
+            SIGNAL(selection_sensitivity_changed(int)));
     connect(Graphs, SIGNAL(canvas_color_changed(QRgb)), SIGNAL(canvas_color_changed(QRgb)));
 
-    connect(Scripts, SIGNAL(script_changed(const QString &)), SIGNAL(script_changed(const QString &)));
+    connect(Scripts, SIGNAL(script_changed(const QString&)),
+            SIGNAL(script_changed(const QString&)));
     connect(Scripts, SIGNAL(show_script_changed(bool)), SIGNAL(show_script_changed(bool)));
-    connect(this, SIGNAL(variables_updated(QStringList &)), Scripts, SLOT(variables_updated(QStringList &)));
+    connect(this, SIGNAL(variables_updated(QStringList&)), Scripts,
+            SLOT(variables_updated(QStringList&)));
 
-    QAction *action = new QAction(tr("Close Window"), this);
+    auto* action = new QAction(tr("Close Window"), this);
     action->setShortcut(tr("Ctrl+W"));
     connect(action, SIGNAL(triggered()), SLOT(close()));
     addAction(action);
@@ -279,18 +291,15 @@ Preferences_Dialog::Preferences_Dialog(QWidget *parent) : QDialog(parent), Show_
 #endif
 }
 
-Preferences_Dialog::~Preferences_Dialog()
-{
-    delete Docs_Helper;
-}
+Preferences_Dialog::~Preferences_Dialog() { delete Docs_Helper; }
 
 /*==============================================================================
     Accessors
 */
 bool Preferences_Dialog::has_changed() const
 {
-    return General->has_changed() || Sources->has_changed() || Rendering->has_changed() || JPIP->has_changed() ||
-           Graphs->has_changed();
+    return General->has_changed() || Sources->has_changed() || Rendering->has_changed() ||
+           JPIP->has_changed() || Graphs->has_changed();
 }
 
 void Preferences_Dialog::apply()
@@ -314,7 +323,7 @@ void Preferences_Dialog::reset()
 /*==============================================================================
     Utilities
 */
-void Preferences_Dialog::save(const QString &key, const QVariant &value)
+void Preferences_Dialog::save(const QString& key, const QVariant& value)
 {
     QSettings settings;
     settings.setValue(key, value);
@@ -322,45 +331,40 @@ void Preferences_Dialog::save(const QString &key, const QVariant &value)
 
 QString Preferences_Dialog::color_text(QRgb color)
 {
-    if (color == 0)
-        return "transparent";
+    if (color == 0) return "transparent";
     return QColor(color).name();
 }
 
-QRgb Preferences_Dialog::color_value(const QString &text)
-{
-    return QColor(text).rgba();
-}
+QRgb Preferences_Dialog::color_value(const QString& text) { return QColor(text).rgba(); }
 
 /*==============================================================================
     Event Handlers
 */
-bool Preferences_Dialog::eventFilter(QObject *object, QEvent *event)
+bool Preferences_Dialog::eventFilter(QObject* object, QEvent* event)
 {
-    if (event->type() == QEvent::ToolTip && !Show_Tooltips)
-        return true; //	Block event.
+    if (event->type() == QEvent::ToolTip && !Show_Tooltips) return true;  //	Block event.
     return QDialog::eventFilter(object, event);
 }
 
-void Preferences_Dialog::closeEvent(QCloseEvent *event)
+void Preferences_Dialog::closeEvent(QCloseEvent* event)
 {
     bool accepted = true;
     if (has_changed())
     {
-        switch (QMessageBox::question(this->parentWidget(), windowTitle(), tr("Apply unsaved changes?"),
-                                      QMessageBox::Discard | QMessageBox::Apply | QMessageBox::Cancel,
-                                      QMessageBox::Cancel))
+        switch (QMessageBox::question(
+            this->parentWidget(), windowTitle(), tr("Apply unsaved changes?"),
+            QMessageBox::Discard | QMessageBox::Apply | QMessageBox::Cancel, QMessageBox::Cancel))
         {
-        case QMessageBox::Cancel:
-            accepted = false;
-            break;
-        case QMessageBox::Apply:
-            apply();
-            break;
-        case QMessageBox::Discard:
-            reset();
-        default:
-            break;
+            case QMessageBox::Cancel:
+                accepted = false;
+                break;
+            case QMessageBox::Apply:
+                apply();
+                break;
+            case QMessageBox::Discard:
+                reset();
+            default:
+                break;
         }
     }
     event->setAccepted(accepted);
@@ -369,49 +373,50 @@ void Preferences_Dialog::closeEvent(QCloseEvent *event)
 /*=*****************************************************************************
     General_Section
 */
-const char *General_Section::RESTORE_LAYOUT_KEY = "Restore_Layout";
+const char* General_Section::RESTORE_LAYOUT_KEY = "Restore_Layout";
 #ifndef DEFAULT_RESTORE_LAYOUT
 #define DEFAULT_RESTORE_LAYOUT true
 #endif
 bool General_Section::Default_Restore_Layout = DEFAULT_RESTORE_LAYOUT;
 
 //	Obsolete.
-const char *General_Section::RESTORE_WINDOW_POSITIONS_KEY = "Restore_Window_Positions";
+const char* General_Section::RESTORE_WINDOW_POSITIONS_KEY = "Restore_Window_Positions";
 
-const char *General_Section::RESTORE_LAST_SOURCE_KEY = "Restore_Last_Source";
+const char* General_Section::RESTORE_LAST_SOURCE_KEY = "Restore_Last_Source";
 
 #ifndef DEFAULT_RESTORE_LAST_SOURCE
 #define DEFAULT_RESTORE_LAST_SOURCE true
 #endif
 bool General_Section::Default_Restore_Last_Source = DEFAULT_RESTORE_LAST_SOURCE;
 
-const char *General_Section::BAND_NUMBERS_INDEXED_KEY = "Band_Numbers_Indexed";
+const char* General_Section::BAND_NUMBERS_INDEXED_KEY = "Band_Numbers_Indexed";
 #ifndef DEFAULT_BAND_NUMBERS_INDEXED
 #define DEFAULT_BAND_NUMBERS_INDEXED true
 #endif
 bool General_Section::Default_Band_Numbers_Indexed = DEFAULT_BAND_NUMBERS_INDEXED;
 
-const char *General_Section::GET_PDS_LABEL_KEY = "Get_PDS_Metadata";
+const char* General_Section::GET_PDS_LABEL_KEY = "Get_PDS_Metadata";
 #ifndef DEFAULT_GET_PDS_LABEL
 #define DEFAULT_GET_PDS_LABEL true
 #endif
 bool General_Section::Default_Get_PDS_Metadata = DEFAULT_GET_PDS_LABEL;
 
-const char *General_Section::RESTORE_LONGITUDE_FORMAT_KEY = "Restore_Longitude_Format";
-const char *General_Section::RESTORE_LATITUDE_FORMAT_KEY = "Restore_Latitude_Format";
-const char *General_Section::RESTORE_LONGITUDE_DIRECTION_KEY = "Restore_Longitude_Direction";
+const char* General_Section::RESTORE_LONGITUDE_FORMAT_KEY = "Restore_Longitude_Format";
+const char* General_Section::RESTORE_LATITUDE_FORMAT_KEY = "Restore_Latitude_Format";
+const char* General_Section::RESTORE_LONGITUDE_DIRECTION_KEY = "Restore_Longitude_Direction";
 #ifndef DEFAULT_COORDINATE_FORMAT
 #define DEFAULT_COORDINATE_FORMAT 0
 #endif
 int General_Section::Default_Coordinate_Format = DEFAULT_COORDINATE_FORMAT;
 
-const char *General_Section::DOCUMENTATION_LOCATION_KEY = "Documentation_Location";
+const char* General_Section::DOCUMENTATION_LOCATION_KEY = "Documentation_Location";
 #ifndef DOCUMENTATION_SEARCH_LOCATIONS
-#define DOCUMENTATION_SEARCH_LOCATIONS                                                                                 \
-    "../docs/Users_Guide", "../Resources/Users_Guide", "docs/Users_Guide",                                             \
+#define DOCUMENTATION_SEARCH_LOCATIONS                                     \
+    "../docs/Users_Guide", "../Resources/Users_Guide", "docs/Users_Guide", \
         "https://pirlwww.lpl.arizona.edu/software/HiView/Users_Guide"
 #endif
-const char *General_Section::Default_Documentation_Search_Locations[] = {DOCUMENTATION_SEARCH_LOCATIONS, NULL};
+const char* General_Section::Default_Documentation_Search_Locations[] = {
+    DOCUMENTATION_SEARCH_LOCATIONS, NULL};
 QStringList General_Section::Documentation_Search_Locations;
 
 #ifndef DEFAULT_DOCUMENTATION_FILENAME
@@ -419,15 +424,14 @@ QStringList General_Section::Documentation_Search_Locations;
 #endif
 const QString General_Section::Default_Documentation_Filename = DEFAULT_DOCUMENTATION_FILENAME;
 
-General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentation_Location_lineEdit(NULL)
+General_Section::General_Section(QWidget* parent)
+    : QWidget(parent), Documentation_Location_lineEdit(NULL)
 {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GENERAL))
     clog << ">>> General_Section" << endl;
 #endif
-    if (parent)
-        Title = parent->windowTitle();
-    else
-        Title = tr("Preferences");
+    if (parent) Title = parent->windowTitle();
+    else Title = tr("Preferences");
     Title += tr(": General");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GENERAL))
     clog << "    Title = \"" << Title << '"' << endl;
@@ -444,26 +448,29 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
 
     if (settings.contains(RESTORE_LAYOUT_KEY))
         Restore_Layout = settings.value(RESTORE_LAYOUT_KEY, Default_Restore_Layout).toBool();
-    else
-        settings.setValue(RESTORE_LAYOUT_KEY, Restore_Layout = Default_Restore_Layout);
+    else settings.setValue(RESTORE_LAYOUT_KEY, Restore_Layout = Default_Restore_Layout);
 
     if (settings.contains(RESTORE_WINDOW_POSITIONS_KEY))
         //	Remove obsolete setting.
         settings.remove(RESTORE_WINDOW_POSITIONS_KEY);
 
     if (settings.contains(RESTORE_LAST_SOURCE_KEY))
-        Restore_Last_Source = settings.value(RESTORE_LAST_SOURCE_KEY, Default_Restore_Last_Source).toBool();
+        Restore_Last_Source =
+            settings.value(RESTORE_LAST_SOURCE_KEY, Default_Restore_Last_Source).toBool();
     else
-        settings.setValue(RESTORE_LAST_SOURCE_KEY, Restore_Last_Source = Default_Restore_Last_Source);
+        settings.setValue(RESTORE_LAST_SOURCE_KEY,
+                          Restore_Last_Source = Default_Restore_Last_Source);
 
     //	End of LAYOUT_GEOMETRY_SECTION.
     settings.endGroup();
 
     //	Band Numbering.
     if (settings.contains(BAND_NUMBERS_INDEXED_KEY))
-        Band_Numbers_Indexed = settings.value(BAND_NUMBERS_INDEXED_KEY, Default_Band_Numbers_Indexed).toBool();
+        Band_Numbers_Indexed =
+            settings.value(BAND_NUMBERS_INDEXED_KEY, Default_Band_Numbers_Indexed).toBool();
     else
-        settings.setValue(BAND_NUMBERS_INDEXED_KEY, Band_Numbers_Indexed = Default_Band_Numbers_Indexed);
+        settings.setValue(BAND_NUMBERS_INDEXED_KEY,
+                          Band_Numbers_Indexed = Default_Band_Numbers_Indexed);
     HiView_Utilities::Band_Numbering_Indexed = Band_Numbers_Indexed;
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GENERAL))
     clog << "      Band_Numbers_Indexed = " << Band_Numbers_Indexed << endl;
@@ -472,8 +479,7 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     //	Get PDS Label.
     if (settings.contains(GET_PDS_LABEL_KEY))
         Get_PDS_Metadata = settings.value(GET_PDS_LABEL_KEY, Default_Get_PDS_Metadata).toBool();
-    else
-        settings.setValue(GET_PDS_LABEL_KEY, Get_PDS_Metadata = Default_Get_PDS_Metadata);
+    else settings.setValue(GET_PDS_LABEL_KEY, Get_PDS_Metadata = Default_Get_PDS_Metadata);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GENERAL))
     clog << "      Get_PDS_Metadata = " << Get_PDS_Metadata << endl;
 #endif
@@ -500,8 +506,7 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     }
     else
     {
-        if (find_documentation_location())
-            Documentation_Location = Documentation_Location_Pending;
+        if (find_documentation_location()) Documentation_Location = Documentation_Location_Pending;
         else
             QMessageBox::information((isVisible() ? this : NULL), Title,
                                      tr("The ") + Default_Documentation_Filename +
@@ -516,25 +521,29 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
 
     //	Get Coordinate Display Format Settings
     if (settings.contains(RESTORE_LONGITUDE_FORMAT_KEY))
-        Longitude_Units = settings.value(RESTORE_LONGITUDE_FORMAT_KEY, Default_Coordinate_Format).toInt();
+        Longitude_Units =
+            settings.value(RESTORE_LONGITUDE_FORMAT_KEY, Default_Coordinate_Format).toInt();
     else
-        settings.setValue(RESTORE_LONGITUDE_FORMAT_KEY, Longitude_Units = Default_Coordinate_Format);
+        settings.setValue(RESTORE_LONGITUDE_FORMAT_KEY,
+                          Longitude_Units = Default_Coordinate_Format);
     if (settings.contains(RESTORE_LONGITUDE_DIRECTION_KEY))
-        Longitude_Direction = settings.value(RESTORE_LONGITUDE_DIRECTION_KEY, Default_Coordinate_Format).toInt();
+        Longitude_Direction =
+            settings.value(RESTORE_LONGITUDE_DIRECTION_KEY, Default_Coordinate_Format).toInt();
     else
-        settings.setValue(RESTORE_LONGITUDE_DIRECTION_KEY, Longitude_Direction = Default_Coordinate_Format);
+        settings.setValue(RESTORE_LONGITUDE_DIRECTION_KEY,
+                          Longitude_Direction = Default_Coordinate_Format);
     if (settings.contains(RESTORE_LATITUDE_FORMAT_KEY))
-        Latitude_Units = settings.value(RESTORE_LATITUDE_FORMAT_KEY, Default_Coordinate_Format).toInt();
-    else
-        settings.setValue(RESTORE_LATITUDE_FORMAT_KEY, Latitude_Units = Default_Coordinate_Format);
+        Latitude_Units =
+            settings.value(RESTORE_LATITUDE_FORMAT_KEY, Default_Coordinate_Format).toInt();
+    else settings.setValue(RESTORE_LATITUDE_FORMAT_KEY, Latitude_Units = Default_Coordinate_Format);
 
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GENERAL))
     clog << "    panel layout -" << endl;
 #endif
-    QGridLayout *grid_layout = new QGridLayout(this);
-    QVBoxLayout *vertical_layout;
-    QHBoxLayout *horizontal_layout;
-    Drawn_Line *line;
+    QGridLayout* grid_layout = new QGridLayout(this);
+    QVBoxLayout* vertical_layout;
+    QHBoxLayout* horizontal_layout;
+    Drawn_Line* line;
     int row = -1;
 
 //	Layout Restoration.
@@ -544,7 +553,8 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
 
     //		Heading Label.
     ++row;
-    grid_layout->addWidget(new QLabel(tr("<b>Layout</b>")), row, 0, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
+    grid_layout->addWidget(new QLabel(tr("<b>Layout</b>")), row, 0, 1, -1,
+                           Qt::AlignLeft | Qt::AlignVCenter);
 
     vertical_layout = new QVBoxLayout;
     //		Restore Geometry.
@@ -577,10 +587,11 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     grid_layout->addWidget(line, row, 0, 1, -1, Qt::AlignBottom);
     //		Heading Label.
     ++row;
-    grid_layout->addWidget(new QLabel(tr("<b>Band Numbering</b>")), row, 0, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
+    grid_layout->addWidget(new QLabel(tr("<b>Band Numbering</b>")), row, 0, 1, -1,
+                           Qt::AlignLeft | Qt::AlignVCenter);
 
     vertical_layout = new QVBoxLayout;
-    QButtonGroup *button_group = new QButtonGroup(this);
+    QButtonGroup* button_group = new QButtonGroup(this);
     //		By index.
     Band_Numbers_Indexed_Button = new QRadioButton(tr("By index: 0-based"));
     Band_Numbers_Indexed_Button->setChecked(Band_Numbers_Indexed);
@@ -589,7 +600,7 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     vertical_layout->addWidget(Band_Numbers_Indexed_Button, 0, Qt::AlignLeft | Qt::AlignVCenter);
 
     //		By count.
-    QRadioButton *button = new QRadioButton(tr("By count: 1-based"));
+    QRadioButton* button = new QRadioButton(tr("By count: 1-based"));
     button->setChecked(!Band_Numbers_Indexed);
     button_group->addButton(button);
     vertical_layout->addWidget(button, 0, Qt::AlignLeft | Qt::AlignVCenter);
@@ -612,11 +623,13 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     grid_layout->addWidget(line, row, 0, 1, -1, Qt::AlignBottom);
     //		Heading Label.
     ++row;
-    grid_layout->addWidget(new QLabel(tr("<b>Metadata</b>")), row, 0, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
+    grid_layout->addWidget(new QLabel(tr("<b>Metadata</b>")), row, 0, 1, -1,
+                           Qt::AlignLeft | Qt::AlignVCenter);
 
     vertical_layout = new QVBoxLayout;
     //		Get PDS Label.
-    Get_PDS_Metadata_CheckBox = new QCheckBox(tr("Try to get a PDS metdata label file for JP2 sources"));
+    Get_PDS_Metadata_CheckBox =
+        new QCheckBox(tr("Try to get a PDS metdata label file for JP2 sources"));
     Get_PDS_Metadata_CheckBox->setChecked(Get_PDS_Metadata);
     connect(Get_PDS_Metadata_CheckBox, SIGNAL(toggled(bool)), SLOT(get_PDS_metadata(bool)));
     vertical_layout->addWidget(Get_PDS_Metadata_CheckBox, 0, Qt::AlignLeft | Qt::AlignVCenter);
@@ -645,23 +658,25 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     horizontal_layout = new QHBoxLayout;
     //		Location.
     //			Label.
-    QLabel *label = new QLabel(tr("&Location:"));
+    QLabel* label = new QLabel(tr("&Location:"));
     horizontal_layout->addWidget(label, 0, Qt::AlignLeft | Qt::AlignVCenter);
     //			Value.
     Documentation_Location_lineEdit = new QLineEdit(Documentation_Location);
-    Documentation_Location_lineEdit->setToolTip(tr("Pathname or URL for the directory containing the ") +
-                                                Default_Documentation_Filename + tr(" file"));
+    Documentation_Location_lineEdit->setToolTip(
+        tr("Pathname or URL for the directory containing the ") + Default_Documentation_Filename +
+        tr(" file"));
 #ifndef QT_NO_SHORTCUT
     label->setBuddy(Documentation_Location_lineEdit);
 #endif
     //	N.B.: textEdited is not emitted when setText is used.
-    connect(Documentation_Location_lineEdit, SIGNAL(textEdited(const QString &)),
-            SLOT(documentation_location(const QString &)));
+    connect(Documentation_Location_lineEdit, SIGNAL(textEdited(const QString&)),
+            SLOT(documentation_location(const QString&)));
     //	N.B.: editingFinished emitted when CR entered or widget loses focus.
-    connect(Documentation_Location_lineEdit, SIGNAL(editingFinished()), SLOT(documentation_location_changed()));
+    connect(Documentation_Location_lineEdit, SIGNAL(editingFinished()),
+            SLOT(documentation_location_changed()));
     horizontal_layout->addWidget(Documentation_Location_lineEdit, 100, Qt::AlignVCenter);
     //			Find button.
-    QPushButton *push_button = new QPushButton(tr("Find"), this);
+    QPushButton* push_button = new QPushButton(tr("Find"), this);
     QString tooltip(tr("Try to find the ") + Default_Documentation_Filename +
                     tr(" documentation file in these locations:"));
     for (int index = 0; index < Documentation_Search_Locations.size(); ++index)
@@ -699,13 +714,15 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     Longitude_Units_ComboBox->addItem(tr("h/m/s"));
     Longitude_Units_ComboBox->addItem(tr("radians"));
     Longitude_Units_ComboBox->setCurrentIndex(Longitude_Units);
-    connect(Longitude_Units_ComboBox, SIGNAL(currentIndexChanged(int)), SLOT(longitude_format(int)));
+    connect(Longitude_Units_ComboBox, SIGNAL(currentIndexChanged(int)),
+            SLOT(longitude_format(int)));
 
     Longitude_Units_ComboBox->setFixedHeight(Longitude_Units_ComboBox->sizeHint().height());
     Longitude_Units_ComboBox->setFixedWidth(Longitude_Units_ComboBox->sizeHint().width());
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     Longitude_Units_ComboBox->setAutoFillBackground(true);
-    clog << "    Longitude_Units_ComboBox sizeHint = " << Longitude_Units_ComboBox->sizeHint() << endl;
+    clog << "    Longitude_Units_ComboBox sizeHint = " << Longitude_Units_ComboBox->sizeHint()
+         << endl;
 #endif
     horizontal_layout->addWidget(Longitude_Units_ComboBox);
 
@@ -715,13 +732,15 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     Longitude_Direction_ComboBox->addItem(tr("east"));
     Longitude_Direction_ComboBox->addItem(tr("west"));
     Longitude_Direction_ComboBox->setCurrentIndex(Longitude_Direction);
-    connect(Longitude_Direction_ComboBox, SIGNAL(currentIndexChanged(int)), SLOT(longitude_direction(int)));
+    connect(Longitude_Direction_ComboBox, SIGNAL(currentIndexChanged(int)),
+            SLOT(longitude_direction(int)));
 
     Longitude_Direction_ComboBox->setFixedHeight(Longitude_Direction_ComboBox->sizeHint().height());
     Longitude_Direction_ComboBox->setFixedWidth(Longitude_Direction_ComboBox->sizeHint().width());
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     Longitude_Direction_ComboBox->setAutoFillBackground(true);
-    clog << "    Longitude_Direction_ComboBox sizeHint = " << Longitude_Direction_ComboBox->sizeHint() << endl;
+    clog << "    Longitude_Direction_ComboBox sizeHint = "
+         << Longitude_Direction_ComboBox->sizeHint() << endl;
 #endif
     horizontal_layout->addWidget(Longitude_Direction_ComboBox);
 
@@ -744,7 +763,8 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     Latitude_Units_ComboBox->setFixedWidth(Latitude_Units_ComboBox->sizeHint().width());
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     Latitude_Units_ComboBox->setAutoFillBackground(true);
-    clog << "    Latitude_Units_ComboBox sizeHint = " << Latitude_Units_ComboBox->sizeHint() << endl;
+    clog << "    Latitude_Units_ComboBox sizeHint = " << Latitude_Units_ComboBox->sizeHint()
+         << endl;
 #endif
     horizontal_layout->addWidget(Latitude_Units_ComboBox);
 
@@ -754,7 +774,8 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     Documentation_Location_Reset_Button = new Icon_Button(*Reset_Button_Icon, this);
     Documentation_Location_Reset_Button->setVisible(false);
     Documentation_Location_Reset_Button->setFocusPolicy(Qt::NoFocus);
-    connect(Documentation_Location_Reset_Button, SIGNAL(clicked()), SLOT(documentation_location_reset()));
+    connect(Documentation_Location_Reset_Button, SIGNAL(clicked()),
+            SLOT(documentation_location_reset()));
     grid_layout->addWidget(Documentation_Location_Reset_Button, row, 1, Qt::AlignLeft);
     grid_layout->setColumnMinimumWidth(1, Documentation_Location_Reset_Button->iconSize().width());
 
@@ -768,20 +789,18 @@ General_Section::General_Section(QWidget *parent) : QWidget(parent), Documentati
     clog << "      Defaults/Apply section" << endl;
 #endif
     ++row;
-    QDialogButtonBox *buttons = new QDialogButtonBox(Qt::Horizontal, this);
+    QDialogButtonBox* buttons = new QDialogButtonBox(Qt::Horizontal, this);
     Defaults_Button = buttons->addButton(tr("Defaults"), QDialogButtonBox::ResetRole);
-    if (Defaults_Button_Icon)
-        Defaults_Button->setIcon(*Defaults_Button_Icon);
+    if (Defaults_Button_Icon) Defaults_Button->setIcon(*Defaults_Button_Icon);
     connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
-    QAction *action = new QAction(tr("Defaults"), this);
+    QAction* action = new QAction(tr("Defaults"), this);
     action->setShortcut(tr("Ctrl+Shift+D"));
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(action);
     connect(action, SIGNAL(triggered()), Defaults_Button, SLOT(click()));
 
     Apply_Button = buttons->addButton(tr("Apply"), QDialogButtonBox::ApplyRole);
-    if (Apply_Button_Icon)
-        Apply_Button->setIcon(*Apply_Button_Icon);
+    if (Apply_Button_Icon) Apply_Button->setIcon(*Apply_Button_Icon);
     connect(Apply_Button, SIGNAL(clicked()), SLOT(apply()));
     action = new QAction(tr("Apply"), this);
     action->setShortcut(tr("Ctrl+Shift+A"));
@@ -809,65 +828,55 @@ void General_Section::restore_layout(bool enabled)
 {
     if (Restore_Layout_CheckBox->isChecked() != enabled)
         Restore_Layout_CheckBox->setChecked(enabled);
-    else
-        reset_modifier_buttons();
+    else reset_modifier_buttons();
 }
 
 void General_Section::restore_last_source(bool enabled)
 {
     if (Restore_Last_Source_CheckBox->isChecked() != enabled)
         Restore_Last_Source_CheckBox->setChecked(enabled);
-    else
-        reset_modifier_buttons();
+    else reset_modifier_buttons();
 }
 
 void General_Section::band_numbers_indexed(bool indexed)
 {
     if (Band_Numbers_Indexed_Button->isChecked() != indexed)
         Band_Numbers_Indexed_Button->setChecked(indexed);
-    else
-        reset_modifier_buttons();
+    else reset_modifier_buttons();
 }
 
 void General_Section::longitude_format(int format)
 {
-    if (format < 0 || format > 2)
-        return;
+    if (format < 0 || format > 2) return;
     if (Longitude_Units_ComboBox->currentIndex() != format)
         Longitude_Units_ComboBox->setCurrentIndex(format);
-    else
-        reset_modifier_buttons();
+    else reset_modifier_buttons();
 }
 
 void General_Section::longitude_direction(int direction)
 {
-    if (direction < 0 || direction > 1)
-        return;
+    if (direction < 0 || direction > 1) return;
     if (Longitude_Direction_ComboBox->currentIndex() != direction)
         Longitude_Direction_ComboBox->setCurrentIndex(direction);
-    else
-        reset_modifier_buttons();
+    else reset_modifier_buttons();
 }
 
 void General_Section::latitude_format(int format)
 {
-    if (format < 0 || format > 2)
-        return;
+    if (format < 0 || format > 2) return;
     if (Latitude_Units_ComboBox->currentIndex() != format)
         Latitude_Units_ComboBox->setCurrentIndex(format);
-    else
-        reset_modifier_buttons();
+    else reset_modifier_buttons();
 }
 
 void General_Section::get_PDS_metadata(bool enabled)
 {
     if (Get_PDS_Metadata_CheckBox->isChecked() != enabled)
         Get_PDS_Metadata_CheckBox->setChecked(enabled);
-    else
-        reset_modifier_buttons();
+    else reset_modifier_buttons();
 }
 
-void General_Section::documentation_location(const QString &location)
+void General_Section::documentation_location(const QString& location)
 {
     if (Documentation_Location_lineEdit)
     {
@@ -878,25 +887,24 @@ void General_Section::documentation_location(const QString &location)
     }
 }
 
-bool General_Section::documentation_location_is_valid(const QString &location)
+bool General_Section::documentation_location_is_valid(const QString& location)
 {
     bool accepted = true;
-    if (location.isEmpty())
-        Documentation_Location_Pending = location;
+    if (location.isEmpty()) Documentation_Location_Pending = location;
     else
     {
         QString source(location);
         source += QDir::separator();
         source += Default_Documentation_Filename;
         if (Preferences_Dialog::Docs_Helper->is_accessible(source) ||
-            QMessageBox::question((isVisible() ? this : NULL), Title,
-                                  tr("The ") + Default_Documentation_Filename +
-                                      tr(" documentation file was not found\n") + tr("at the ") + location +
-                                      tr(" location.\n\n") + tr("Use the location anyway?"),
-                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+            QMessageBox::question(
+                (isVisible() ? this : NULL), Title,
+                tr("The ") + Default_Documentation_Filename +
+                    tr(" documentation file was not found\n") + tr("at the ") + location +
+                    tr(" location.\n\n") + tr("Use the location anyway?"),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
             Documentation_Location_Pending = location;
-        else
-            accepted = false;
+        else accepted = false;
     }
 
     documentation_location(Documentation_Location_Pending);
@@ -908,7 +916,8 @@ void General_Section::documentation_location_changed()
 {
     //	Avoid redundant editingFinished signals.
     bool blocked = Documentation_Location_lineEdit->blockSignals(true);
-    if (Documentation_Location_lineEdit->text() != Documentation_Location_Pending && !Defaults_Button->hasFocus())
+    if (Documentation_Location_lineEdit->text() != Documentation_Location_Pending &&
+        !Defaults_Button->hasFocus())
         documentation_location_is_valid(Documentation_Location_lineEdit->text());
     Documentation_Location_lineEdit->blockSignals(blocked);
 }
@@ -919,23 +928,22 @@ bool General_Section::find_documentation_location()
     clog << ">>> General_Section::find_documentation_location" << endl
          << "    searching for " << Default_Documentation_Filename << endl;
 #endif
-    Documentation_Location_Pending =
-        Preferences_Dialog::Docs_Helper->find(Default_Documentation_Filename, Documentation_Search_Locations);
+    Documentation_Location_Pending = Preferences_Dialog::Docs_Helper->find(
+        Default_Documentation_Filename, Documentation_Search_Locations);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GENERAL))
     clog << "      Documentation_Location_Pending = " << Documentation_Location_Pending << endl;
 #endif
     if (!Documentation_Location_Pending.isEmpty())
         documentation_location(Documentation_Location_Pending);
 #if ((DEBUG_SECTION) & DEBUG_GENERAL)
-    clog << "<<< General_Section::find_documentation_location: " << (!Documentation_Location_Pending.isEmpty()) << endl;
+    clog << "<<< General_Section::find_documentation_location: "
+         << (!Documentation_Location_Pending.isEmpty()) << endl;
 #endif
     return !Documentation_Location_Pending.isEmpty();
 }
 
 void General_Section::documentation_location_reset()
-{
-    documentation_location(Documentation_Location);
-}
+{ documentation_location(Documentation_Location); }
 
 void General_Section::defaults()
 {
@@ -951,23 +959,28 @@ void General_Section::defaults()
 
 void General_Section::reset_defaults_button()
 {
-    Defaults_Button->setEnabled((Restore_Layout_CheckBox->isChecked() != Default_Restore_Layout) ||
-                                (Restore_Last_Source_CheckBox->isChecked() != Default_Restore_Last_Source) ||
-                                (Band_Numbers_Indexed_Button->isChecked() != Default_Band_Numbers_Indexed) ||
-                                (Get_PDS_Metadata_CheckBox->isChecked() != Default_Get_PDS_Metadata) ||
-                                (Longitude_Units_ComboBox->currentIndex() != Default_Coordinate_Format) ||
-                                (Longitude_Direction_ComboBox->currentIndex() != Default_Coordinate_Format) ||
-                                (Latitude_Units_ComboBox->currentIndex() != Default_Coordinate_Format)
-                                //	No Default_Documentation_Location.
+    Defaults_Button->setEnabled(
+        (Restore_Layout_CheckBox->isChecked() != Default_Restore_Layout) ||
+        (Restore_Last_Source_CheckBox->isChecked() != Default_Restore_Last_Source) ||
+        (Band_Numbers_Indexed_Button->isChecked() != Default_Band_Numbers_Indexed) ||
+        (Get_PDS_Metadata_CheckBox->isChecked() != Default_Get_PDS_Metadata) ||
+        (Longitude_Units_ComboBox->currentIndex() != Default_Coordinate_Format) ||
+        (Longitude_Direction_ComboBox->currentIndex() != Default_Coordinate_Format) ||
+        (Latitude_Units_ComboBox->currentIndex() != Default_Coordinate_Format)
+        //	No Default_Documentation_Location.
     );
 #if ((DEBUG_SECTION) & DEBUG_GENERAL)
     clog << ">-< General_Section::reset_defaults_button:" << endl
-         << "            Restore_Layout_CheckBox isChecked = " << Restore_Layout_CheckBox->isChecked() << endl
+         << "            Restore_Layout_CheckBox isChecked = "
+         << Restore_Layout_CheckBox->isChecked() << endl
          << "                       Default_Restore_Layout = " << Default_Restore_Layout << endl
-         << "                    Default_Restore_Last_Source = " << Default_Restore_Last_Source << endl
-         << "                   Default_Band_Numbers_Indexed = " << Default_Band_Numbers_Indexed << endl
+         << "                    Default_Restore_Last_Source = " << Default_Restore_Last_Source
+         << endl
+         << "                   Default_Band_Numbers_Indexed = " << Default_Band_Numbers_Indexed
+         << endl
          << "                       Default_Get_PDS_Metadata = " << Default_Get_PDS_Metadata << endl
-         << "                      Defaults_Button isEnabled = " << Defaults_Button->isEnabled() << endl;
+         << "                      Defaults_Button isEnabled = " << Defaults_Button->isEnabled()
+         << endl;
 #endif
 }
 
@@ -994,7 +1007,8 @@ bool General_Section::has_changed() const
         (Latitude_Units_ComboBox->currentIndex() != Latitude_Units);
 #if ((DEBUG_SECTION) & DEBUG_GENERAL)
     clog << ">-< General_Section::has_changed:" << endl
-         << "    Restore_Layout_CheckBox isChecked = " << Restore_Layout_CheckBox->isChecked() << endl
+         << "    Restore_Layout_CheckBox isChecked = " << Restore_Layout_CheckBox->isChecked()
+         << endl
          << "                       Restore_Layout = " << Restore_Layout << endl
          << "                  Restore_Last_Source = " << Restore_Last_Source << endl
          << "                 Band_Numbers_Indexed = " << Band_Numbers_Indexed << endl
@@ -1096,15 +1110,13 @@ int Sources_Section::Default_Source_List_Capacity = DEFAULT_SOURCE_LIST_CAPACITY
 #endif
 int Sources_Section::Default_Source_List_Capacity_Max = DEFAULT_SOURCE_LIST_CAPACITY_MAX;
 
-Sources_Section::Sources_Section(QWidget *parent) : QWidget(parent)
+Sources_Section::Sources_Section(QWidget* parent) : QWidget(parent)
 {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SOURCES))
     clog << ">>> Sources_Section" << endl;
 #endif
-    if (parent)
-        Title = parent->windowTitle();
-    else
-        Title = tr("Preferences");
+    if (parent) Title = parent->windowTitle();
+    else Title = tr("Preferences");
     Title += tr(": Sources");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SOURCES))
     clog << "    Title = \"" << Title << '"' << endl;
@@ -1117,7 +1129,8 @@ Sources_Section::Sources_Section(QWidget *parent) : QWidget(parent)
     QSettings settings;
     bool OK;
 
-    int capacity = Capacity = settings.value(SOURCE_LIST_CAPACITY_KEY, Default_Source_List_Capacity).toInt(&OK);
+    int capacity = Capacity =
+        settings.value(SOURCE_LIST_CAPACITY_KEY, Default_Source_List_Capacity).toInt(&OK);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SOURCES))
     clog << "    " << SOURCE_LIST_CAPACITY_KEY << " = " << Capacity << endl;
 #endif
@@ -1126,8 +1139,10 @@ Sources_Section::Sources_Section(QWidget *parent) : QWidget(parent)
         QMessageBox::warning((isVisible() ? this : NULL), Title,
                              tr("The ") + SOURCE_LIST_CAPACITY_KEY + " \"" +
                                  settings.value(SOURCE_LIST_CAPACITY_KEY).toString() +
-                                 tr("\" value is invalid - a number is required.\n\n") + tr("The default value of ") +
-                                 QString::number(Default_Source_List_Capacity) + tr(" is being used."));
+                                 tr("\" value is invalid - a number is required.\n\n") +
+                                 tr("The default value of ") +
+                                 QString::number(Default_Source_List_Capacity) +
+                                 tr(" is being used."));
         capacity = Default_Source_List_Capacity;
     }
     else if (!settings.contains(SOURCE_LIST_CAPACITY_KEY))
@@ -1141,16 +1156,15 @@ Sources_Section::Sources_Section(QWidget *parent) : QWidget(parent)
     for (int index = 0; index < list.size(); index++)
         clog << "    " << index << ": " << list.at(index) << endl;
 #endif
-    if (!settings.contains(SOURCE_LIST_KEY))
-        settings.setValue(SOURCE_LIST_KEY, *Source_List);
+    if (!settings.contains(SOURCE_LIST_KEY)) settings.setValue(SOURCE_LIST_KEY, *Source_List);
 
 //	Layout controls.
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SOURCES))
     clog << "    layout controls -" << endl;
 #endif
-    QGridLayout *grid_layout = new QGridLayout(this);
-    QHBoxLayout *horizontal_layout = new QHBoxLayout;
-    QLabel *label;
+    QGridLayout* grid_layout = new QGridLayout(this);
+    QHBoxLayout* horizontal_layout = new QHBoxLayout;
+    QLabel* label;
     int row = -1;
 
     //	Row 0:
@@ -1210,9 +1224,12 @@ Sources_Section::Sources_Section(QWidget *parent) : QWidget(parent)
     Source_List_Widget->setDropIndicatorShown(true);
     Source_List_Widget->setSelectionBehavior(QAbstractItemView::SelectItems);
     Source_List_Widget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    Source_List_Widget->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
-    connect(Source_List_Widget, SIGNAL(itemSelectionChanged()), SLOT(source_list_selection_changed()));
-    connect(Source_List_Widget, SIGNAL(itemChanged(QListWidgetItem *)), SLOT(source_list_changed(QListWidgetItem *)));
+    Source_List_Widget->setEditTriggers(QAbstractItemView::DoubleClicked |
+                                        QAbstractItemView::EditKeyPressed);
+    connect(Source_List_Widget, SIGNAL(itemSelectionChanged()),
+            SLOT(source_list_selection_changed()));
+    connect(Source_List_Widget, SIGNAL(itemChanged(QListWidgetItem*)),
+            SLOT(source_list_changed(QListWidgetItem*)));
 
     //		List reset button (LR corner of Source List).
     Source_List_Reset_Button = new Icon_Button(*Reset_Button_Icon, this);
@@ -1226,7 +1243,7 @@ Sources_Section::Sources_Section(QWidget *parent) : QWidget(parent)
     grid_layout->setRowStretch(row, 100);
 
     //		Edit button.
-    QVBoxLayout *vertical_layout = new QVBoxLayout();
+    QVBoxLayout* vertical_layout = new QVBoxLayout();
     Edit_Button = new QPushButton(tr("Edit"), this);
     Edit_Button->setEnabled(false);
     connect(Edit_Button, SIGNAL(clicked()), SLOT(source_list_edit_item()));
@@ -1244,18 +1261,17 @@ Sources_Section::Sources_Section(QWidget *parent) : QWidget(parent)
 
     //	Defaults/Apply buttons.
     ++row;
-    QDialogButtonBox *buttons = new QDialogButtonBox(Qt::Horizontal, this);
+    QDialogButtonBox* buttons = new QDialogButtonBox(Qt::Horizontal, this);
     Defaults_Button = buttons->addButton(tr("Defaults"), QDialogButtonBox::ResetRole);
     Defaults_Button->setIcon(*Defaults_Button_Icon);
     connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
-    QAction *action = new QAction(tr("Defaults"), this);
+    QAction* action = new QAction(tr("Defaults"), this);
     action->setShortcut(tr("Ctrl+Shift+D"));
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(action);
     connect(action, SIGNAL(triggered()), Defaults_Button, SLOT(click()));
     Apply_Button = buttons->addButton(QDialogButtonBox::Apply);
-    if (Apply_Button_Icon)
-        Apply_Button->setIcon(*Apply_Button_Icon);
+    if (Apply_Button_Icon) Apply_Button->setIcon(*Apply_Button_Icon);
     connect(Apply_Button, SIGNAL(clicked()), SLOT(apply()));
     action = new QAction(tr("Apply"), this);
     action->setShortcut(tr("Ctrl+Shift+A"));
@@ -1282,87 +1298,70 @@ Sources_Section::Sources_Section(QWidget *parent) : QWidget(parent)
 
 void Sources_Section::source_list_capacity(int capacity)
 {
-    if (capacity < 1)
-        capacity = 1;
+    if (capacity < 1) capacity = 1;
     else if (capacity > Default_Source_List_Capacity_Max)
     {
         capacity = Default_Source_List_Capacity_Max;
-        QMessageBox::information((isVisible() ? this : NULL), Title,
-                                 tr("The source list capacity has been limited to the maximimum of ") +
-                                     QString::number(Default_Source_List_Capacity_Max) + '.');
+        QMessageBox::information(
+            (isVisible() ? this : NULL), Title,
+            tr("The source list capacity has been limited to the maximimum of ") +
+                QString::number(Default_Source_List_Capacity_Max) + '.');
     }
 
     int entries = Source_List_Widget->count();
     if (entries > capacity)
     {
-        if (QMessageBox::question((isVisible() ? this : NULL), Title,
-                                  tr("The source list capacity of ") + QString::number(capacity) +
-                                      tr(" is less than the ") + QString::number(entries) +
-                                      tr(" entries in the sources list.\n\n") + tr("Increase the capacity?\n") +
-                                      tr("If No, excess entries will be removed from the list."),
-                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+        if (QMessageBox::question(
+                (isVisible() ? this : NULL), Title,
+                tr("The source list capacity of ") + QString::number(capacity) +
+                    tr(" is less than the ") + QString::number(entries) +
+                    tr(" entries in the sources list.\n\n") + tr("Increase the capacity?\n") +
+                    tr("If No, excess entries will be removed from the list."),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
             capacity = entries;
         else
         {
-            while (entries > capacity)
-                delete Source_List_Widget->takeItem(--entries);
+            while (entries > capacity) delete Source_List_Widget->takeItem(--entries);
             Entries->setNum(Source_List_Widget->count());
         }
     }
 
-    if (capacity != Capacity_spinBox->value())
-        Capacity_spinBox->setValue(capacity);
+    if (capacity != Capacity_spinBox->value()) Capacity_spinBox->setValue(capacity);
 
     reset_modifier_buttons();
 }
 
 void Sources_Section::source_list_capacity_change()
-{
-    source_list_capacity(Capacity_spinBox->value());
-}
+{ source_list_capacity(Capacity_spinBox->value()); }
 
-void Sources_Section::source_list_capacity_reset()
-{
-    source_list_capacity(Capacity);
-}
+void Sources_Section::source_list_capacity_reset() { source_list_capacity(Capacity); }
 
 #ifndef DOXYGEN_PROCESSING
 namespace
 {
-bool operator==(const QListWidget &list, const QStringList &strings)
+bool operator==(const QListWidget& list, const QStringList& strings)
 {
     bool matched = false;
     if (list.count() == strings.count())
     {
         int count = list.count();
         while (count--)
-            if (list.item(count)->text() != strings.at(count))
-                break;
-        if (count < 0)
-            matched = true;
+            if (list.item(count)->text() != strings.at(count)) break;
+        if (count < 0) matched = true;
     }
     return matched;
 }
 
-bool operator==(const QStringList &strings, const QListWidget &list)
-{
-    return list == strings;
-}
+bool operator==(const QStringList& strings, const QListWidget& list) { return list == strings; }
 
-bool operator!=(const QListWidget &list, const QStringList &strings)
-{
-    return !(list == strings);
-}
+bool operator!=(const QListWidget& list, const QStringList& strings) { return !(list == strings); }
 
-bool operator!=(const QStringList &strings, const QListWidget &list)
-{
-    return !(list == strings);
-}
+bool operator!=(const QStringList& strings, const QListWidget& list) { return !(list == strings); }
 
-} // namespace
+}  // namespace
 #endif
 
-void Sources_Section::source_list(const QStringList &list)
+void Sources_Section::source_list(const QStringList& list)
 {
     bool changed = false;
     if (*Source_List != list)
@@ -1376,8 +1375,7 @@ void Sources_Section::source_list(const QStringList &list)
         {
             there = Source_List->count();
             while (--there > here)
-                if (Source_List->at(there) == Source_List->at(here))
-                    Source_List->removeAt(there);
+                if (Source_List->at(there) == Source_List->at(here)) Source_List->removeAt(there);
         }
 
         /*	Keep the list size under the capacity.
@@ -1385,8 +1383,7 @@ void Sources_Section::source_list(const QStringList &list)
             N.B. Excess entries are silently removed.
         */
         here = Capacity_spinBox->value();
-        while (Source_List->count() > here)
-            Source_List->removeLast();
+        while (Source_List->count() > here) Source_List->removeLast();
     }
 
     if (*Source_List != *Source_List_Widget)
@@ -1395,7 +1392,8 @@ void Sources_Section::source_list(const QStringList &list)
         for (int index = 0; index < Source_List->count(); ++index)
         {
             Source_List_Widget->addItem(Source_List->at(index));
-            Source_List_Widget->item(index)->setFlags(Source_List_Widget->item(index)->flags() | Qt::ItemIsEditable);
+            Source_List_Widget->item(index)->setFlags(Source_List_Widget->item(index)->flags() |
+                                                      Qt::ItemIsEditable);
         }
         //	Make sure the viewport is refreshed.
         Source_List_Widget->viewport()->update();
@@ -1432,24 +1430,22 @@ void Sources_Section::source_list_selection_changed()
 #endif
 }
 
-void Sources_Section::source_list_changed(QListWidgetItem *)
-{
-    reset_modifier_buttons();
-}
+void Sources_Section::source_list_changed(QListWidgetItem*) { reset_modifier_buttons(); }
 
 void Sources_Section::source_list_edit_item()
 {
 #if ((DEBUG_SECTION) & DEBUG_SOURCES)
     clog << ">>> Sources_Section::source_list_edit_item" << endl;
 #endif
-    QListWidgetItem *item = Source_List_Widget->currentItem();
+    QListWidgetItem* item = Source_List_Widget->currentItem();
     if (item)
     {
 #if ((DEBUG_SECTION) & DEBUG_SOURCES)
         clog << "    visualItemRect = " << Source_List_Widget->visualItemRect(item) << endl
              << "     viewport rect = " << Source_List_Widget->viewport()->rect() << endl;
 #endif
-        if (Source_List_Widget->visualItemRect(item).bottom() > Source_List_Widget->viewport()->rect().height())
+        if (Source_List_Widget->visualItemRect(item).bottom() >
+            Source_List_Widget->viewport()->rect().height())
             Source_List_Widget->scrollToItem(item);
         Source_List_Widget->editItem(item);
     }
@@ -1463,12 +1459,12 @@ void Sources_Section::source_list_remove_items()
 #if ((DEBUG_SECTION) & DEBUG_SOURCES)
     clog << ">>> Sources_Section::source_list_remove_items" << endl;
 #endif
-    QList<QListWidgetItem *> selected_items(Source_List_Widget->selectedItems());
+    QList<QListWidgetItem*> selected_items(Source_List_Widget->selectedItems());
     int count = selected_items.count();
     if (count)
     {
         int entries = Source_List_Widget->count();
-        QListWidgetItem *top_item = NULL;
+        QListWidgetItem* top_item = NULL;
         if (count != entries)
         {
 //	Find the item at the top of the viewport.
@@ -1481,11 +1477,11 @@ void Sources_Section::source_list_remove_items()
             {
                 top_item = Source_List_Widget->item(top_row);
 #if ((DEBUG_SECTION) & DEBUG_SOURCES)
-                clog << "    " << top_row << ": visualItemRect = " << Source_List_Widget->visualItemRect(top_item)
+                clog << "    " << top_row
+                     << ": visualItemRect = " << Source_List_Widget->visualItemRect(top_item)
                      << endl;
 #endif
-                if (Source_List_Widget->visualItemRect(top_item).top() >= 0)
-                    break;
+                if (Source_List_Widget->visualItemRect(top_item).top() >= 0) break;
             }
 
             if (selected_items.contains(top_item))
@@ -1501,8 +1497,7 @@ void Sources_Section::source_list_remove_items()
                     clog << "    " << row << endl;
 #endif
                     top_item = Source_List_Widget->item(row);
-                    if (!selected_items.contains(top_item))
-                        break;
+                    if (!selected_items.contains(top_item)) break;
                 }
                 if (row == entries)
                 {
@@ -1517,8 +1512,7 @@ void Sources_Section::source_list_remove_items()
                         clog << "    " << row << endl;
 #endif
                         top_item = Source_List_Widget->item(row);
-                        if (!selected_items.contains(top_item))
-                            break;
+                        if (!selected_items.contains(top_item)) break;
                     }
                 }
             }
@@ -1553,17 +1547,17 @@ void Sources_Section::source_list_reset()
     int capacity = Capacity_spinBox->value(), entries = Source_List->count();
     if (entries > capacity)
     {
-        if (QMessageBox::question((isVisible() ? this : NULL), Title,
-                                  tr("The source list capacity of ") + QString::number(capacity) +
-                                      tr(" is less than the ") + QString::number(entries) +
-                                      tr(" entries in the sources list.\n\n") + tr("Increase the capacity?\n") +
-                                      tr("If No, excess entries will be removed from the list."),
-                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+        if (QMessageBox::question(
+                (isVisible() ? this : NULL), Title,
+                tr("The source list capacity of ") + QString::number(capacity) +
+                    tr(" is less than the ") + QString::number(entries) +
+                    tr(" entries in the sources list.\n\n") + tr("Increase the capacity?\n") +
+                    tr("If No, excess entries will be removed from the list."),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
             source_list_capacity(entries);
         else
             //	Remove excess entries.
-            while (entries-- > capacity)
-                Source_List->takeLast();
+            while (entries-- > capacity) Source_List->takeLast();
     }
 
     //	Update the source list.
@@ -1576,10 +1570,7 @@ void Sources_Section::reset()
     source_list_reset();
 }
 
-void Sources_Section::defaults()
-{
-    source_list_capacity(Default_Source_List_Capacity);
-}
+void Sources_Section::defaults() { source_list_capacity(Default_Source_List_Capacity); }
 
 void Sources_Section::reset_modifier_buttons()
 {
@@ -1619,20 +1610,18 @@ void Sources_Section::apply()
 }
 
 bool Sources_Section::has_changed() const
-{
-    return Capacity != Capacity_spinBox->value() || *Source_List != *Source_List_Widget;
-}
+{ return Capacity != Capacity_spinBox->value() || *Source_List != *Source_List_Widget; }
 
 /*=*****************************************************************************
     Rendering_Section
 */
-const char *Rendering_Section::INITIAL_SCALE_KEY = "Initial_Scale";
+const char* Rendering_Section::INITIAL_SCALE_KEY = "Initial_Scale";
 #ifndef DEFAULT_INITIAL_SCALE
 #define DEFAULT_INITIAL_SCALE Preferences_Dialog::INITIAL_SCALE_AUTO_FIT
 #endif
 double Rendering_Section::Default_Initial_Scale = DEFAULT_INITIAL_SCALE;
 
-const char *Rendering_Section::MIN_SCALE_KEY = "Min_Scale";
+const char* Rendering_Section::MIN_SCALE_KEY = "Min_Scale";
 #ifndef DEFAULT_MIN_SCALE
 #define DEFAULT_MIN_SCALE 0.01
 #endif
@@ -1641,7 +1630,7 @@ double Rendering_Section::Default_Min_Scale = DEFAULT_MIN_SCALE;
 #define MIN_SCALING 0.001
 #endif
 
-const char *Rendering_Section::MAX_SCALE_KEY = "Max_Scale";
+const char* Rendering_Section::MAX_SCALE_KEY = "Max_Scale";
 #ifndef DEFAULT_MAX_SCALE
 #define DEFAULT_MAX_SCALE 10.0
 #endif
@@ -1650,13 +1639,13 @@ double Rendering_Section::Default_Max_Scale = DEFAULT_MAX_SCALE;
 #define MAX_SCALING 100.0
 #endif
 
-const char *Rendering_Section::SCALING_MINOR_INCREMENT_KEY = "Scaling_Minor_Increment";
+const char* Rendering_Section::SCALING_MINOR_INCREMENT_KEY = "Scaling_Minor_Increment";
 #ifndef DEFAULT_SCALING_MINOR_INCREMENT
 #define DEFAULT_SCALING_MINOR_INCREMENT 0.01
 #endif
 double Rendering_Section::Default_Scaling_Minor_Increment = DEFAULT_SCALING_MINOR_INCREMENT;
 
-const char *Rendering_Section::SCALING_MAJOR_INCREMENT_KEY = "Scaling_Major_Increment";
+const char* Rendering_Section::SCALING_MAJOR_INCREMENT_KEY = "Scaling_Major_Increment";
 #ifndef DEFAULT_SCALING_MAJOR_INCREMENT
 #define DEFAULT_SCALING_MAJOR_INCREMENT 0.1
 #endif
@@ -1665,21 +1654,21 @@ double Rendering_Section::Default_Scaling_Major_Increment = DEFAULT_SCALING_MAJO
 #define MAX_SCALING_INCREMENT 1.0
 #endif
 
-const char *Rendering_Section::CONTRAST_STRETCH_UPPER_KEY = "Contrast_Stretch_Upper";
+const char* Rendering_Section::CONTRAST_STRETCH_UPPER_KEY = "Contrast_Stretch_Upper";
 #ifndef DEFAULT_CONTRAST_STRETCH_UPPER
 #define DEFAULT_CONTRAST_STRETCH_UPPER {0.01, 0.01, 0.01}
 #endif
 double Rendering_Section::Default_Contrast_Stretch_Upper[3] = DEFAULT_CONTRAST_STRETCH_UPPER;
 
-const char *Rendering_Section::CONTRAST_STRETCH_LOWER_KEY = "Contrast_Stretch_Lower";
+const char* Rendering_Section::CONTRAST_STRETCH_LOWER_KEY = "Contrast_Stretch_Lower";
 #ifndef DEFAULT_CONTRAST_STRETCH_LOWER
 #define DEFAULT_CONTRAST_STRETCH_LOWER {0.10, 0.10, 0.10}
 #endif
 double Rendering_Section::Default_Contrast_Stretch_Lower[3] = DEFAULT_CONTRAST_STRETCH_LOWER;
 
-const char *Rendering_Section::BACKGROUND_COLOR_KEY = "Background_Color";
+const char* Rendering_Section::BACKGROUND_COLOR_KEY = "Background_Color";
 
-const char *Rendering_Section::LINE_COLOR_KEY = "Line_Color";
+const char* Rendering_Section::LINE_COLOR_KEY = "Line_Color";
 
 #ifndef AS_STRING
 /*	Provides stringification of #defined names.
@@ -1697,14 +1686,15 @@ const char *Rendering_Section::LINE_COLOR_KEY = "Line_Color";
 #define DEFAULT_BACKGROUND_COLOR black
 #endif
 
-#define _DEFAULT_BACKGROUND_COLOR_ AS_STRING(DEFAULT_BACKGROUND_COLOR)
-QRgb Rendering_Section::Default_Background_Color = QColor(_DEFAULT_BACKGROUND_COLOR_).rgba();
+#define DEFAULT_BACKGROUND_COLOR_ AS_STRING(DEFAULT_BACKGROUND_COLOR)
+QRgb Rendering_Section::Default_Background_Color =  // NOLINT
+    QColor(DEFAULT_BACKGROUND_COLOR_).rgba();
 
 #ifndef DEFAULT_LINE_COLOR
 #define DEFAULT_LINE_COLOR "#ff0000"
 #endif
 
-const char *Rendering_Section::TILE_SIZE_KEY = "Tile_Size";
+const char* Rendering_Section::TILE_SIZE_KEY = "Tile_Size";
 #ifndef MIN_TILE_SIZE
 #define MIN_TILE_SIZE 256
 #endif
@@ -1716,22 +1706,20 @@ int Rendering_Section::Default_Tile_Size = DEFAULT_TILE_SIZE;
 #define MAX_TILE_SIZE 8192
 #endif
 
-const char *Rendering_Section::RENDERING_INCREMENT_LINES_KEY = "Rendering_Increment_Lines";
+const char* Rendering_Section::RENDERING_INCREMENT_LINES_KEY = "Rendering_Increment_Lines";
 
 #ifndef DEFAULT_RENDERING_INCREMENT_LINES
 #define DEFAULT_RENDERING_INCREMENT_LINES 100
 #endif
 int Rendering_Section::Default_Rendering_Increment_Lines = DEFAULT_RENDERING_INCREMENT_LINES;
 
-Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
+Rendering_Section::Rendering_Section(QWidget* parent) : QWidget(parent), m_updatingScale(false)
 {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << ">>> Rendering_Section" << endl;
 #endif
-    if (parent)
-        Title = parent->windowTitle();
-    else
-        Title = tr("Preferences");
+    if (parent) Title = parent->windowTitle();
+    else Title = tr("Preferences");
     Title += tr(": Rendering");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    Title = \"" << Title << '"' << endl;
@@ -1747,16 +1735,19 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     /*------------------------------------------------------------------------------
         Scaling
     */
-    double initial_scaling = Initial_Scale = settings.value(INITIAL_SCALE_KEY, Default_Initial_Scale).toDouble(&OK);
+    double initial_scaling = Initial_Scale =
+        settings.value(INITIAL_SCALE_KEY, Default_Initial_Scale).toDouble(&OK);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << INITIAL_SCALE_KEY << " = " << Initial_Scale << endl;
 #endif
     if (!OK)
     {
-        QMessageBox::warning((isVisible() ? this : NULL), Title,
-                             tr("The ") + INITIAL_SCALE_KEY + " \"" + settings.value(INITIAL_SCALE_KEY).toString() +
-                                 tr("\" value is invalid - a number is required.\n\n") + tr("The default value of ") +
-                                 QString::number(Default_Initial_Scale) + tr(" (fit to viewport) is being used."));
+        QMessageBox::warning(
+            (isVisible() ? this : NULL), Title,
+            tr("The ") + INITIAL_SCALE_KEY + " \"" + settings.value(INITIAL_SCALE_KEY).toString() +
+                tr("\" value is invalid - a number is required.\n\n") +
+                tr("The default value of ") + QString::number(Default_Initial_Scale) +
+                tr(" (fit to viewport) is being used."));
         initial_scaling = Default_Initial_Scale;
     }
     else if (!settings.contains(INITIAL_SCALE_KEY))
@@ -1769,14 +1760,14 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     if (!OK || Min_Scale <= 0)
     {
         QMessageBox::warning((isVisible() ? this : NULL), Title,
-                             tr("The ") + MIN_SCALE_KEY + " \"" + settings.value(MIN_SCALE_KEY).toString() +
+                             tr("The ") + MIN_SCALE_KEY + " \"" +
+                                 settings.value(MIN_SCALE_KEY).toString() +
                                  tr("\" value is invalid - a positive number is required.\n\n") +
                                  tr("The default value of ") + QString::number(Default_Min_Scale) +
                                  tr(" is being used."));
         min_scaling = Default_Min_Scale;
     }
-    else if (!settings.contains(MIN_SCALE_KEY))
-        settings.setValue(MIN_SCALE_KEY, Default_Min_Scale);
+    else if (!settings.contains(MIN_SCALE_KEY)) settings.setValue(MIN_SCALE_KEY, Default_Min_Scale);
 
     double max_scaling = Max_Scale = settings.value(MAX_SCALE_KEY, Default_Max_Scale).toDouble(&OK);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
@@ -1785,17 +1776,16 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     if (!OK || Max_Scale <= 0)
     {
         QMessageBox::warning((isVisible() ? this : NULL), Title,
-                             tr("The ") + MAX_SCALE_KEY + " \"" + settings.value(MAX_SCALE_KEY).toString() +
+                             tr("The ") + MAX_SCALE_KEY + " \"" +
+                                 settings.value(MAX_SCALE_KEY).toString() +
                                  tr("\" value is invalid - a positive number is required.\n\n") +
                                  tr("The default value of ") + QString::number(Default_Max_Scale) +
                                  tr(" is being used."));
         max_scaling = Default_Max_Scale;
     }
-    else if (!settings.contains(MAX_SCALE_KEY))
-        settings.setValue(MAX_SCALE_KEY, Default_Max_Scale);
+    else if (!settings.contains(MAX_SCALE_KEY)) settings.setValue(MAX_SCALE_KEY, Default_Max_Scale);
 
-    if (max_scaling < min_scaling)
-        max_scaling = min_scaling;
+    if (max_scaling < min_scaling) max_scaling = min_scaling;
 
     double minor_increment = Scaling_Minor_Increment =
         settings.value(SCALING_MINOR_INCREMENT_KEY, Default_Scaling_Minor_Increment).toDouble(&OK);
@@ -1804,11 +1794,13 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 #endif
     if (!OK || Scaling_Minor_Increment <= 0)
     {
-        QMessageBox::warning(
-            (isVisible() ? this : NULL), Title,
-            tr("The ") + SCALING_MINOR_INCREMENT_KEY + " \"" + settings.value(MAX_SCALE_KEY).toString() +
-                tr("\" value is invalid - a positive number is required.\n\n") + tr("The default value of ") +
-                QString::number(Default_Scaling_Minor_Increment) + tr(" is being used."));
+        QMessageBox::warning((isVisible() ? this : NULL), Title,
+                             tr("The ") + SCALING_MINOR_INCREMENT_KEY + " \"" +
+                                 settings.value(MAX_SCALE_KEY).toString() +
+                                 tr("\" value is invalid - a positive number is required.\n\n") +
+                                 tr("The default value of ") +
+                                 QString::number(Default_Scaling_Minor_Increment) +
+                                 tr(" is being used."));
         minor_increment = Default_Scaling_Minor_Increment;
     }
     else if (!settings.contains(SCALING_MINOR_INCREMENT_KEY))
@@ -1821,11 +1813,13 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 #endif
     if (!OK || Scaling_Major_Increment <= 0)
     {
-        QMessageBox::warning(
-            (isVisible() ? this : NULL), Title,
-            tr("The ") + SCALING_MAJOR_INCREMENT_KEY + " \"" + settings.value(SCALING_MAJOR_INCREMENT_KEY).toString() +
-                tr("\" value is invalid - a positive number is required.\n\n") + tr("The default value of ") +
-                QString::number(Default_Scaling_Major_Increment) + tr(" is being used."));
+        QMessageBox::warning((isVisible() ? this : NULL), Title,
+                             tr("The ") + SCALING_MAJOR_INCREMENT_KEY + " \"" +
+                                 settings.value(SCALING_MAJOR_INCREMENT_KEY).toString() +
+                                 tr("\" value is invalid - a positive number is required.\n\n") +
+                                 tr("The default value of ") +
+                                 QString::number(Default_Scaling_Major_Increment) +
+                                 tr(" is being used."));
         major_increment = Default_Scaling_Major_Increment;
     }
     else if (!settings.contains(SCALING_MAJOR_INCREMENT_KEY))
@@ -1840,37 +1834,39 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
         values = settings.value(CONTRAST_STRETCH_UPPER_KEY).toList();
     for (int band = 0; band < 3; ++band)
     {
-        Default_Contrast_Stretch_Upper[band] = round_to(Default_Contrast_Stretch_Upper[band], PERCENT_DECIMAL_PLACES);
+        Default_Contrast_Stretch_Upper[band] =
+            round_to(Default_Contrast_Stretch_Upper[band], PERCENT_DECIMAL_PLACES);
         if (band < values.count())
         {
             percent = values[band].toDouble(&OK);
             if (!OK || percent < 0.0 || percent > 100.0)
             {
                 QMessageBox::warning((isVisible() ? this : NULL), Title,
-                                     tr("The ") + CONTRAST_STRETCH_UPPER_KEY + '[' + QString::number(band) + "] \"" +
-                                         values[band].toString() +
+                                     tr("The ") + CONTRAST_STRETCH_UPPER_KEY + '[' +
+                                         QString::number(band) + "] \"" + values[band].toString() +
                                          tr("\" value is invalid - "
                                             "a number in the range 0.0 - 100.0 is required.\n\n") +
                                          tr("This default value of ") +
-                                         QString::number(Default_Contrast_Stretch_Upper[band]) + tr(" is being used."));
+                                         QString::number(Default_Contrast_Stretch_Upper[band]) +
+                                         tr(" is being used."));
                 percent = Default_Contrast_Stretch_Upper[band];
             }
         }
-        else
-            percent = Default_Contrast_Stretch_Upper[band];
+        else percent = Default_Contrast_Stretch_Upper[band];
         Contrast_Stretch_Upper[band] = round_to(percent, PERCENT_DECIMAL_PLACES);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
-        clog << "    " << CONTRAST_STRETCH_UPPER_KEY << '[' << band << "] = " << Contrast_Stretch_Upper[band] << endl;
+        clog << "    " << CONTRAST_STRETCH_UPPER_KEY << '[' << band
+             << "] = " << Contrast_Stretch_Upper[band] << endl;
 #endif
     }
 
     if (settings.contains(CONTRAST_STRETCH_LOWER_KEY))
         values = settings.value(CONTRAST_STRETCH_LOWER_KEY).toList();
-    else
-        values.clear();
+    else values.clear();
     for (int band = 0; band < 3; ++band)
     {
-        Default_Contrast_Stretch_Lower[band] = round_to(Default_Contrast_Stretch_Lower[band], PERCENT_DECIMAL_PLACES);
+        Default_Contrast_Stretch_Lower[band] =
+            round_to(Default_Contrast_Stretch_Lower[band], PERCENT_DECIMAL_PLACES);
         if ((Default_Contrast_Stretch_Lower[band] + Default_Contrast_Stretch_Upper[band]) > 100.0)
             Default_Contrast_Stretch_Lower[band] = 100.0 - Default_Contrast_Stretch_Upper[band];
 
@@ -1880,20 +1876,21 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
             if (!OK || percent < 0.0 || percent > 100.0)
             {
                 QMessageBox::warning((isVisible() ? this : NULL), Title,
-                                     tr("The ") + CONTRAST_STRETCH_LOWER_KEY + '[' + QString::number(band) + "] \"" +
-                                         values[band].toString() +
+                                     tr("The ") + CONTRAST_STRETCH_LOWER_KEY + '[' +
+                                         QString::number(band) + "] \"" + values[band].toString() +
                                          tr("\" value is invalid - "
                                             "a number in the range 0.0 - 100.0 is required.\n\n") +
                                          tr("This default value of ") +
-                                         QString::number(Default_Contrast_Stretch_Lower[band]) + tr(" is being used."));
+                                         QString::number(Default_Contrast_Stretch_Lower[band]) +
+                                         tr(" is being used."));
                 percent = Default_Contrast_Stretch_Lower[band];
             }
         }
-        else
-            percent = Default_Contrast_Stretch_Lower[band];
+        else percent = Default_Contrast_Stretch_Lower[band];
         Contrast_Stretch_Lower[band] = round_to(percent, PERCENT_DECIMAL_PLACES);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
-        clog << "    " << CONTRAST_STRETCH_LOWER_KEY << '[' << band << "] = " << Contrast_Stretch_Lower[band] << endl;
+        clog << "    " << CONTRAST_STRETCH_LOWER_KEY << '[' << band
+             << "] = " << Contrast_Stretch_Lower[band] << endl;
 #endif
 
         if ((Contrast_Stretch_Lower[band] + Contrast_Stretch_Upper[band]) > 100.0)
@@ -1907,7 +1904,7 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     QColor::setAllowX11ColorNames(true);
 #endif
     Default_Background_Color_Text = color_text(Default_Background_Color);
-    Background_Color = Default_Background_Color; // VALGRIND
+    Background_Color = Default_Background_Color;  // VALGRIND
     QString color = Background_Color_Text =
         settings.value(BACKGROUND_COLOR_KEY, Default_Background_Color_Text).toString();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
@@ -1927,16 +1924,16 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 #endif
     if (!OK || Tile_Size < MIN_TILE_SIZE || Tile_Size > MAX_TILE_SIZE)
     {
-        QMessageBox::warning((isVisible() ? this : NULL), Title,
-                             tr("The ") + TILE_SIZE_KEY + " \"" + settings.value(TILE_SIZE_KEY).toString() +
-                                 tr("\" value is invalid;\n") + tr("A value in the range ") +
-                                 QString::number(MIN_TILE_SIZE) + " - " + QString::number(MAX_TILE_SIZE) +
-                                 tr(" is required.\n\n") + tr("The default value of ") +
-                                 QString::number(Default_Tile_Size) + tr(" is being used."));
+        QMessageBox::warning(
+            (isVisible() ? this : NULL), Title,
+            tr("The ") + TILE_SIZE_KEY + " \"" + settings.value(TILE_SIZE_KEY).toString() +
+                tr("\" value is invalid;\n") + tr("A value in the range ") +
+                QString::number(MIN_TILE_SIZE) + " - " + QString::number(MAX_TILE_SIZE) +
+                tr(" is required.\n\n") + tr("The default value of ") +
+                QString::number(Default_Tile_Size) + tr(" is being used."));
         tile_extent = Default_Tile_Size;
     }
-    else if (!settings.contains(TILE_SIZE_KEY))
-        settings.setValue(TILE_SIZE_KEY, Default_Tile_Size);
+    else if (!settings.contains(TILE_SIZE_KEY)) settings.setValue(TILE_SIZE_KEY, Default_Tile_Size);
 
     int increment_lines = Rendering_Increment_Lines =
         settings.value(RENDERING_INCREMENT_LINES_KEY, Default_Rendering_Increment_Lines).toInt(&OK);
@@ -1950,7 +1947,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
                                  settings.value(RENDERING_INCREMENT_LINES_KEY).toString() +
                                  tr("\" value is invalid - a positive number is required.\n\n") +
                                  tr("The default value of ") + ' ' +
-                                 QString::number(Default_Rendering_Increment_Lines) + tr(" is being used."));
+                                 QString::number(Default_Rendering_Increment_Lines) +
+                                 tr(" is being used."));
         increment_lines = Default_Rendering_Increment_Lines;
     }
     else if (!settings.contains(RENDERING_INCREMENT_LINES_KEY))
@@ -1962,10 +1960,10 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    layout controls -" << endl;
 #endif
-    QGridLayout *grid_layout = new QGridLayout(this);
+    QGridLayout* grid_layout = new QGridLayout(this);
     grid_layout->setHorizontalSpacing(HORIZONTAL_SPACING);
-    Drawn_Line *line;
-    QLabel *label;
+    Drawn_Line* line;
+    QLabel* label;
     int reset_button_width, row = -1, col = 0;
 
     //	Scaling:
@@ -1983,7 +1981,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << " heading line" << endl;
 #endif
-    grid_layout->addWidget(new QLabel(tr("<b>Scaling</b>")), row, col, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
+    grid_layout->addWidget(new QLabel(tr("<b>Scaling</b>")), row, col, 1, -1,
+                           Qt::AlignLeft | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Scaling label" << endl;
 #endif
@@ -1992,7 +1991,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     ++row;
     //			Label.
     col = 0;
-    grid_layout->addWidget(label = new QLabel(tr("Initial:")), row, col, Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label = new QLabel(tr("Initial:")), row, col,
+                           Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Initial label" << endl;
 #endif
@@ -2008,7 +2008,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     Initial_Scale_doubleSpinBox->setKeyboardTracking(true);
     Initial_Scale_doubleSpinBox->setValue(Initial_Scale);
     Initial_Scale_doubleSpinBox->setSingleStep(0.01);
-    Initial_Scale_doubleSpinBox->setToolTip(tr("Initial scaling factor on image load; zero for auto fit to viewport"));
+    Initial_Scale_doubleSpinBox->setToolTip(
+        tr("Initial scaling factor on image load; zero for auto fit to viewport"));
 #ifndef QT_NO_SHORTCUT
     label->setBuddy(Initial_Scale_doubleSpinBox);
 #endif
@@ -2045,7 +2046,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     ++row;
     //			Range label.
     col = 0;
-    grid_layout->addWidget(label = new QLabel(tr("Range Mi&nimum:")), row, col, Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label = new QLabel(tr("Range Mi&nimum:")), row, col,
+                           Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Range Minimum label" << endl;
 #endif
@@ -2091,7 +2093,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 
     //			Increment label.
     ++col;
-    grid_layout->addWidget(label = new QLabel(tr("M&inor Increment:")), row, col, Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label = new QLabel(tr("M&inor Increment:")), row, col,
+                           Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Range Minimum label" << endl;
 #endif
@@ -2111,7 +2114,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     label->setBuddy(Scaling_Minor_Increment_doubleSpinBox);
 #endif
     connect(Scaling_Minor_Increment_doubleSpinBox, SIGNAL(valueChanged(double)), SLOT(changing()));
-    connect(Scaling_Minor_Increment_doubleSpinBox, SIGNAL(editingFinished()), SLOT(scaling_minor_increment_change()));
+    connect(Scaling_Minor_Increment_doubleSpinBox, SIGNAL(editingFinished()),
+            SLOT(scaling_minor_increment_change()));
     grid_layout->addWidget(Scaling_Minor_Increment_doubleSpinBox, row, col);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Scaling_Minor_Increment_doubleSpinBox" << endl;
@@ -2121,7 +2125,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     Scaling_Minor_Increment_Reset_Button = new Icon_Button(*Reset_Button_Icon);
     Scaling_Minor_Increment_Reset_Button->setVisible(false);
     Scaling_Minor_Increment_Reset_Button->setFocusPolicy(Qt::NoFocus);
-    connect(Scaling_Minor_Increment_Reset_Button, SIGNAL(clicked()), SLOT(scaling_minor_increment_reset()));
+    connect(Scaling_Minor_Increment_Reset_Button, SIGNAL(clicked()),
+            SLOT(scaling_minor_increment_reset()));
     grid_layout->addWidget(Scaling_Minor_Increment_Reset_Button, row, col);
     grid_layout->setColumnMinimumWidth(col, reset_button_width);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
@@ -2139,7 +2144,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     ++row;
     //			Range label.
     col = 0;
-    grid_layout->addWidget(label = new QLabel(tr("Range Ma&ximum:")), row, col, Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label = new QLabel(tr("Range Ma&ximum:")), row, col,
+                           Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Range Maximum label" << endl;
 #endif
@@ -2176,7 +2182,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 
     //			Increment label.
     col += 2;
-    grid_layout->addWidget(label = new QLabel(tr("M&ajor Increment:")), row, col, Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label = new QLabel(tr("M&ajor Increment:")), row, col,
+                           Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Major Increment label" << endl;
 #endif
@@ -2196,7 +2203,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     label->setBuddy(Scaling_Major_Increment_doubleSpinBox);
 #endif
     connect(Scaling_Major_Increment_doubleSpinBox, SIGNAL(valueChanged(double)), SLOT(changing()));
-    connect(Scaling_Major_Increment_doubleSpinBox, SIGNAL(editingFinished()), SLOT(scaling_major_increment_change()));
+    connect(Scaling_Major_Increment_doubleSpinBox, SIGNAL(editingFinished()),
+            SLOT(scaling_major_increment_change()));
     grid_layout->addWidget(Scaling_Major_Increment_doubleSpinBox, row, col);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Scaling_Major_Increment_doubleSpinBox" << endl;
@@ -2206,7 +2214,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     Scaling_Major_Increment_Reset_Button = new Icon_Button(*Reset_Button_Icon);
     Scaling_Major_Increment_Reset_Button->setVisible(false);
     Scaling_Major_Increment_Reset_Button->setFocusPolicy(Qt::NoFocus);
-    connect(Scaling_Major_Increment_Reset_Button, SIGNAL(clicked()), SLOT(scaling_major_increment_reset()));
+    connect(Scaling_Major_Increment_Reset_Button, SIGNAL(clicked()),
+            SLOT(scaling_major_increment_reset()));
     grid_layout->addWidget(Scaling_Major_Increment_Reset_Button, row, col);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Scaling_Major_Increment_Reset_Button" << endl;
@@ -2242,7 +2251,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
         ++col;
         name += tr(DISPLAY_BAND_NAMES[band]);
         name += tr(" Band:");
-        grid_layout->addWidget(label = new QLabel(name, this), row, col, Qt::AlignRight | Qt::AlignVCenter);
+        grid_layout->addWidget(label = new QLabel(name, this), row, col,
+                               Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
         clog << "    " << row << ',' << col << ": " << name << " label" << endl;
 #endif
@@ -2258,25 +2268,31 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
         Contrast_Stretch_Upper_doubleSpinBox[band]->setValue(Contrast_Stretch_Upper[band]);
         Contrast_Stretch_Upper_doubleSpinBox[band]->setSingleStep(0.01);
         Contrast_Stretch_Upper_doubleSpinBox[band]->setSuffix("%");
-        Contrast_Stretch_Upper_doubleSpinBox[band]->setToolTip(tr("Saturation Upper Bound Percent"));
+        Contrast_Stretch_Upper_doubleSpinBox[band]->setToolTip(
+            tr("Saturation Upper Bound Percent"));
 #ifndef QT_NO_SHORTCUT
         label->setBuddy(Contrast_Stretch_Upper_doubleSpinBox[band]);
 #endif
-        connect(Contrast_Stretch_Upper_doubleSpinBox[band], SIGNAL(valueChanged(double)), SLOT(changing()));
-        connect(Contrast_Stretch_Upper_doubleSpinBox[band], SIGNAL(editingFinished()), SLOT(contrast_stretch_change()));
+        connect(Contrast_Stretch_Upper_doubleSpinBox[band], SIGNAL(valueChanged(double)),
+                SLOT(changing()));
+        connect(Contrast_Stretch_Upper_doubleSpinBox[band], SIGNAL(editingFinished()),
+                SLOT(contrast_stretch_change()));
         grid_layout->addWidget(Contrast_Stretch_Upper_doubleSpinBox[band], row, col);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
-        clog << "    " << row << ',' << col << ": Contrast_Stretch_Upper_doubleSpinBox[" << band << ']' << endl;
+        clog << "    " << row << ',' << col << ": Contrast_Stretch_Upper_doubleSpinBox[" << band
+             << ']' << endl;
 #endif
         //		Reset button.
         ++col;
         Contrast_Stretch_Upper_Reset_Button[band] = new Icon_Button(*Reset_Button_Icon);
         Contrast_Stretch_Upper_Reset_Button[band]->setVisible(false);
         Contrast_Stretch_Upper_Reset_Button[band]->setFocusPolicy(Qt::NoFocus);
-        connect(Contrast_Stretch_Upper_Reset_Button[band], SIGNAL(clicked()), SLOT(contrast_stretch_reset()));
+        connect(Contrast_Stretch_Upper_Reset_Button[band], SIGNAL(clicked()),
+                SLOT(contrast_stretch_reset()));
         grid_layout->addWidget(Contrast_Stretch_Upper_Reset_Button[band], row, col, Qt::AlignLeft);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
-        clog << "    " << row << ',' << col << ": Contrast_Stretch_Upper_Reset_Button[" << band << ']' << endl;
+        clog << "    " << row << ',' << col << ": Contrast_Stretch_Upper_Reset_Button[" << band
+             << ']' << endl;
 #endif
         grid_layout->setColumnMinimumWidth(col, reset_button_width);
 
@@ -2296,7 +2312,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
         ++col;
         name += tr(DISPLAY_BAND_NAMES[band]);
         name += tr(" Band:");
-        grid_layout->addWidget(label = new QLabel(name, this), row, col, Qt::AlignRight | Qt::AlignVCenter);
+        grid_layout->addWidget(label = new QLabel(name, this), row, col,
+                               Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
         clog << "    " << row << ',' << col << ": " << name << " label" << endl;
 #endif
@@ -2312,25 +2329,31 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
         Contrast_Stretch_Lower_doubleSpinBox[band]->setValue(Contrast_Stretch_Lower[band]);
         Contrast_Stretch_Lower_doubleSpinBox[band]->setSingleStep(0.01);
         Contrast_Stretch_Lower_doubleSpinBox[band]->setSuffix("%");
-        Contrast_Stretch_Lower_doubleSpinBox[band]->setToolTip(tr("Saturation Lower Bound Percent"));
+        Contrast_Stretch_Lower_doubleSpinBox[band]->setToolTip(
+            tr("Saturation Lower Bound Percent"));
 #ifndef QT_NO_SHORTCUT
         label->setBuddy(Contrast_Stretch_Lower_doubleSpinBox[band]);
 #endif
-        connect(Contrast_Stretch_Lower_doubleSpinBox[band], SIGNAL(valueChanged(double)), SLOT(changing()));
-        connect(Contrast_Stretch_Lower_doubleSpinBox[band], SIGNAL(editingFinished()), SLOT(contrast_stretch_change()));
+        connect(Contrast_Stretch_Lower_doubleSpinBox[band], SIGNAL(valueChanged(double)),
+                SLOT(changing()));
+        connect(Contrast_Stretch_Lower_doubleSpinBox[band], SIGNAL(editingFinished()),
+                SLOT(contrast_stretch_change()));
         grid_layout->addWidget(Contrast_Stretch_Lower_doubleSpinBox[band], row, col);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
-        clog << "    " << row << ',' << col << ": Contrast_Stretch_Lower_doubleSpinBox[" << band << ']' << endl;
+        clog << "    " << row << ',' << col << ": Contrast_Stretch_Lower_doubleSpinBox[" << band
+             << ']' << endl;
 #endif
         //		Reset button.
         ++col;
         Contrast_Stretch_Lower_Reset_Button[band] = new Icon_Button(*Reset_Button_Icon);
         Contrast_Stretch_Lower_Reset_Button[band]->setVisible(false);
         Contrast_Stretch_Lower_Reset_Button[band]->setFocusPolicy(Qt::NoFocus);
-        connect(Contrast_Stretch_Lower_Reset_Button[band], SIGNAL(clicked()), SLOT(contrast_stretch_reset()));
+        connect(Contrast_Stretch_Lower_Reset_Button[band], SIGNAL(clicked()),
+                SLOT(contrast_stretch_reset()));
         grid_layout->addWidget(Contrast_Stretch_Lower_Reset_Button[band], row, col, Qt::AlignLeft);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
-        clog << "    " << row << ',' << col << ": Contrast_Stretch_Lower_Reset_Button[" << band << ']' << endl;
+        clog << "    " << row << ',' << col << ": Contrast_Stretch_Lower_Reset_Button[" << band
+             << ']' << endl;
 #endif
 
         if (band != 2)
@@ -2366,16 +2389,17 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 #ifndef QT_NO_SHORTCUT
     label->setBuddy(Background_Color_lineEdit);
 #endif
-    connect(Background_Color_lineEdit, SIGNAL(textEdited(const QString &)), SLOT(background_color(const QString &)));
+    connect(Background_Color_lineEdit, SIGNAL(textEdited(const QString&)),
+            SLOT(background_color(const QString&)));
     connect(Background_Color_lineEdit, SIGNAL(editingFinished()), SLOT(background_color_changed()));
     grid_layout->addWidget(Background_Color_lineEdit, row, col, 1, 2);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << "/2: Background_Color_lineEdit" << endl;
 #endif
     //			Select and reset buttons.
-    col += 3; //	includes padding column
+    col += 3;  //	includes padding column
     //			Select button.
-    QHBoxLayout *horizontal_layout = new QHBoxLayout;
+    QHBoxLayout* horizontal_layout = new QHBoxLayout;
     horizontal_layout->setSpacing(HORIZONTAL_SPACING);
     Background_Color_Select_Button = new QPushButton(tr("Select ..."));
     connect(Background_Color_Select_Button, SIGNAL(clicked()), SLOT(select_background_color()));
@@ -2399,13 +2423,15 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     //		Line Color Selection
     ++row;
     col = 0;
-    grid_layout->addWidget(label = new QLabel(tr("Line &Color:"), this), row, col, Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label = new QLabel(tr("Line &Color:"), this), row, col,
+                           Qt::AlignRight | Qt::AlignVCenter);
     //		Value
     ++col;
     Line_Color_lineEdit = new QLineEdit(Line_Color_Text, this);
     Line_Color_lineEdit->setToolTip(tr("Line color used by the Distance Line tool"));
     label->setBuddy(Line_Color_lineEdit);
-    connect(Line_Color_lineEdit, SIGNAL(textEdited(const QString &)), SLOT(line_color(const QString &)));
+    connect(Line_Color_lineEdit, SIGNAL(textEdited(const QString&)),
+            SLOT(line_color(const QString&)));
     connect(Line_Color_lineEdit, SIGNAL(editingFinished()), SLOT(line_color_changed()));
     grid_layout->addWidget(Line_Color_lineEdit, row, col, 1, 2);
     col += 3;
@@ -2428,7 +2454,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     ++row;
     //			Label.
     col = 0;
-    grid_layout->addWidget(label = new QLabel(tr("&Tile Size:"), this), row, col, Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label = new QLabel(tr("&Tile Size:"), this), row, col,
+                           Qt::AlignRight | Qt::AlignVCenter);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Tile Size label" << endl;
 #endif
@@ -2487,7 +2514,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     label->setBuddy(Rendering_Increment_Lines_spinBox);
 #endif
     connect(Rendering_Increment_Lines_spinBox, SIGNAL(valueChanged(int)), SLOT(changing()));
-    connect(Rendering_Increment_Lines_spinBox, SIGNAL(editingFinished()), SLOT(rendering_increment_lines_change()));
+    connect(Rendering_Increment_Lines_spinBox, SIGNAL(editingFinished()),
+            SLOT(rendering_increment_lines_change()));
     grid_layout->addWidget(Rendering_Increment_Lines_spinBox, row, col);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Rendering_Increment_Lines_spinBox" << endl;
@@ -2497,7 +2525,8 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     Rendering_Increment_Lines_Reset_Button = new Icon_Button(*Reset_Button_Icon, this);
     Rendering_Increment_Lines_Reset_Button->setVisible(false);
     Rendering_Increment_Lines_Reset_Button->setFocusPolicy(Qt::NoFocus);
-    connect(Rendering_Increment_Lines_Reset_Button, SIGNAL(clicked()), SLOT(rendering_increment_lines_reset()));
+    connect(Rendering_Increment_Lines_Reset_Button, SIGNAL(clicked()),
+            SLOT(rendering_increment_lines_reset()));
     grid_layout->addWidget(Rendering_Increment_Lines_Reset_Button, row, col, Qt::AlignLeft);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << row << ',' << col << ": Rendering_Increment_Lines_Reset_Button" << endl;
@@ -2514,19 +2543,18 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     //		Defaults/Apply buttons.
     ++row;
     col = 0;
-    QDialogButtonBox *buttons = new QDialogButtonBox(Qt::Horizontal, this);
+    QDialogButtonBox* buttons = new QDialogButtonBox(Qt::Horizontal, this);
     Defaults_Button = buttons->addButton(tr("Defaults"), QDialogButtonBox::ResetRole);
     Defaults_Button->setIcon(*Defaults_Button_Icon);
     connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
-    QAction *action = new QAction(tr("Defaults"), this);
+    QAction* action = new QAction(tr("Defaults"), this);
     action->setShortcut(tr("Ctrl+Shift+D"));
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(action);
     connect(action, SIGNAL(triggered()), Defaults_Button, SLOT(click()));
 
     Apply_Button = buttons->addButton(tr("Apply"), QDialogButtonBox::ApplyRole);
-    if (Apply_Button_Icon)
-        Apply_Button->setIcon(*Apply_Button_Icon);
+    if (Apply_Button_Icon) Apply_Button->setIcon(*Apply_Button_Icon);
     connect(Apply_Button, SIGNAL(clicked()), SLOT(apply()));
     action = new QAction(tr("Apply"), this);
     action->setShortcut(tr("Ctrl+Shift+A"));
@@ -2547,17 +2575,17 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
     tile_size(tile_extent);
     rendering_increment_lines(increment_lines);
     Background_Color_Text_Pending = Default_Background_Color_Text;
-    if (!(OK = background_color_is_valid(color)) && color != Default_Background_Color_Text)
+    if (!(OK = background_color_is_valid(color)) &&  // NOLINT
+        color != Default_Background_Color_Text)
         OK = background_color_is_valid(Default_Background_Color_Text);
-    if (!OK)
-        background_color_is_valid(Default_Background_Color_Text = "transparent");
+    if (!OK) background_color_is_valid(Default_Background_Color_Text = "transparent");
     Background_Color = color_value(Background_Color_Text);
 
     Line_Color_Text_Pending = Default_Line_Color_Text;
-    if (!(OK = line_color_is_valid(Line_Color_Text)) && Line_Color_Text != Default_Line_Color_Text)
+    if (!(OK = line_color_is_valid(Line_Color_Text))  // NOLINT
+        && Line_Color_Text != Default_Line_Color_Text)
         OK = line_color_is_valid(Default_Line_Color_Text);
-    if (!OK)
-        line_color_is_valid(Default_Line_Color_Text = "transparent");
+    if (!OK) line_color_is_valid(Default_Line_Color_Text = "transparent");
     //	Update settings with any changed values.
     apply();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
@@ -2570,7 +2598,6 @@ Rendering_Section::Rendering_Section(QWidget *parent) : QWidget(parent)
 */
 void Rendering_Section::initial_scale(double scaling)
 {
-
     if (Initial_Scale_doubleSpinBox->value() != scaling)
         Initial_Scale_doubleSpinBox->setValue(scaling);
 
@@ -2579,35 +2606,36 @@ void Rendering_Section::initial_scale(double scaling)
 }
 
 void Rendering_Section::initial_scale_change()
-{
-    initial_scale(Initial_Scale_doubleSpinBox->value());
-}
+{ initial_scale(Initial_Scale_doubleSpinBox->value()); }
 
-void Rendering_Section::initial_scale_reset()
-{
-    initial_scale(Initial_Scale);
-}
+void Rendering_Section::initial_scale_reset() { initial_scale(Initial_Scale); }
 
 void Rendering_Section::min_scale(double scaling)
 {
+    if (m_updatingScale) return;
+
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
-    clog << ">>> Rendering_Section::min_scale: " << scaling << endl << "    current value = " << Min_Scale << endl;
+    clog << ">>> Rendering_Section::min_scale: " << scaling << endl
+         << "    current value = " << Min_Scale << endl;
 #endif
     if (scaling < MIN_SCALING || scaling > MAX_SCALING)
     {
-        QMessageBox::warning((isVisible() ? this : NULL), Title,
-                             tr("The minimum scaling of ") + QString::number(scaling) + tr(" was clipped to the ") +
-                                 QString::number(MIN_SCALING) + " - " + QString::number(MAX_SCALING) + tr(" limits."));
+        QMessageBox::warning((isVisible() ? this : nullptr), Title,
+                             tr("The minimum scaling of ") + QString::number(scaling) +
+                                 tr(" was clipped to the ") + QString::number(MIN_SCALING) + " - " +
+                                 QString::number(MAX_SCALING) + tr(" limits."));
         scaling = qBound(MIN_SCALING, scaling, MAX_SCALING);
     }
 
-    if (Min_Scale_doubleSpinBox->value() != scaling)
-        Min_Scale_doubleSpinBox->setValue(scaling);
+    m_updatingScale = true;
 
-    if (Max_Scale_doubleSpinBox->value() < scaling)
-        max_scale(scaling);
+    if (Min_Scale_doubleSpinBox->value() != scaling) Min_Scale_doubleSpinBox->setValue(scaling);
+
+    if (Max_Scale_doubleSpinBox->value() < scaling) max_scale(scaling);
 
     Min_Scale_Reset_Button->setVisible(scaling != Min_Scale);
+
+    m_updatingScale = false;
 
     reset_modifier_buttons();
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
@@ -2623,32 +2651,34 @@ void Rendering_Section::min_scale_change()
     min_scale(Min_Scale_doubleSpinBox->value());
 }
 
-void Rendering_Section::min_scale_reset()
-{
-    min_scale(Min_Scale);
-}
+void Rendering_Section::min_scale_reset() { min_scale(Min_Scale); }
 
 void Rendering_Section::max_scale(double scaling)
 {
+    if (m_updatingScale) return;
+
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
-    clog << ">>> Rendering_Section::max_scale: " << scaling << endl << "    current value = " << Max_Scale << endl;
+    clog << ">>> Rendering_Section::max_scale: " << scaling << endl
+         << "    current value = " << Max_Scale << endl;
 #endif
     if (scaling < MIN_SCALING || scaling > MAX_SCALING)
     {
         QMessageBox::information((isVisible() ? this : NULL), Title,
-                                 tr("The maximum scaling of ") + QString::number(scaling) + tr(" was clipped to the ") +
-                                     QString::number(MIN_SCALING) + " - " + QString::number(MAX_SCALING) +
-                                     tr(" limits."));
+                                 tr("The maximum scaling of ") + QString::number(scaling) +
+                                     tr(" was clipped to the ") + QString::number(MIN_SCALING) +
+                                     " - " + QString::number(MAX_SCALING) + tr(" limits."));
         scaling = qBound(MIN_SCALING, scaling, MAX_SCALING);
     }
 
-    if (Max_Scale_doubleSpinBox->value() != scaling)
-        Max_Scale_doubleSpinBox->setValue(scaling);
+    m_updatingScale = true;
 
-    if (Min_Scale_doubleSpinBox->value() > scaling)
-        min_scale(scaling);
+    if (Max_Scale_doubleSpinBox->value() != scaling) Max_Scale_doubleSpinBox->setValue(scaling);
+
+    if (Min_Scale_doubleSpinBox->value() > scaling) min_scale(scaling);
 
     Max_Scale_Reset_Button->setVisible(scaling != Max_Scale);
+
+    m_updatingScale = false;
 
     reset_modifier_buttons();
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
@@ -2664,18 +2694,16 @@ void Rendering_Section::max_scale_change()
     max_scale(Max_Scale_doubleSpinBox->value());
 }
 
-void Rendering_Section::max_scale_reset()
-{
-    max_scale(Max_Scale);
-}
+void Rendering_Section::max_scale_reset() { max_scale(Max_Scale); }
 
 void Rendering_Section::scaling_minor_increment(double increment)
 {
     if (increment < MIN_SCALING || increment > MAX_SCALING_INCREMENT)
     {
         QMessageBox::information((isVisible() ? this : NULL), Title,
-                                 tr("The minor scaling increment of ") + QString::number(increment) +
-                                     tr(" was clipped to the ") + QString::number(MIN_SCALING) + " - " +
+                                 tr("The minor scaling increment of ") +
+                                     QString::number(increment) + tr(" was clipped to the ") +
+                                     QString::number(MIN_SCALING) + " - " +
                                      QString::number(MAX_SCALING_INCREMENT) + tr(" limits."));
         increment = qBound(MIN_SCALING, increment, MAX_SCALING_INCREMENT);
     }
@@ -2697,17 +2725,16 @@ void Rendering_Section::scaling_minor_increment_change()
 }
 
 void Rendering_Section::scaling_minor_increment_reset()
-{
-    scaling_minor_increment(Scaling_Minor_Increment);
-}
+{ scaling_minor_increment(Scaling_Minor_Increment); }
 
 void Rendering_Section::scaling_major_increment(double increment)
 {
     if (increment < MIN_SCALING || increment > MAX_SCALING_INCREMENT)
     {
         QMessageBox::information((isVisible() ? this : NULL), Title,
-                                 tr("The major scaling increment of ") + QString::number(increment) +
-                                     tr(" was clipped to the ") + QString::number(MIN_SCALING) + " - " +
+                                 tr("The major scaling increment of ") +
+                                     QString::number(increment) + tr(" was clipped to the ") +
+                                     QString::number(MIN_SCALING) + " - " +
                                      QString::number(MAX_SCALING_INCREMENT) + tr(" limits."));
         increment = qBound(MIN_SCALING, increment, MAX_SCALING_INCREMENT);
     }
@@ -2729,9 +2756,7 @@ void Rendering_Section::scaling_major_increment_change()
 }
 
 void Rendering_Section::scaling_major_increment_reset()
-{
-    scaling_major_increment(Scaling_Major_Increment);
-}
+{ scaling_major_increment(Scaling_Major_Increment); }
 
 /*------------------------------------------------------------------------------
     Contrast Stretch
@@ -2741,7 +2766,8 @@ double Rendering_Section::contrast_stretch_upper(int band) const
     if (band < 0 || band > 2)
     {
         ostringstream message;
-        message << Preferences_Dialog::ID << endl << "Can't get band " << band << " constrast stretch upper value.";
+        message << Preferences_Dialog::ID << endl
+                << "Can't get band " << band << " constrast stretch upper value.";
         throw invalid_argument(message.str());
     }
     return Contrast_Stretch_Upper[band];
@@ -2752,7 +2778,8 @@ double Rendering_Section::contrast_stretch_lower(int band) const
     if (band < 0 || band > 2)
     {
         ostringstream message;
-        message << Preferences_Dialog::ID << endl << "Can't get band " << band << " constrast stretch lower value.";
+        message << Preferences_Dialog::ID << endl
+                << "Can't get band " << band << " constrast stretch lower value.";
         throw invalid_argument(message.str());
     }
     return Contrast_Stretch_Lower[band];
@@ -2761,7 +2788,8 @@ double Rendering_Section::contrast_stretch_lower(int band) const
 void Rendering_Section::contrast_stretch_upper(double percent, int band)
 {
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
-    clog << ">>> Rendering_Section::contrast_stretch_upper: " << percent << " percent, band " << band << endl;
+    clog << ">>> Rendering_Section::contrast_stretch_upper: " << percent << " percent, band "
+         << band << endl;
 #endif
     bool enabled = Contrast_Stretch_Upper_doubleSpinBox[band]->blockSignals(true);
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
@@ -2780,7 +2808,8 @@ void Rendering_Section::contrast_stretch_upper(double percent, int band)
 void Rendering_Section::contrast_stretch_lower(double percent, int band)
 {
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
-    clog << ">>> Rendering_Section::contrast_stretch_lower: " << percent << " percent, band " << band << endl;
+    clog << ">>> Rendering_Section::contrast_stretch_lower: " << percent << " percent, band "
+         << band << endl;
 #endif
     bool enabled = Contrast_Stretch_Lower_doubleSpinBox[band]->blockSignals(true);
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
@@ -2801,7 +2830,7 @@ void Rendering_Section::contrast_stretch_change()
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
     clog << ">>> Rendering_Section::contrast_stretch_change" << endl;
 #endif
-    QObject *source = sender();
+    QObject* source = sender();
     int band;
     if (source)
     {
@@ -2811,11 +2840,13 @@ void Rendering_Section::contrast_stretch_change()
             if (source == Contrast_Stretch_Upper_doubleSpinBox[band])
             {
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
-                clog << "    source is Contrast_Stretch_Upper_doubleSpinBox[" << band << ']' << endl;
+                clog << "    source is Contrast_Stretch_Upper_doubleSpinBox[" << band << ']'
+                     << endl;
 #endif
                 if ((Contrast_Stretch_Upper_doubleSpinBox[band]->value() +
                      Contrast_Stretch_Lower_doubleSpinBox[band]->value()) > 100.0)
-                    contrast_stretch_lower(100.0 - Contrast_Stretch_Upper_doubleSpinBox[band]->value(), band);
+                    contrast_stretch_lower(
+                        100.0 - Contrast_Stretch_Upper_doubleSpinBox[band]->value(), band);
                 source = NULL;
                 break;
             }
@@ -2829,11 +2860,13 @@ void Rendering_Section::contrast_stretch_change()
             if (source == Contrast_Stretch_Lower_doubleSpinBox[band])
             {
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
-                clog << "    source is Contrast_Stretch_Lower_doubleSpinBox[" << band << ']' << endl;
+                clog << "    source is Contrast_Stretch_Lower_doubleSpinBox[" << band << ']'
+                     << endl;
 #endif
                 if ((Contrast_Stretch_Lower_doubleSpinBox[band]->value() +
                      Contrast_Stretch_Upper_doubleSpinBox[band]->value()) > 100.0)
-                    contrast_stretch_upper(100.0 - Contrast_Stretch_Lower_doubleSpinBox[band]->value(), band);
+                    contrast_stretch_upper(
+                        100.0 - Contrast_Stretch_Lower_doubleSpinBox[band]->value(), band);
                 break;
             }
         }
@@ -2846,20 +2879,18 @@ void Rendering_Section::contrast_stretch_change()
 
 void Rendering_Section::contrast_stretch_reset()
 {
-    QObject *source = sender();
+    QObject* source = sender();
     for (int band = 0; band < 3; ++band)
     {
         if (!source || source == Contrast_Stretch_Upper_Reset_Button[band])
         {
             contrast_stretch_upper(Contrast_Stretch_Upper[band], band);
-            if (!source)
-                break;
+            if (!source) break;
         }
         if (!source || source == Contrast_Stretch_Lower_Reset_Button[band])
         {
             contrast_stretch_lower(Contrast_Stretch_Lower[band], band);
-            if (!source)
-                break;
+            if (!source) break;
         }
     }
 }
@@ -2875,14 +2906,13 @@ void Rendering_Section::tile_size(int size)
     if (size < MIN_TILE_SIZE || size > MAX_TILE_SIZE)
     {
         QMessageBox::information((isVisible() ? this : NULL), Title,
-                                 tr("The tile size of ") + QString::number(size) + tr(" was clipped to the ") +
-                                     QString::number(MIN_TILE_SIZE) + " - " + QString::number(MAX_TILE_SIZE) +
-                                     tr(" limits."));
+                                 tr("The tile size of ") + QString::number(size) +
+                                     tr(" was clipped to the ") + QString::number(MIN_TILE_SIZE) +
+                                     " - " + QString::number(MAX_TILE_SIZE) + tr(" limits."));
         size = qBound(MIN_TILE_SIZE, size, MAX_TILE_SIZE);
     }
 
-    if (Tile_Size_spinBox->value() != size)
-        Tile_Size_spinBox->setValue(size);
+    if (Tile_Size_spinBox->value() != size) Tile_Size_spinBox->setValue(size);
 
     Tile_Size_Reset_Button->setVisible(size != Tile_Size);
 
@@ -2900,18 +2930,16 @@ void Rendering_Section::tile_size_change()
     tile_size(Tile_Size_spinBox->value());
 }
 
-void Rendering_Section::tile_size_reset()
-{
-    tile_size(Tile_Size);
-}
+void Rendering_Section::tile_size_reset() { tile_size(Tile_Size); }
 
 void Rendering_Section::rendering_increment_lines(int lines)
 {
     if (lines < 0 || lines > MAX_TILE_SIZE)
     {
         QMessageBox::information((isVisible() ? this : NULL), Title,
-                                 tr("The number of rendring increment lines of ") + QString::number(lines) +
-                                     tr(" was clipped to the 0 - ") + QString::number(MAX_TILE_SIZE) + tr(" limits."));
+                                 tr("The number of rendring increment lines of ") +
+                                     QString::number(lines) + tr(" was clipped to the 0 - ") +
+                                     QString::number(MAX_TILE_SIZE) + tr(" limits."));
         lines = qBound(0, lines, MAX_TILE_SIZE);
     }
 
@@ -2932,42 +2960,35 @@ void Rendering_Section::rendering_increment_lines_change()
 }
 
 void Rendering_Section::rendering_increment_lines_reset()
-{
-    rendering_increment_lines(Rendering_Increment_Lines);
-}
+{ rendering_increment_lines(Rendering_Increment_Lines); }
 
-void Rendering_Section::background_color(const QString &text)
+void Rendering_Section::background_color(const QString& text)
 {
-    if (Background_Color_lineEdit->text() != text)
-        Background_Color_lineEdit->setText(text);
+    if (Background_Color_lineEdit->text() != text) Background_Color_lineEdit->setText(text);
     Background_Color_Reset_Button->setVisible(text != Background_Color_Text);
     reset_modifier_buttons();
 }
 
-void Rendering_Section::line_color(const QString &text)
+void Rendering_Section::line_color(const QString& text)
 {
-    if (Line_Color_lineEdit->text() != text)
-        Line_Color_lineEdit->setText(text);
+    if (Line_Color_lineEdit->text() != text) Line_Color_lineEdit->setText(text);
     Line_Color_Reset_Button->setVisible(text != Line_Color_Text);
     reset_modifier_buttons();
 }
 
 namespace
 {
-void no_warning_messages(QtMsgType, const QMessageLogContext &, const QString &)
-{
-}
-} // namespace
+void no_warning_messages(QtMsgType, const QMessageLogContext&, const QString&) {}
+}  // namespace
 
-bool Rendering_Section::background_color_is_valid(const QString &color_spec)
+bool Rendering_Section::background_color_is_valid(const QString& color_spec)
 {
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
     clog << ">>> Rendering_Section::background_color_is_valid: " << color_spec << endl;
 #endif
     bool accepted = true;
     QString text(color_spec);
-    if (text.toLower() == "none")
-        text = "transparent";
+    if (text.toLower() == "none") text = "transparent";
 
     //	Prevent gratuitous warning message from QColor about invalid color name.
     qInstallMessageHandler(no_warning_messages);
@@ -2996,13 +3017,12 @@ bool Rendering_Section::background_color_is_valid(const QString &color_spec)
     return accepted;
 }
 
-bool Rendering_Section::line_color_is_valid(const QString &color_spec)
+bool Rendering_Section::line_color_is_valid(const QString& color_spec)
 {
     bool accepted = true;
     QString text(color_spec);
     // don't want a transparent line
-    if (text.toLower() == "transparent")
-        text = "";
+    if (text.toLower() == "transparent") text = "";
 
     //	Prevent gratuitous warning message from QColor about invalid color name.
     qInstallMessageHandler(no_warning_messages);
@@ -3015,7 +3035,8 @@ bool Rendering_Section::line_color_is_valid(const QString &color_spec)
     else
     {
         QMessageBox::information((isVisible() ? this : NULL), Title,
-                                 QString("\"") + Line_Color_lineEdit->text() + tr("\" is an invalid line color.\n\n") +
+                                 QString("\"") + Line_Color_lineEdit->text() +
+                                     tr("\" is an invalid line color.\n\n") +
                                      tr("The color must be an RGB hex value triplet "
                                         "beginning with the '#' character, "
                                         "or a recognized color name such as \"black\"."));
@@ -3031,7 +3052,8 @@ void Rendering_Section::background_color_changed()
 {
     //	Avoid redundant editingFinished signals.
     static bool OK = true;
-    if (OK && Background_Color_lineEdit->text() != Background_Color_Text_Pending && !Defaults_Button->hasFocus())
+    if (OK && Background_Color_lineEdit->text() != Background_Color_Text_Pending &&
+        !Defaults_Button->hasFocus())
     {
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
         clog << ">-< Rendering_Section::background_color_changed" << endl;
@@ -3045,7 +3067,8 @@ void Rendering_Section::background_color_changed()
 void Rendering_Section::line_color_changed()
 {
     static bool OK = true;
-    if (OK && Line_Color_lineEdit->text() != Line_Color_Text_Pending && !Defaults_Button->hasFocus())
+    if (OK && Line_Color_lineEdit->text() != Line_Color_Text_Pending &&
+        !Defaults_Button->hasFocus())
     {
         OK = false;
         line_color_is_valid(Line_Color_lineEdit->text());
@@ -3055,29 +3078,24 @@ void Rendering_Section::line_color_changed()
 
 void Rendering_Section::select_background_color()
 {
-    QColor color(QColorDialog::getColor(color_value(Background_Color_lineEdit->text()), (isVisible() ? this : NULL),
+    QColor color(QColorDialog::getColor(color_value(Background_Color_lineEdit->text()),
+                                        (isVisible() ? this : NULL),
                                         Title + " - " + tr("Background Color")));
-    if (color.isValid())
-        background_color_is_valid(color_text(color.rgb()));
+    if (color.isValid()) background_color_is_valid(color_text(color.rgb()));
 }
 
 void Rendering_Section::select_line_color()
 {
-    QColor color(QColorDialog::getColor(color_value(Line_Color_lineEdit->text()), (isVisible() ? this : NULL),
+    QColor color(QColorDialog::getColor(color_value(Line_Color_lineEdit->text()),
+                                        (isVisible() ? this : NULL),
                                         Title + " - " + tr("Line Color")));
-    if (color.isValid())
-        line_color_is_valid(color_text(color.rgb()));
+    if (color.isValid()) line_color_is_valid(color_text(color.rgb()));
 }
 
 void Rendering_Section::background_color_reset()
-{
-    background_color_is_valid(Background_Color_Text);
-}
+{ background_color_is_valid(Background_Color_Text); }
 
-void Rendering_Section::line_color_reset()
-{
-    line_color_is_valid(Line_Color_Text);
-}
+void Rendering_Section::line_color_reset() { line_color_is_valid(Line_Color_Text); }
 
 /*------------------------------------------------------------------------------
     Utilities
@@ -3134,23 +3152,26 @@ void Rendering_Section::reset_defaults_button()
     bool enabled = false;
     for (int band = 0; band < 3; ++band)
     {
-        if (Contrast_Stretch_Upper_doubleSpinBox[band]->value() != Default_Contrast_Stretch_Upper[band] ||
-            Contrast_Stretch_Lower_doubleSpinBox[band]->value() != Default_Contrast_Stretch_Lower[band])
+        if (Contrast_Stretch_Upper_doubleSpinBox[band]->value() !=
+                Default_Contrast_Stretch_Upper[band] ||
+            Contrast_Stretch_Lower_doubleSpinBox[band]->value() !=
+                Default_Contrast_Stretch_Lower[band])
         {
             enabled = true;
             break;
         }
     }
 
-    Defaults_Button->setEnabled(enabled || Initial_Scale_doubleSpinBox->value() != Default_Initial_Scale ||
-                                Min_Scale_doubleSpinBox->value() != Default_Min_Scale ||
-                                Max_Scale_doubleSpinBox->value() != Default_Max_Scale ||
-                                Scaling_Minor_Increment_doubleSpinBox->value() != Default_Scaling_Minor_Increment ||
-                                Scaling_Major_Increment_doubleSpinBox->value() != Default_Scaling_Major_Increment ||
-                                Rendering_Increment_Lines_spinBox->value() != Default_Rendering_Increment_Lines ||
-                                Tile_Size_spinBox->value() != Default_Tile_Size ||
-                                Background_Color_lineEdit->text() != Default_Background_Color_Text ||
-                                Line_Color_lineEdit->text() != Default_Line_Color_Text);
+    Defaults_Button->setEnabled(
+        enabled || Initial_Scale_doubleSpinBox->value() != Default_Initial_Scale ||
+        Min_Scale_doubleSpinBox->value() != Default_Min_Scale ||
+        Max_Scale_doubleSpinBox->value() != Default_Max_Scale ||
+        Scaling_Minor_Increment_doubleSpinBox->value() != Default_Scaling_Minor_Increment ||
+        Scaling_Major_Increment_doubleSpinBox->value() != Default_Scaling_Major_Increment ||
+        Rendering_Increment_Lines_spinBox->value() != Default_Rendering_Increment_Lines ||
+        Tile_Size_spinBox->value() != Default_Tile_Size ||
+        Background_Color_lineEdit->text() != Default_Background_Color_Text ||
+        Line_Color_lineEdit->text() != Default_Line_Color_Text);
 }
 
 void Rendering_Section::changing()
@@ -3158,10 +3179,11 @@ void Rendering_Section::changing()
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
     clog << ">>> Rendering_Section::changing" << endl;
 #endif
-    QObject *source = sender();
+    QObject* source = sender();
     bool change, changed = false;
 
-    Initial_Scale_Reset_Button->setVisible(change = (Initial_Scale_doubleSpinBox->value() != Initial_Scale));
+    Initial_Scale_Reset_Button->setVisible(
+        change = (Initial_Scale_doubleSpinBox->value() != Initial_Scale));
     changed |= change;
     Min_Scale_Reset_Button->setVisible(change = (Min_Scale_doubleSpinBox->value() != Min_Scale));
     changed |= change;
@@ -3181,24 +3203,28 @@ void Rendering_Section::changing()
             clog << "    source is Contrast_Stretch_Upper_doubleSpinBox[" << band << ']' << endl;
 #endif
         Contrast_Stretch_Upper_Reset_Button[band]->setVisible(
-            change = (Contrast_Stretch_Upper_doubleSpinBox[band]->value() != Contrast_Stretch_Upper[band]));
+            change = (Contrast_Stretch_Upper_doubleSpinBox[band]->value() !=
+                      Contrast_Stretch_Upper[band]));
         changed |= change;
         if (source == Contrast_Stretch_Upper_doubleSpinBox[band] &&
             (Contrast_Stretch_Upper_doubleSpinBox[band]->value() +
              Contrast_Stretch_Lower_doubleSpinBox[band]->value()) > 100.0)
-            contrast_stretch_lower(100.0 - Contrast_Stretch_Upper_doubleSpinBox[band]->value(), band);
+            contrast_stretch_lower(100.0 - Contrast_Stretch_Upper_doubleSpinBox[band]->value(),
+                                   band);
 
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
         if (source == Contrast_Stretch_Lower_doubleSpinBox[band])
             clog << "    source is Contrast_Stretch_Lower_doubleSpinBox[" << band << ']' << endl;
 #endif
         Contrast_Stretch_Lower_Reset_Button[band]->setVisible(
-            change = (Contrast_Stretch_Lower_doubleSpinBox[band]->value() != Contrast_Stretch_Lower[band]));
+            change = (Contrast_Stretch_Lower_doubleSpinBox[band]->value() !=
+                      Contrast_Stretch_Lower[band]));
         changed |= change;
         if (source == Contrast_Stretch_Lower_doubleSpinBox[band] &&
             (Contrast_Stretch_Lower_doubleSpinBox[band]->value() +
              Contrast_Stretch_Upper_doubleSpinBox[band]->value()) > 100.0)
-            contrast_stretch_upper(100.0 - Contrast_Stretch_Lower_doubleSpinBox[band]->value(), band);
+            contrast_stretch_upper(100.0 - Contrast_Stretch_Lower_doubleSpinBox[band]->value(),
+                                   band);
     }
 
     Tile_Size_Reset_Button->setVisible(change = (Tile_Size_spinBox->value() != Tile_Size));
@@ -3235,11 +3261,13 @@ bool Rendering_Section::has_changed() const
     }
 
     return changed || Initial_Scale_doubleSpinBox->value() != Initial_Scale ||
-           Min_Scale_doubleSpinBox->value() != Min_Scale || Max_Scale_doubleSpinBox->value() != Max_Scale ||
+           Min_Scale_doubleSpinBox->value() != Min_Scale ||
+           Max_Scale_doubleSpinBox->value() != Max_Scale ||
            Scaling_Minor_Increment_doubleSpinBox->value() != Scaling_Minor_Increment ||
            Scaling_Major_Increment_doubleSpinBox->value() != Scaling_Major_Increment ||
            Rendering_Increment_Lines_spinBox->value() != Rendering_Increment_Lines ||
-           Tile_Size_spinBox->value() != Tile_Size || Background_Color_lineEdit->text() != Background_Color_Text ||
+           Tile_Size_spinBox->value() != Tile_Size ||
+           Background_Color_lineEdit->text() != Background_Color_Text ||
            Line_Color_lineEdit->text() != Line_Color_Text;
 }
 
@@ -3365,42 +3393,31 @@ void Rendering_Section::apply()
 #endif
 }
 
-QString Rendering_Section::color_text(QRgb color)
-{
-    return Preferences_Dialog::color_text(color);
-}
+QString Rendering_Section::color_text(QRgb color) { return Preferences_Dialog::color_text(color); }
 
-QRgb Rendering_Section::color_value(const QString &text)
-{
-    return Preferences_Dialog::color_value(text);
-}
+QRgb Rendering_Section::color_value(const QString& text)
+{ return Preferences_Dialog::color_value(text); }
 
 /*=*****************************************************************************
     JPIP_Section
 */
-const char
-    *JPIP_Section::HTTP_TO_JPIP_HOSTNAME_KEY	= "HTTP_to_JPIP_Hostname";
+const char* JPIP_Section::HTTP_TO_JPIP_HOSTNAME_KEY = "HTTP_to_JPIP_Hostname";
 
 #ifndef DEFAULT_HTTP_TO_JPIP_HOSTNAME
-#define DEFAULT_HTTP_TO_JPIP_HOSTNAME		hirise-jpip.lpl.arizona.edu
+#define DEFAULT_HTTP_TO_JPIP_HOSTNAME "hirise-jpip.lpl.arizona.edu"
 #endif
-#define _DEFAULT_HTTP_TO_JPIP_HOSTNAME_	AS_STRING(DEFAULT_HTTP_TO_JPIP_HOSTNAME)
-QString
-    JPIP_Section::Default_HTTP_to_JPIP_Hostname
-        = _DEFAULT_HTTP_TO_JPIP_HOSTNAME_;
+#define DEFAULT_HTTP_TO_JPIP_HOSTNAME_ AS_STRING(DEFAULT_HTTP_TO_JPIP_HOSTNAME)
+QString JPIP_Section::Default_HTTP_to_JPIP_Hostname = DEFAULT_HTTP_TO_JPIP_HOSTNAME_;  // NOLINT
 
-        const char
-            *JPIP_Section::JPIP_TO_HTTP_HOSTNAME_KEY	= "JPIP_to_HTTP_Hostname";
+const char* JPIP_Section::JPIP_TO_HTTP_HOSTNAME_KEY = "JPIP_to_HTTP_Hostname";
 
-        #ifndef DEFAULT_JPIP_TO_HTTP_HOSTNAME
-        #define DEFAULT_JPIP_TO_HTTP_HOSTNAME		hirise-pds.lpl.arizona.edu
-        #endif
-        #define _DEFAULT_JPIP_TO_HTTP_HOSTNAME_	AS_STRING(DEFAULT_JPIP_TO_HTTP_HOSTNAME)
-        QString
-            JPIP_Section::Default_JPIP_to_HTTP_Hostname
-                = _DEFAULT_JPIP_TO_HTTP_HOSTNAME_;
+#ifndef DEFAULT_JPIP_TO_HTTP_HOSTNAME
+#define DEFAULT_JPIP_TO_HTTP_HOSTNAME "hirise-pds.lpl.arizona.edu"
+#endif
+#define DEFAULT_JPIP_TO_HTTP_HOSTNAME_ AS_STRING(DEFAULT_JPIP_TO_HTTP_HOSTNAME)
+QString JPIP_Section::Default_JPIP_to_HTTP_Hostname = DEFAULT_JPIP_TO_HTTP_HOSTNAME_;  // NOLINT
 
-const char *JPIP_Section::JPIP_SERVER_PORT_KEY = "JPIP_Server_Port";
+const char* JPIP_Section::JPIP_SERVER_PORT_KEY = "JPIP_Server_Port";
 
 #ifndef DEFAULT_JPIP_SERVER_PORT
 #define DEFAULT_JPIP_SERVER_PORT 8064
@@ -3413,25 +3430,25 @@ int JPIP_Section::Default_JPIP_Server_Port = DEFAULT_JPIP_SERVER_PORT;
 #define DEFAULT_JPIP_SERVER_PORT_MAX 65535
 #endif
 
-const char *JPIP_Section::JPIP_PROXY_KEY = "JPIP_Proxy";
+const char* JPIP_Section::JPIP_PROXY_KEY = "JPIP_Proxy";
 
 #ifndef DEFAULT_JPIP_PROXY
-#define _DEFAULT_JPIP_PROXY_ ""
+#define DEFAULT_JPIP_PROXY_ ""
 #else
 #define _DEFAULT_JPIP_PROXY_ AS_STRING(DEFAULT_JPIP_PROXY)
 #endif
-QString JPIP_Section::Default_JPIP_Proxy = _DEFAULT_JPIP_PROXY_;
+QString JPIP_Section::Default_JPIP_Proxy = DEFAULT_JPIP_PROXY_;  // NOLINT
 
-const char *JPIP_Section::JPIP_CACHE_DIRECTORY_KEY = "JPIP_Cache_Directory";
+const char* JPIP_Section::JPIP_CACHE_DIRECTORY_KEY = "JPIP_Cache_Directory";
 
 #ifndef DEFAULT_JPIP_CACHE_DIRECTORY
-#define _DEFAULT_JPIP_CACHE_DIRECTORY_ ""
+#define DEFAULT_JPIP_CACHE_DIRECTORY_ ""
 #else
 #define _DEFAULT_JPIP_CACHE_DIRECTORY_ AS_STRING(DEFAULT_JPIP_CACHE_DIRECTORY)
 #endif
-QString JPIP_Section::Default_JPIP_Cache_Directory = _DEFAULT_JPIP_CACHE_DIRECTORY_;
+QString JPIP_Section::Default_JPIP_Cache_Directory = DEFAULT_JPIP_CACHE_DIRECTORY_;  // NOLINT
 
-const char *JPIP_Section::JPIP_REQUEST_TIMEOUT_KEY = "JPIP_Request_Timeout";
+const char* JPIP_Section::JPIP_REQUEST_TIMEOUT_KEY = "JPIP_Request_Timeout";
 
 #ifndef JPIP_REQUEST_TIMEOUT_MIN
 #define JPIP_REQUEST_TIMEOUT_MIN 2
@@ -3444,7 +3461,7 @@ int JPIP_Section::Default_JPIP_Request_Timeout = DEFAULT_JPIP_REQUEST_TIMEOUT;
 #define DEFAULT_JPIP_REQUEST_TIMEOUT_MAX 3600
 #endif
 
-const char *JPIP_Section::MAX_SOURCE_IMAGE_AREA_MB_KEY = "Max_Source_Image_Area_MB";
+const char* JPIP_Section::MAX_SOURCE_IMAGE_AREA_MB_KEY = "Max_Source_Image_Area_MB";
 
 #ifndef DEFAULT_MAX_SOURCE_IMAGE_AREA_MB
 #define DEFAULT_MAX_SOURCE_IMAGE_AREA_MB 2
@@ -3455,7 +3472,7 @@ int JPIP_Section::Default_Max_Source_Image_Area_MB = DEFAULT_MAX_SOURCE_IMAGE_AR
 #ifndef DOXYGEN_PROCESSING
 namespace
 {
-bool possible_abbreviated_home_path(QString &name)
+bool possible_abbreviated_home_path(QString& name)
 {
 #if ((DEBUG_SECTION) & DEBUG_HELPERS)
     clog << ">>> possible_abbreviated_home_path: " << name << endl;
@@ -3478,18 +3495,16 @@ bool possible_abbreviated_home_path(QString &name)
 #endif
     return changed;
 }
-} // namespace
+}  // namespace
 #endif
 
-JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Dialog(NULL)
+JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Dialog(nullptr)
 {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << ">>> JPIP_Section" << endl;
 #endif
-    if (parent)
-        Title = parent->windowTitle();
-    else
-        Title = tr("Preferences");
+    if (parent) Title = parent->windowTitle();
+    else Title = tr("Preferences");
     Title += tr(": JPIP");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    Title = \"" << Title << '"' << endl;
@@ -3502,29 +3517,21 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     QSettings settings;
     bool OK;
 
-    QString
-        hostnameH2J =
-        HTTP_to_JPIP_Hostname = settings.value (HTTP_TO_JPIP_HOSTNAME_KEY,
-            Default_HTTP_to_JPIP_Hostname).toString ();
-    #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
-    clog << "    " << HTTP_TO_JPIP_HOSTNAME_KEY << " = \""
-            << HTTP_to_JPIP_Hostname << '"' << endl;
-    #endif
-    if (! settings.contains (HTTP_TO_JPIP_HOSTNAME_KEY))
-        settings.setValue (HTTP_TO_JPIP_HOSTNAME_KEY,
-            Default_HTTP_to_JPIP_Hostname);
+    QString const hostnameH2J = HTTP_to_JPIP_Hostname =
+        settings.value(HTTP_TO_JPIP_HOSTNAME_KEY, Default_HTTP_to_JPIP_Hostname).toString();
+#if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
+    clog << "    " << HTTP_TO_JPIP_HOSTNAME_KEY << " = \"" << HTTP_to_JPIP_Hostname << '"' << endl;
+#endif
+    if (!settings.contains(HTTP_TO_JPIP_HOSTNAME_KEY))
+        settings.setValue(HTTP_TO_JPIP_HOSTNAME_KEY, Default_HTTP_to_JPIP_Hostname);
 
-        QString
-            hostnameJ2H =
-            JPIP_to_HTTP_Hostname = settings.value (JPIP_TO_HTTP_HOSTNAME_KEY,
-                Default_JPIP_to_HTTP_Hostname).toString ();
-        #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
-        clog << "    " << JPIP_TO_HTTP_HOSTNAME_KEY << " = \""
-                << JPIP_to_HTTP_Hostname << '"' << endl;
-        #endif
-        if (! settings.contains (JPIP_TO_HTTP_HOSTNAME_KEY))
-            settings.setValue (JPIP_TO_HTTP_HOSTNAME_KEY,
-                Default_JPIP_to_HTTP_Hostname);
+    QString const hostnameJ2H = JPIP_to_HTTP_Hostname =
+        settings.value(JPIP_TO_HTTP_HOSTNAME_KEY, Default_JPIP_to_HTTP_Hostname).toString();
+#if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
+    clog << "    " << JPIP_TO_HTTP_HOSTNAME_KEY << " = \"" << JPIP_to_HTTP_Hostname << '"' << endl;
+#endif
+    if (!settings.contains(JPIP_TO_HTTP_HOSTNAME_KEY))
+        settings.setValue(JPIP_TO_HTTP_HOSTNAME_KEY, Default_JPIP_to_HTTP_Hostname);
 
     int port = Port = settings.value(JPIP_SERVER_PORT_KEY, Default_JPIP_Server_Port).toInt(&OK);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
@@ -3535,7 +3542,8 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
         QMessageBox::warning((isVisible() ? this : NULL), Title,
                              tr("The ") + JPIP_SERVER_PORT_KEY + " \"" +
                                  settings.value(JPIP_SERVER_PORT_KEY).toString() +
-                                 tr("\" value is invalid - a number is required.\n\n") + tr("The default value of ") +
+                                 tr("\" value is invalid - a number is required.\n\n") +
+                                 tr("The default value of ") +
                                  QString::number(Default_JPIP_Server_Port) + tr(" is being used."));
         port = Default_JPIP_Server_Port;
     }
@@ -3546,8 +3554,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    " << JPIP_PROXY_KEY << " = \"" << Proxy << '"' << endl;
 #endif
-    if (!settings.contains(JPIP_PROXY_KEY))
-        settings.setValue(JPIP_PROXY_KEY, Default_JPIP_Proxy);
+    if (!settings.contains(JPIP_PROXY_KEY)) settings.setValue(JPIP_PROXY_KEY, Default_JPIP_Proxy);
 
     possible_abbreviated_home_path(Default_JPIP_Cache_Directory);
     QString cache_directory = Cache_Directory =
@@ -3558,7 +3565,8 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     if (!settings.contains(JPIP_CACHE_DIRECTORY_KEY))
         settings.setValue(JPIP_CACHE_DIRECTORY_KEY, Default_JPIP_Cache_Directory);
 
-    int seconds = Request_Timeout = settings.value(JPIP_REQUEST_TIMEOUT_KEY, Default_JPIP_Request_Timeout).toInt(&OK);
+    int seconds = Request_Timeout =
+        settings.value(JPIP_REQUEST_TIMEOUT_KEY, Default_JPIP_Request_Timeout).toInt(&OK);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    " << JPIP_REQUEST_TIMEOUT_KEY << " = " << Request_Timeout << endl;
 #endif
@@ -3567,8 +3575,10 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
         QMessageBox::warning((isVisible() ? this : NULL), Title,
                              tr("The ") + JPIP_REQUEST_TIMEOUT_KEY + " \"" +
                                  settings.value(JPIP_REQUEST_TIMEOUT_KEY).toString() +
-                                 tr("\" value is invalid - a number is required.\n\n") + tr("The default value of ") +
-                                 QString::number(Default_JPIP_Request_Timeout) + tr(" is being used."));
+                                 tr("\" value is invalid - a number is required.\n\n") +
+                                 tr("The default value of ") +
+                                 QString::number(Default_JPIP_Request_Timeout) +
+                                 tr(" is being used."));
         seconds = Default_JPIP_Request_Timeout;
     }
     else if (!settings.contains(JPIP_REQUEST_TIMEOUT_KEY))
@@ -3584,8 +3594,10 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
         QMessageBox::warning((isVisible() ? this : NULL), Title,
                              tr("The ") + MAX_SOURCE_IMAGE_AREA_MB_KEY + " \"" +
                                  settings.value(MAX_SOURCE_IMAGE_AREA_MB_KEY).toString() +
-                                 tr("\" value is invalid - a number is required.\n\n") + tr("The default value of ") +
-                                 QString::number(Default_Max_Source_Image_Area_MB) + tr(" is being used."));
+                                 tr("\" value is invalid - a number is required.\n\n") +
+                                 tr("The default value of ") +
+                                 QString::number(Default_Max_Source_Image_Area_MB) +
+                                 tr(" is being used."));
         image_area = Default_Max_Source_Image_Area_MB;
     }
     else if (!settings.contains(MAX_SOURCE_IMAGE_AREA_MB_KEY))
@@ -3595,9 +3607,9 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    layout controls -" << endl;
 #endif
-    QGridLayout *grid_layout = new QGridLayout(this);
+    QGridLayout* grid_layout = new QGridLayout(this);
     grid_layout->setHorizontalSpacing(HORIZONTAL_SPACING);
-    QLabel *label;
+    QLabel* label;
     int row, col;
 
     //	HTTP-to-JPIP URL Hostname.
@@ -3605,34 +3617,31 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     //		Label.
     col = 0;
 
-    label = new QLabel (tr ("&HTTP-to-JPIP URL Hostname:"), this);
-    label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
-    grid_layout->addWidget (label, row, col);
+    label = new QLabel(tr("&HTTP-to-JPIP URL Hostname:"), this);
+    label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label, row, col);
     //		Value.
     ++col;
-    HTTP_to_JPIP_Hostname_lineEdit = new QLineEdit (HTTP_to_JPIP_Hostname, this);
-    HTTP_to_JPIP_Hostname_lineEdit->setToolTip
-        (tr ("Hostname to convert an HTTP URL for a JP2 file to the JPIP protocol"));
-    #ifndef QT_NO_SHORTCUT
-    label->setBuddy (HTTP_to_JPIP_Hostname_lineEdit);
-    #endif
-    connect (HTTP_to_JPIP_Hostname_lineEdit, SIGNAL (textEdited (const QString&)),
-        SLOT (HTTP_to_JPIP_hostname (const QString&)));
-    connect (HTTP_to_JPIP_Hostname_lineEdit, SIGNAL (editingFinished ()),
-        SLOT (HTTP_to_JPIP_hostname_changed ()));
-    grid_layout->addWidget (HTTP_to_JPIP_Hostname_lineEdit, row, col, 1, 5);
+    HTTP_to_JPIP_Hostname_lineEdit = new QLineEdit(HTTP_to_JPIP_Hostname, this);
+    HTTP_to_JPIP_Hostname_lineEdit->setToolTip(
+        tr("Hostname to convert an HTTP URL for a JP2 file to the JPIP protocol"));
+#ifndef QT_NO_SHORTCUT
+    label->setBuddy(HTTP_to_JPIP_Hostname_lineEdit);
+#endif
+    connect(HTTP_to_JPIP_Hostname_lineEdit, SIGNAL(textEdited(const QString&)),
+            SLOT(HTTP_to_JPIP_hostname(const QString&)));
+    connect(HTTP_to_JPIP_Hostname_lineEdit, SIGNAL(editingFinished()),
+            SLOT(HTTP_to_JPIP_hostname_changed()));
+    grid_layout->addWidget(HTTP_to_JPIP_Hostname_lineEdit, row, col, 1, 5);
     //		Reset button.
     col += 5;
-    HTTP_to_JPIP_Hostname_Reset_Button =
-        new Icon_Button (*Reset_Button_Icon, this);
-    HTTP_to_JPIP_Hostname_Reset_Button->setVisible (false);
-    HTTP_to_JPIP_Hostname_Reset_Button->setFocusPolicy (Qt::NoFocus);
-    connect (HTTP_to_JPIP_Hostname_Reset_Button, SIGNAL (clicked ()),
-        SLOT (HTTP_to_JPIP_hostname_reset ()));
-    grid_layout->addWidget (HTTP_to_JPIP_Hostname_Reset_Button,
-        row, col, Qt::AlignLeft);
-    grid_layout->setColumnMinimumWidth
-        (col, HTTP_to_JPIP_Hostname_Reset_Button->iconSize ().width ());
+    HTTP_to_JPIP_Hostname_Reset_Button = new Icon_Button(*Reset_Button_Icon, this);
+    HTTP_to_JPIP_Hostname_Reset_Button->setVisible(false);
+    HTTP_to_JPIP_Hostname_Reset_Button->setFocusPolicy(Qt::NoFocus);
+    connect(HTTP_to_JPIP_Hostname_Reset_Button, SIGNAL(clicked()),
+            SLOT(HTTP_to_JPIP_hostname_reset()));
+    grid_layout->addWidget(HTTP_to_JPIP_Hostname_Reset_Button, row, col, Qt::AlignLeft);
+    grid_layout->setColumnMinimumWidth(col, HTTP_to_JPIP_Hostname_Reset_Button->iconSize().width());
 
     //	Spacing.
     ++row;
@@ -3640,34 +3649,31 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 
     grid_layout->setRowMinimumHeight(row, 10);
 
-    label = new QLabel (tr ("&JPIP-to-HTTP URL Hostname:"), this);
-    label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
-    grid_layout->addWidget (label, row, col);
+    label = new QLabel(tr("&JPIP-to-HTTP URL Hostname:"), this);
+    label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    grid_layout->addWidget(label, row, col);
     //		Value.
     ++col;
-    JPIP_to_HTTP_Hostname_lineEdit = new QLineEdit (JPIP_to_HTTP_Hostname, this);
-    JPIP_to_HTTP_Hostname_lineEdit->setToolTip
-        (tr ("Hostname to convert an JPIP URL for a JP2 file to the HTTP protocol"));
-    #ifndef QT_NO_SHORTCUT
-    label->setBuddy (JPIP_to_HTTP_Hostname_lineEdit);
-    #endif
-    connect (JPIP_to_HTTP_Hostname_lineEdit, SIGNAL (textEdited (const QString&)),
-        SLOT (JPIP_to_HTTP_hostname (const QString&)));
-    connect (JPIP_to_HTTP_Hostname_lineEdit, SIGNAL (editingFinished ()),
-        SLOT (JPIP_to_HTTP_hostname_changed ()));
-    grid_layout->addWidget (JPIP_to_HTTP_Hostname_lineEdit, row, col, 1, 5);
+    JPIP_to_HTTP_Hostname_lineEdit = new QLineEdit(JPIP_to_HTTP_Hostname, this);
+    JPIP_to_HTTP_Hostname_lineEdit->setToolTip(
+        tr("Hostname to convert an JPIP URL for a JP2 file to the HTTP protocol"));
+#ifndef QT_NO_SHORTCUT
+    label->setBuddy(JPIP_to_HTTP_Hostname_lineEdit);
+#endif
+    connect(JPIP_to_HTTP_Hostname_lineEdit, SIGNAL(textEdited(const QString&)),
+            SLOT(JPIP_to_HTTP_hostname(const QString&)));
+    connect(JPIP_to_HTTP_Hostname_lineEdit, SIGNAL(editingFinished()),
+            SLOT(JPIP_to_HTTP_hostname_changed()));
+    grid_layout->addWidget(JPIP_to_HTTP_Hostname_lineEdit, row, col, 1, 5);
     //		Reset button.
     col += 5;
-    JPIP_to_HTTP_Hostname_Reset_Button =
-        new Icon_Button (*Reset_Button_Icon, this);
-    JPIP_to_HTTP_Hostname_Reset_Button->setVisible (false);
-    JPIP_to_HTTP_Hostname_Reset_Button->setFocusPolicy (Qt::NoFocus);
-    connect (JPIP_to_HTTP_Hostname_Reset_Button, SIGNAL (clicked ()),
-        SLOT (JPIP_to_HTTP_hostname_reset ()));
-    grid_layout->addWidget (JPIP_to_HTTP_Hostname_Reset_Button,
-        row, col, Qt::AlignLeft);
-    grid_layout->setColumnMinimumWidth
-        (col, JPIP_to_HTTP_Hostname_Reset_Button->iconSize ().width ());
+    JPIP_to_HTTP_Hostname_Reset_Button = new Icon_Button(*Reset_Button_Icon, this);
+    JPIP_to_HTTP_Hostname_Reset_Button->setVisible(false);
+    JPIP_to_HTTP_Hostname_Reset_Button->setFocusPolicy(Qt::NoFocus);
+    connect(JPIP_to_HTTP_Hostname_Reset_Button, SIGNAL(clicked()),
+            SLOT(JPIP_to_HTTP_hostname_reset()));
+    grid_layout->addWidget(JPIP_to_HTTP_Hostname_Reset_Button, row, col, Qt::AlignLeft);
+    grid_layout->setColumnMinimumWidth(col, JPIP_to_HTTP_Hostname_Reset_Button->iconSize().width());
 
     //	Spacing.
     grid_layout->setRowMinimumHeight(row, 10);
@@ -3721,7 +3727,7 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 #ifndef QT_NO_SHORTCUT
     label->setBuddy(Proxy_lineEdit);
 #endif
-    connect(Proxy_lineEdit, SIGNAL(textEdited(const QString &)), SLOT(JPIP_proxy(const QString &)));
+    connect(Proxy_lineEdit, SIGNAL(textEdited(const QString&)), SLOT(JPIP_proxy(const QString&)));
     connect(Proxy_lineEdit, SIGNAL(editingFinished()), SLOT(JPIP_proxy_changed()));
     grid_layout->addWidget(Proxy_lineEdit, row, col, 1, 5);
     //		Reset button.
@@ -3750,8 +3756,10 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 #ifndef QT_NO_SHORTCUT
     label->setBuddy(Cache_Directory_lineEdit);
 #endif
-    connect(Cache_Directory_lineEdit, SIGNAL(textEdited(const QString &)), SLOT(JPIP_cache_directory(const QString &)));
-    connect(Cache_Directory_lineEdit, SIGNAL(editingFinished()), SLOT(JPIP_cache_directory_changed()));
+    connect(Cache_Directory_lineEdit, SIGNAL(textEdited(const QString&)),
+            SLOT(JPIP_cache_directory(const QString&)));
+    connect(Cache_Directory_lineEdit, SIGNAL(editingFinished()),
+            SLOT(JPIP_cache_directory_changed()));
     grid_layout->addWidget(Cache_Directory_lineEdit, row, col, 1, 4);
     //		Select button.
     col += 4;
@@ -3841,7 +3849,8 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
     Max_Source_Image_Area_MB_Reset_Button = new Icon_Button(*Reset_Button_Icon, this);
     Max_Source_Image_Area_MB_Reset_Button->setVisible(false);
     Max_Source_Image_Area_MB_Reset_Button->setFocusPolicy(Qt::NoFocus);
-    connect(Max_Source_Image_Area_MB_Reset_Button, SIGNAL(clicked()), SLOT(max_source_image_area_MB_reset()));
+    connect(Max_Source_Image_Area_MB_Reset_Button, SIGNAL(clicked()),
+            SLOT(max_source_image_area_MB_reset()));
     grid_layout->addWidget(Max_Source_Image_Area_MB_Reset_Button, row, col, Qt::AlignLeft);
     //		Padding.
     ++col;
@@ -3854,19 +3863,18 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 
     //	Defaults/Apply buttons.
     ++row;
-    QDialogButtonBox *buttons = new QDialogButtonBox(Qt::Horizontal, this);
+    QDialogButtonBox* buttons = new QDialogButtonBox(Qt::Horizontal, this);
     Defaults_Button = buttons->addButton(tr("Defaults"), QDialogButtonBox::ResetRole);
     Defaults_Button->setIcon(*Defaults_Button_Icon);
     connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
-    QAction *action = new QAction(tr("Defaults"), this);
+    QAction* action = new QAction(tr("Defaults"), this);
     action->setShortcut(tr("Ctrl+Shift+D"));
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(action);
     connect(action, SIGNAL(triggered()), Defaults_Button, SLOT(click()));
 
     Apply_Button = buttons->addButton(tr("Apply"), QDialogButtonBox::ApplyRole);
-    if (Apply_Button_Icon)
-        Apply_Button->setIcon(*Apply_Button_Icon);
+    if (Apply_Button_Icon) Apply_Button->setIcon(*Apply_Button_Icon);
     connect(Apply_Button, SIGNAL(clicked()), SLOT(apply()));
     action = new QAction(tr("Apply"), this);
     action->setShortcut(tr("Ctrl+Shift+A"));
@@ -3877,33 +3885,28 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 
     //	Initialize the GUI widget values.
     HTTP_to_JPIP_Hostname_Pending = Default_HTTP_to_JPIP_Hostname;
-    if (! (OK = HTTP_to_JPIP_hostname_verify (hostnameH2J)) &&
+    if (!(OK = HTTP_to_JPIP_hostname_verify(hostnameH2J)) &&
         hostnameH2J != Default_HTTP_to_JPIP_Hostname)
-        OK = HTTP_to_JPIP_hostname_verify (Default_HTTP_to_JPIP_Hostname);
-    if (! OK &&
-        ! Default_HTTP_to_JPIP_Hostname.isEmpty ())
-        HTTP_to_JPIP_hostname_verify ("");
+        OK = HTTP_to_JPIP_hostname_verify(Default_HTTP_to_JPIP_Hostname);
+    if (!OK && !Default_HTTP_to_JPIP_Hostname.isEmpty()) HTTP_to_JPIP_hostname_verify("");
 
-        JPIP_to_HTTP_Hostname_Pending = Default_JPIP_to_HTTP_Hostname;
-        if (! (OK = JPIP_to_HTTP_hostname_verify (hostnameJ2H)) &&
-            hostnameJ2H != Default_JPIP_to_HTTP_Hostname)
-            OK = JPIP_to_HTTP_hostname_verify (Default_JPIP_to_HTTP_Hostname);
-        if (! OK &&
-            ! Default_JPIP_to_HTTP_Hostname.isEmpty ())
-            JPIP_to_HTTP_hostname_verify ("");
+    JPIP_to_HTTP_Hostname_Pending = Default_JPIP_to_HTTP_Hostname;
+    if (!(OK = JPIP_to_HTTP_hostname_verify(hostnameJ2H)) &&
+        hostnameJ2H != Default_JPIP_to_HTTP_Hostname)
+        OK = JPIP_to_HTTP_hostname_verify(Default_JPIP_to_HTTP_Hostname);
+    if (!OK && !Default_JPIP_to_HTTP_Hostname.isEmpty()) JPIP_to_HTTP_hostname_verify("");
     JPIP_server_port(port);
 
     Proxy_Pending = Default_JPIP_Proxy;
     if (!(OK = JPIP_proxy_is_valid(proxy)) && proxy != Default_JPIP_Proxy)
         OK = JPIP_proxy_is_valid(Default_JPIP_Proxy);
-    if (!OK)
-        JPIP_proxy_is_valid(Default_JPIP_Proxy = "");
+    if (!OK) JPIP_proxy_is_valid(Default_JPIP_Proxy = "");
 
     Cache_Directory_Pending = Default_JPIP_Cache_Directory;
-    if (!(OK = JPIP_cache_directory_is_valid(cache_directory)) && cache_directory != Default_JPIP_Cache_Directory)
+    if (!(OK = JPIP_cache_directory_is_valid(cache_directory)) &&
+        cache_directory != Default_JPIP_Cache_Directory)
         OK = JPIP_cache_directory_is_valid(Default_JPIP_Cache_Directory);
-    if (!OK)
-        JPIP_cache_directory_is_valid(Default_JPIP_Cache_Directory = "");
+    if (!OK) JPIP_cache_directory_is_valid(Default_JPIP_Cache_Directory = "");
 
     JPIP_request_timeout(seconds);
     max_source_image_area_MB(image_area);
@@ -3915,166 +3918,131 @@ JPIP_Section::JPIP_Section(QWidget *parent) : QWidget(parent), File_Selection_Di
 #endif
 }
 
-void
-JPIP_Section::HTTP_to_JPIP_hostname
-    (
-    const QString&	text
-    )
+void JPIP_Section::HTTP_to_JPIP_hostname(const QString& text)
 {
-if (HTTP_to_JPIP_Hostname_lineEdit->text () != text)
-    HTTP_to_JPIP_Hostname_lineEdit->setText (text);
-HTTP_to_JPIP_Hostname_Reset_Button->setVisible (text != HTTP_to_JPIP_Hostname);
-reset_modifier_buttons ();
+    if (HTTP_to_JPIP_Hostname_lineEdit->text() != text)
+        HTTP_to_JPIP_Hostname_lineEdit->setText(text);
+    HTTP_to_JPIP_Hostname_Reset_Button->setVisible(text != HTTP_to_JPIP_Hostname);
+    reset_modifier_buttons();
 }
 
-void
-JPIP_Section::JPIP_to_HTTP_hostname
-    (
-    const QString&	text
-    )
+void JPIP_Section::JPIP_to_HTTP_hostname(const QString& text)
 {
-if (JPIP_to_HTTP_Hostname_lineEdit->text () != text)
-    JPIP_to_HTTP_Hostname_lineEdit->setText (text);
-JPIP_to_HTTP_Hostname_Reset_Button->setVisible (text != JPIP_to_HTTP_Hostname);
-reset_modifier_buttons ();
+    if (JPIP_to_HTTP_Hostname_lineEdit->text() != text)
+        JPIP_to_HTTP_Hostname_lineEdit->setText(text);
+    JPIP_to_HTTP_Hostname_Reset_Button->setVisible(text != JPIP_to_HTTP_Hostname);
+    reset_modifier_buttons();
 }
 
-bool
-JPIP_Section::HTTP_to_JPIP_hostname_verify
-    (
-    const QString&	hostname
-    )
+bool JPIP_Section::HTTP_to_JPIP_hostname_verify(const QString& hostname)
 {
-bool
-    accepted = true;
+    bool accepted = true;
 
-if (hostname.isEmpty () ||
-    QHostInfo::fromName (hostname).error () == QHostInfo::NoError ||
-    QMessageBox::question ((isVisible () ? this : NULL), Title,
-        tr ("A DNS lookup of the \"") + hostname
-        + tr ("\" hostname failed.\n\n")
-        + tr ("The host may be temporarily unavailable -\n")
-        + tr ("for example, a VPN connection may be required.\n\n")
-        + tr ("Use the hostname anyway?"),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No)
-    == QMessageBox::Yes)
-    HTTP_to_JPIP_Hostname_Pending = hostname;
-else
-    accepted = false;
+    if (hostname.isEmpty() || QHostInfo::fromName(hostname).error() == QHostInfo::NoError ||
+        QMessageBox::question(
+            (isVisible() ? this : NULL), Title,
+            tr("A DNS lookup of the \"") + hostname + tr("\" hostname failed.\n\n") +
+                tr("The host may be temporarily unavailable -\n") +
+                tr("for example, a VPN connection may be required.\n\n") +
+                tr("Use the hostname anyway?"),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+        HTTP_to_JPIP_Hostname_Pending = hostname;
+    else accepted = false;
 
-HTTP_to_JPIP_hostname (HTTP_to_JPIP_Hostname_Pending);
+    HTTP_to_JPIP_hostname(HTTP_to_JPIP_Hostname_Pending);
 
-return accepted;
+    return accepted;
 }
 
-bool
-JPIP_Section::JPIP_to_HTTP_hostname_verify
-    (
-    const QString&	hostname
-    )
+bool JPIP_Section::JPIP_to_HTTP_hostname_verify(const QString& hostname)
 {
-bool
-    accepted = true;
+    bool accepted = true;
 
-if (hostname.isEmpty () ||
-    QHostInfo::fromName (hostname).error () == QHostInfo::NoError ||
-    QMessageBox::question ((isVisible () ? this : NULL), Title,
-        tr ("A DNS lookup of the \"") + hostname
-        + tr ("\" hostname failed.\n\n")
-        + tr ("The host may be temporarily unavailable -\n")
-        + tr ("for example, a VPN connection may be required.\n\n")
-        + tr ("Use the hostname anyway?"),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No)
-    == QMessageBox::Yes)
-    JPIP_to_HTTP_Hostname_Pending = hostname;
-else
-    accepted = false;
+    if (hostname.isEmpty() || QHostInfo::fromName(hostname).error() == QHostInfo::NoError ||
+        QMessageBox::question(
+            (isVisible() ? this : NULL), Title,
+            tr("A DNS lookup of the \"") + hostname + tr("\" hostname failed.\n\n") +
+                tr("The host may be temporarily unavailable -\n") +
+                tr("for example, a VPN connection may be required.\n\n") +
+                tr("Use the hostname anyway?"),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+        JPIP_to_HTTP_Hostname_Pending = hostname;
+    else accepted = false;
 
-JPIP_to_HTTP_hostname (JPIP_to_HTTP_Hostname_Pending);
+    JPIP_to_HTTP_hostname(JPIP_to_HTTP_Hostname_Pending);
 
-return accepted;
+    return accepted;
 }
 
-
-void
-JPIP_Section::HTTP_to_JPIP_hostname_changed ()
+void JPIP_Section::HTTP_to_JPIP_hostname_changed()
 {
-QString hostname = HTTP_to_JPIP_Hostname_lineEdit->text();
-//	Avoid redundant editingFinished signals.
+    QString hostname = HTTP_to_JPIP_Hostname_lineEdit->text();
+    //	Avoid redundant editingFinished signals.
 
-if (hostname != HTTP_to_JPIP_Hostname_Pending && !Defaults_Button->hasFocus ())
+    if (hostname != HTTP_to_JPIP_Hostname_Pending && !Defaults_Button->hasFocus())
     {
-    HTTP_to_JPIP_hostname_verify (hostname);
+        HTTP_to_JPIP_hostname_verify(hostname);
     }
 }
 
-void
-JPIP_Section::JPIP_to_HTTP_hostname_changed ()
+void JPIP_Section::JPIP_to_HTTP_hostname_changed()
 {
-QString hostname = JPIP_to_HTTP_Hostname_lineEdit->text();
-//	Avoid redundant editingFinished signals.
+    QString hostname = JPIP_to_HTTP_Hostname_lineEdit->text();
+    //	Avoid redundant editingFinished signals.
 
-if (hostname != JPIP_to_HTTP_Hostname_Pending && !Defaults_Button->hasFocus ())
+    if (hostname != JPIP_to_HTTP_Hostname_Pending && !Defaults_Button->hasFocus())
     {
-    JPIP_to_HTTP_hostname_verify (hostname);
+        JPIP_to_HTTP_hostname_verify(hostname);
     }
 }
 
-void
-JPIP_Section::HTTP_to_JPIP_hostname_reset ()
-{HTTP_to_JPIP_hostname_changed (HTTP_to_JPIP_Hostname);}
+void JPIP_Section::HTTP_to_JPIP_hostname_reset()
+{ HTTP_to_JPIP_hostname_changed(HTTP_to_JPIP_Hostname); }
 
-void
-JPIP_Section::JPIP_to_HTTP_hostname_reset ()
-{JPIP_to_HTTP_hostname_changed (JPIP_to_HTTP_Hostname);}
+void JPIP_Section::JPIP_to_HTTP_hostname_reset()
+{ JPIP_to_HTTP_hostname_changed(JPIP_to_HTTP_Hostname); }
 
 void JPIP_Section::JPIP_server_port(int port)
 {
-    if (Port_spinBox->value() != port)
-        Port_spinBox->setValue(port);
+    if (Port_spinBox->value() != port) Port_spinBox->setValue(port);
     Port_Reset_Button->setVisible(port != Default_JPIP_Server_Port);
     reset_modifier_buttons();
 }
 
-void JPIP_Section::JPIP_server_port_reset()
-{
-    JPIP_server_port(Port);
-}
+void JPIP_Section::JPIP_server_port_reset() { JPIP_server_port(Port); }
 
-void JPIP_Section::JPIP_proxy(const QString &text)
+void JPIP_Section::JPIP_proxy(const QString& text)
 {
-    if (Proxy_lineEdit->text() != text)
-        Proxy_lineEdit->setText(text);
+    if (Proxy_lineEdit->text() != text) Proxy_lineEdit->setText(text);
     Proxy_Reset_Button->setVisible(text != Proxy);
     reset_modifier_buttons();
 }
 
-bool JPIP_Section::JPIP_proxy_is_valid(const QString &proxy)
+bool JPIP_Section::JPIP_proxy_is_valid(const QString& proxy)
 {
     bool accepted = true;
-    if (proxy.isEmpty())
-        Proxy_Pending = proxy;
+    if (proxy.isEmpty()) Proxy_Pending = proxy;
     else
     {
         QUrl URL(QUrl::fromUserInput(proxy));
-        if (URL.isValid() && (URL.scheme().toLower() == "https" || URL.scheme().toLower() == "http") &&
+        if (URL.isValid() &&
+            (URL.scheme().toLower() == "https" || URL.scheme().toLower() == "http") &&
             !URL.host().isEmpty())
         {
             if (QHostInfo::fromName(URL.host()).error() == QHostInfo::NoError ||
-                QMessageBox::question((isVisible() ? this : NULL), Title,
-                                      tr("A lookup of the \"") + URL.toString() +
-                                          tr("\" JPIP proxy hostname failed.\n\n") + tr("Use the proxy anyway?"),
-                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+                QMessageBox::question(
+                    (isVisible() ? this : NULL), Title,
+                    tr("A lookup of the \"") + URL.toString() +
+                        tr("\" JPIP proxy hostname failed.\n\n") + tr("Use the proxy anyway?"),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
                 Proxy_Pending = URL.toString();
-            else
-                accepted = false;
+            else accepted = false;
         }
         else
         {
-            QMessageBox::information((isVisible() ? this : NULL), Title,
-                                     QString("JPIP proxy \"") + proxy + "\" " + tr("is not a valid proxy URL."));
+            QMessageBox::information(
+                (isVisible() ? this : NULL), Title,
+                QString("JPIP proxy \"") + proxy + "\" " + tr("is not a valid proxy URL."));
             accepted = false;
         }
     }
@@ -4096,20 +4064,16 @@ void JPIP_Section::JPIP_proxy_changed()
     }
 }
 
-void JPIP_Section::JPIP_proxy_reset()
-{
-    JPIP_proxy_is_valid(Proxy);
-}
+void JPIP_Section::JPIP_proxy_reset() { JPIP_proxy_is_valid(Proxy); }
 
-void JPIP_Section::JPIP_cache_directory(const QString &text)
+void JPIP_Section::JPIP_cache_directory(const QString& text)
 {
-    if (Cache_Directory_lineEdit->text() != text)
-        Cache_Directory_lineEdit->setText(text);
+    if (Cache_Directory_lineEdit->text() != text) Cache_Directory_lineEdit->setText(text);
     Cache_Directory_Reset_Button->setVisible(text != Cache_Directory);
     reset_modifier_buttons();
 }
 
-bool JPIP_Section::JPIP_cache_directory_is_valid(const QString &cache_directory)
+bool JPIP_Section::JPIP_cache_directory_is_valid(const QString& cache_directory)
 {
     bool accepted = true;
     QString pathname(cache_directory);
@@ -4122,14 +4086,14 @@ bool JPIP_Section::JPIP_cache_directory_is_valid(const QString &cache_directory)
         accepted = false;
         if (!file.exists())
         {
-            if (QMessageBox::question((isVisible() ? this : NULL), Title,
-                                      tr("The JPIP cache directory \"") + pathname + tr("\" does not exist.\n\n") +
-                                          tr("Create the directory?\n"),
-                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+            if (QMessageBox::question(
+                    (isVisible() ? this : NULL), Title,
+                    tr("The JPIP cache directory \"") + pathname + tr("\" does not exist.\n\n") +
+                        tr("Create the directory?\n"),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
             {
                 QDir directory;
-                if (directory.mkpath(pathname))
-                    accepted = true;
+                if (directory.mkpath(pathname)) accepted = true;
                 else
                     QMessageBox::warning((isVisible() ? this : NULL), Title,
                                          tr("The JPIP cache directory at \"") + pathname +
@@ -4143,11 +4107,9 @@ bool JPIP_Section::JPIP_cache_directory_is_valid(const QString &cache_directory)
             QMessageBox::warning((isVisible() ? this : NULL), Title,
                                  tr("The JPIP cache directory \"") + pathname +
                                      tr("\" is not accessible for reading or writing."));
-        else
-            accepted = true;
+        else accepted = true;
     }
-    if (accepted)
-        Cache_Directory_Pending = pathname;
+    if (accepted) Cache_Directory_Pending = pathname;
 
     JPIP_cache_directory(Cache_Directory_Pending);
 
@@ -4158,7 +4120,8 @@ void JPIP_Section::JPIP_cache_directory_changed()
 {
     //	Avoid redundant editingFinished signals.
     static bool OK = true;
-    if (OK && Cache_Directory_lineEdit->text() != Cache_Directory_Pending && !Defaults_Button->hasFocus())
+    if (OK && Cache_Directory_lineEdit->text() != Cache_Directory_Pending &&
+        !Defaults_Button->hasFocus())
     {
         OK = false;
         JPIP_cache_directory_is_valid(Cache_Directory_lineEdit->text());
@@ -4170,43 +4133,35 @@ void JPIP_Section::select_JPIP_cache_directory()
 {
     if (!File_Selection_Dialog)
     {
-        File_Selection_Dialog =
-            new QFileDialog((isVisible() ? this : NULL), Title + " - " + tr("Cache Directory"), QDir::homePath());
+        File_Selection_Dialog = new QFileDialog(
+            (isVisible() ? this : NULL), Title + " - " + tr("Cache Directory"), QDir::homePath());
         File_Selection_Dialog->setAcceptMode(QFileDialog::AcceptOpen);
         File_Selection_Dialog->setFileMode(QFileDialog::Directory);
         File_Selection_Dialog->setFilter(QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot);
-        File_Selection_Dialog->setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::ShowDirsOnly |
+        File_Selection_Dialog->setOptions(QFileDialog::DontUseNativeDialog |
+                                          QFileDialog::ShowDirsOnly |
                                           QFileDialog::DontResolveSymlinks);
     }
 
     if (File_Selection_Dialog->exec())
     {
         QString pathname(File_Selection_Dialog->selectedFiles().value(0));
-        if (!pathname.isEmpty())
-            JPIP_cache_directory_is_valid(pathname);
+        if (!pathname.isEmpty()) JPIP_cache_directory_is_valid(pathname);
     }
 }
 
-void JPIP_Section::JPIP_cache_directory_reset()
-{
-    JPIP_cache_directory_is_valid(Cache_Directory);
-}
+void JPIP_Section::JPIP_cache_directory_reset() { JPIP_cache_directory_is_valid(Cache_Directory); }
 
 void JPIP_Section::JPIP_request_timeout(int seconds)
 {
-    if (seconds < 0)
-        seconds = 0;
+    if (seconds < 0) seconds = 0;
 
-    if (Request_Timeout_spinBox->value() != seconds)
-        Request_Timeout_spinBox->setValue(seconds);
+    if (Request_Timeout_spinBox->value() != seconds) Request_Timeout_spinBox->setValue(seconds);
     Request_Timeout_Reset_Button->setVisible(seconds != Request_Timeout);
     reset_modifier_buttons();
 }
 
-void JPIP_Section::JPIP_request_timeout_reset()
-{
-    JPIP_request_timeout(Request_Timeout);
-}
+void JPIP_Section::JPIP_request_timeout_reset() { JPIP_request_timeout(Request_Timeout); }
 
 void JPIP_Section::max_source_image_area_MB(int area)
 {
@@ -4217,14 +4172,12 @@ void JPIP_Section::max_source_image_area_MB(int area)
 }
 
 void JPIP_Section::max_source_image_area_MB_reset()
-{
-    max_source_image_area_MB(Max_Source_Image_Area_MB);
-}
+{ max_source_image_area_MB(Max_Source_Image_Area_MB); }
 
 void JPIP_Section::reset()
 {
-    HTTP_to_JPIP_hostname_reset ();
-    JPIP_to_HTTP_hostname_reset ();
+    HTTP_to_JPIP_hostname_reset();
+    JPIP_to_HTTP_hostname_reset();
     JPIP_server_port_reset();
     JPIP_proxy_reset();
     JPIP_cache_directory_reset();
@@ -4234,8 +4187,8 @@ void JPIP_Section::reset()
 
 void JPIP_Section::defaults()
 {
-    HTTP_to_JPIP_hostname (Default_HTTP_to_JPIP_Hostname);
-    JPIP_to_HTTP_hostname (Default_HTTP_to_JPIP_Hostname);
+    HTTP_to_JPIP_hostname(Default_HTTP_to_JPIP_Hostname);
+    JPIP_to_HTTP_hostname(Default_HTTP_to_JPIP_Hostname);
     JPIP_server_port(Default_JPIP_Server_Port);
     JPIP_proxy(Default_JPIP_Proxy);
     JPIP_cache_directory(Default_JPIP_Cache_Directory);
@@ -4252,11 +4205,10 @@ void JPIP_Section::reset_modifier_buttons()
 void JPIP_Section::reset_defaults_button()
 {
     Defaults_Button->setEnabled(
-        HTTP_to_JPIP_Hostname_lineEdit->text ()
-    		!= Default_HTTP_to_JPIP_Hostname	||
-      JPIP_to_HTTP_Hostname_lineEdit->text ()
-  		!= Default_JPIP_to_HTTP_Hostname	||
-    Port_spinBox->value() != Default_JPIP_Server_Port || Proxy_lineEdit->text() != Default_JPIP_Proxy ||
+        HTTP_to_JPIP_Hostname_lineEdit->text() != Default_HTTP_to_JPIP_Hostname ||
+        JPIP_to_HTTP_Hostname_lineEdit->text() != Default_JPIP_to_HTTP_Hostname ||
+        Port_spinBox->value() != Default_JPIP_Server_Port ||
+        Proxy_lineEdit->text() != Default_JPIP_Proxy ||
         Cache_Directory_lineEdit->text() != Default_JPIP_Cache_Directory ||
         Request_Timeout_spinBox->value() != Default_JPIP_Request_Timeout ||
         Max_Source_Image_Area_MB_spinBox->value() != Default_Max_Source_Image_Area_MB);
@@ -4267,15 +4219,14 @@ void JPIP_Section::changing()
     bool change, changed = false;
 
     //	Text fields manage their Reset_Buttons.
-    changed |= (HTTP_to_JPIP_Hostname_lineEdit->text ()
-    		!= HTTP_to_JPIP_Hostname);
-    changed |= (JPIP_to_HTTP_Hostname_lineEdit->text ()
-    		!= JPIP_to_HTTP_Hostname);
+    changed |= (HTTP_to_JPIP_Hostname_lineEdit->text() != HTTP_to_JPIP_Hostname);
+    changed |= (JPIP_to_HTTP_Hostname_lineEdit->text() != JPIP_to_HTTP_Hostname);
     Port_Reset_Button->setVisible(change = (Port_spinBox->value() != Port));
     changed |= change;
     changed |= (Proxy_lineEdit->text() != Proxy);
     changed |= (Cache_Directory_lineEdit->text() != Cache_Directory);
-    Request_Timeout_Reset_Button->setVisible(change = (Request_Timeout_spinBox->value() != Request_Timeout));
+    Request_Timeout_Reset_Button->setVisible(
+        change = (Request_Timeout_spinBox->value() != Request_Timeout));
     changed |= change;
     Max_Source_Image_Area_MB_Reset_Button->setVisible(
         change = (Max_Source_Image_Area_MB_spinBox->value() != Max_Source_Image_Area_MB));
@@ -4287,14 +4238,12 @@ void JPIP_Section::changing()
 
 bool JPIP_Section::has_changed() const
 {
-    return
-        	HTTP_to_JPIP_Hostname_lineEdit->text ()
-        		!= HTTP_to_JPIP_Hostname			||
-         	JPIP_to_HTTP_Hostname_lineEdit->text ()
-         		!= JPIP_to_HTTP_Hostname			||
-        Port_spinBox->value() != Port || Proxy_lineEdit->text() != Proxy ||
-        Cache_Directory_lineEdit->text() != Cache_Directory || Request_Timeout_spinBox->value() != Request_Timeout ||
-        Max_Source_Image_Area_MB_spinBox->value() != Max_Source_Image_Area_MB;
+    return HTTP_to_JPIP_Hostname_lineEdit->text() != HTTP_to_JPIP_Hostname ||
+           JPIP_to_HTTP_Hostname_lineEdit->text() != JPIP_to_HTTP_Hostname ||
+           Port_spinBox->value() != Port || Proxy_lineEdit->text() != Proxy ||
+           Cache_Directory_lineEdit->text() != Cache_Directory ||
+           Request_Timeout_spinBox->value() != Request_Timeout ||
+           Max_Source_Image_Area_MB_spinBox->value() != Max_Source_Image_Area_MB;
 }
 
 void JPIP_Section::apply()
@@ -4302,25 +4251,25 @@ void JPIP_Section::apply()
     QSettings settings;
     QString text;
 
-    text = HTTP_to_JPIP_Hostname_lineEdit->text ();
+    text = HTTP_to_JPIP_Hostname_lineEdit->text();
     if (HTTP_to_JPIP_Hostname != text)
-        {
+    {
         HTTP_to_JPIP_Hostname = text;
-        HTTP_to_JPIP_Hostname_Reset_Button->setVisible (false);
-        settings.setValue (HTTP_TO_JPIP_HOSTNAME_KEY, HTTP_to_JPIP_Hostname);
+        HTTP_to_JPIP_Hostname_Reset_Button->setVisible(false);
+        settings.setValue(HTTP_TO_JPIP_HOSTNAME_KEY, HTTP_to_JPIP_Hostname);
         //	>>> SIGNAL <<<
-        emit HTTP_to_JPIP_hostname_changed (HTTP_to_JPIP_Hostname);
-        }
+        emit HTTP_to_JPIP_hostname_changed(HTTP_to_JPIP_Hostname);
+    }
 
-        text = JPIP_to_HTTP_Hostname_lineEdit->text ();
-        if (JPIP_to_HTTP_Hostname != text)
-            {
-            JPIP_to_HTTP_Hostname = text;
-            JPIP_to_HTTP_Hostname_Reset_Button->setVisible (false);
-            settings.setValue (JPIP_TO_HTTP_HOSTNAME_KEY, JPIP_to_HTTP_Hostname);
-            //	>>> SIGNAL <<<
-            emit JPIP_to_HTTP_hostname_changed (JPIP_to_HTTP_Hostname);
-            }
+    text = JPIP_to_HTTP_Hostname_lineEdit->text();
+    if (JPIP_to_HTTP_Hostname != text)
+    {
+        JPIP_to_HTTP_Hostname = text;
+        JPIP_to_HTTP_Hostname_Reset_Button->setVisible(false);
+        settings.setValue(JPIP_TO_HTTP_HOSTNAME_KEY, JPIP_to_HTTP_Hostname);
+        //	>>> SIGNAL <<<
+        emit JPIP_to_HTTP_hostname_changed(JPIP_to_HTTP_Hostname);
+    }
 
     if (Port != Port_spinBox->value())
     {
@@ -4371,26 +4320,24 @@ void JPIP_Section::apply()
 /*=*****************************************************************************
     Graphs_Section
 */
-const char *Graphs_Section::SELECTION_SENSITIVITY_KEY = "Graphs_Selection_Sensitivity";
+const char* Graphs_Section::SELECTION_SENSITIVITY_KEY = "Graphs_Selection_Sensitivity";
 
 #ifndef DEFAULT_SELECTION_SENSITIVITY
 #define DEFAULT_SELECTION_SENSITIVITY 5
 #endif
 int Graphs_Section::Default_Selection_Sensitivity = DEFAULT_SELECTION_SENSITIVITY;
 
-const char *Graphs_Section::CANVAS_COLOR_KEY = "Graphs_Canvas_Color";
+const char* Graphs_Section::CANVAS_COLOR_KEY = "Graphs_Canvas_Color";
 
 QRgb Graphs_Section::Default_Canvas_Color;
 
-Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
+Graphs_Section::Graphs_Section(QWidget* parent) : QWidget(parent)
 {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GRAPHS))
     clog << ">>> Graphs_Section" << endl;
 #endif
-    if (parent)
-        Title = parent->windowTitle();
-    else
-        Title = tr("Preferences");
+    if (parent) Title = parent->windowTitle();
+    else Title = tr("Preferences");
     Title += tr(": Graphs");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GRAPHS))
     clog << "    Title = \"" << Title << '"' << endl;
@@ -4408,15 +4355,16 @@ Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GRAPHS))
     clog << "    " << SELECTION_SENSITIVITY_KEY << " = " << Selection_Sensitivity << endl;
 #endif
-    if (sensitivity < 0)
-        sensitivity = Selection_Sensitivity = 0;
+    if (sensitivity < 0) sensitivity = Selection_Sensitivity = 0;
     if (!OK)
     {
         QMessageBox::warning((isVisible() ? this : NULL), Title,
                              tr("The ") + SELECTION_SENSITIVITY_KEY + " \"" +
                                  settings.value(SELECTION_SENSITIVITY_KEY).toString() +
-                                 tr("\" value is invalid - a number is required.\n\n") + tr("The default value of ") +
-                                 QString::number(Default_Selection_Sensitivity) + tr(" is being used."));
+                                 tr("\" value is invalid - a number is required.\n\n") +
+                                 tr("The default value of ") +
+                                 QString::number(Default_Selection_Sensitivity) +
+                                 tr(" is being used."));
         sensitivity = Default_Selection_Sensitivity;
     }
     else if (!settings.contains(SELECTION_SENSITIVITY_KEY))
@@ -4431,14 +4379,16 @@ Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
     clog << "    Default_Canvas_Color = " << hex << Default_Canvas_Color << dec << endl;
 #endif
     Default_Canvas_Color_Text = color_text(Default_Canvas_Color);
-    QString color = Canvas_Color_Text = settings.value(CANVAS_COLOR_KEY, Default_Canvas_Color_Text).toString();
+    QString color = Canvas_Color_Text =
+        settings.value(CANVAS_COLOR_KEY, Default_Canvas_Color_Text).toString();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GRAPHS))
     clog << "    " << CANVAS_COLOR_KEY << " = " << Canvas_Color_Text << endl;
 #endif
     if (!settings.contains(CANVAS_COLOR_KEY))
     {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GRAPHS))
-        clog << "    initial " << CANVAS_COLOR_KEY << " setting = " << Default_Canvas_Color_Text << endl;
+        clog << "    initial " << CANVAS_COLOR_KEY << " setting = " << Default_Canvas_Color_Text
+             << endl;
 #endif
         settings.setValue(CANVAS_COLOR_KEY, Default_Canvas_Color_Text);
     }
@@ -4447,10 +4397,10 @@ Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GRAPHS))
     clog << "    layout controls -" << endl;
 #endif
-    QGridLayout *grid_layout = new QGridLayout(this);
+    QGridLayout* grid_layout = new QGridLayout(this);
     grid_layout->setHorizontalSpacing(HORIZONTAL_SPACING);
 
-    QLabel *label;
+    QLabel* label;
     int row = -1, col;
 
     //	Selection Sensitivity.
@@ -4469,19 +4419,22 @@ Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
     Selection_Sensitivity_spinBox->setMaximum(100);
     Selection_Sensitivity_spinBox->setValue(Selection_Sensitivity);
     Selection_Sensitivity_spinBox->setKeyboardTracking(true);
-    Selection_Sensitivity_spinBox->setToolTip(tr("Sensitivity (roughly distance) to selecting a graph item"));
+    Selection_Sensitivity_spinBox->setToolTip(
+        tr("Sensitivity (roughly distance) to selecting a graph item"));
 #ifndef QT_NO_SHORTCUT
     label->setBuddy(Selection_Sensitivity_spinBox);
 #endif
     connect(Selection_Sensitivity_spinBox, SIGNAL(valueChanged(int)), SLOT(changing()));
-    connect(Selection_Sensitivity_spinBox, SIGNAL(editingFinished()), SLOT(selection_sensitivity_change()));
+    connect(Selection_Sensitivity_spinBox, SIGNAL(editingFinished()),
+            SLOT(selection_sensitivity_change()));
     grid_layout->addWidget(Selection_Sensitivity_spinBox, row, col);
     //		Reset button.
     ++col;
     Selection_Sensitivity_Reset_Button = new Icon_Button(*Reset_Button_Icon, this);
     Selection_Sensitivity_Reset_Button->setVisible(false);
     Selection_Sensitivity_Reset_Button->setFocusPolicy(Qt::NoFocus);
-    connect(Selection_Sensitivity_Reset_Button, SIGNAL(clicked()), SLOT(selection_sensitivity_reset()));
+    connect(Selection_Sensitivity_Reset_Button, SIGNAL(clicked()),
+            SLOT(selection_sensitivity_reset()));
     grid_layout->addWidget(Selection_Sensitivity_Reset_Button, row, col, Qt::AlignLeft);
 
     //	Spacing
@@ -4497,7 +4450,7 @@ Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
     grid_layout->addWidget(label, row, col);
     //		Value.
     ++col;
-    Canvas_Color = Default_Canvas_Color; // VALGRIND
+    Canvas_Color = Default_Canvas_Color;  // VALGRIND
 
     Canvas_Color_lineEdit = new QLineEdit(color_text(Canvas_Color), this);
     Canvas_Color_lineEdit->setMaximumWidth(90);
@@ -4505,7 +4458,8 @@ Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
 #ifndef QT_NO_SHORTCUT
     label->setBuddy(Canvas_Color_lineEdit);
 #endif
-    connect(Canvas_Color_lineEdit, SIGNAL(textEdited(const QString &)), SLOT(canvas_color(const QString &)));
+    connect(Canvas_Color_lineEdit, SIGNAL(textEdited(const QString&)),
+            SLOT(canvas_color(const QString&)));
     connect(Canvas_Color_lineEdit, SIGNAL(editingFinished()), SLOT(canvas_color_changed()));
     grid_layout->addWidget(Canvas_Color_lineEdit, row, col, 1, 2);
     //		Select button.
@@ -4531,19 +4485,18 @@ Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
 
     //	Defaults/Apply buttons.
     ++row;
-    QDialogButtonBox *buttons = new QDialogButtonBox(Qt::Horizontal, this);
+    QDialogButtonBox* buttons = new QDialogButtonBox(Qt::Horizontal, this);
     Defaults_Button = buttons->addButton(tr("Defaults"), QDialogButtonBox::ResetRole);
     Defaults_Button->setIcon(*Defaults_Button_Icon);
     connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
-    QAction *action = new QAction(tr("Defaults"), this);
+    QAction* action = new QAction(tr("Defaults"), this);
     action->setShortcut(tr("Ctrl+Shift+D"));
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(action);
     connect(action, SIGNAL(triggered()), Defaults_Button, SLOT(click()));
 
     Apply_Button = buttons->addButton(tr("Apply"), QDialogButtonBox::ApplyRole);
-    if (Apply_Button_Icon)
-        Apply_Button->setIcon(*Apply_Button_Icon);
+    if (Apply_Button_Icon) Apply_Button->setIcon(*Apply_Button_Icon);
     connect(Apply_Button, SIGNAL(clicked()), SLOT(apply()));
     action = new QAction(tr("Apply"), this);
     action->setShortcut(tr("Ctrl+Shift+A"));
@@ -4557,8 +4510,7 @@ Graphs_Section::Graphs_Section(QWidget *parent) : QWidget(parent)
     Canvas_Color_Text_Pending = Default_Canvas_Color_Text;
     if (!(OK = canvas_color_is_valid(color)) && color != Default_Canvas_Color_Text)
         OK = canvas_color_is_valid(Default_Canvas_Color_Text);
-    if (!OK)
-        canvas_color_is_valid(Default_Canvas_Color_Text = "transparent");
+    if (!OK) canvas_color_is_valid(Default_Canvas_Color_Text = "transparent");
     Canvas_Color = color_value(Canvas_Color_Text);
 
     //	Update settings with any changed values.
@@ -4573,8 +4525,7 @@ void Graphs_Section::selection_sensitivity(int size)
 #if ((DEBUG_SECTION) & DEBUG_GRAPHS)
     clog << ">>> Graphs_Section::selection_sensitivity: " << size << endl;
 #endif
-    if (size < 0)
-        size = 0;
+    if (size < 0) size = 0;
 
     if (Selection_Sensitivity_spinBox->value() != size)
         Selection_Sensitivity_spinBox->setValue(size);
@@ -4595,28 +4546,23 @@ void Graphs_Section::selection_sensitivity_change()
     selection_sensitivity(Selection_Sensitivity_spinBox->value());
 }
 
-void Graphs_Section::selection_sensitivity_reset()
-{
-    selection_sensitivity(Selection_Sensitivity);
-}
+void Graphs_Section::selection_sensitivity_reset() { selection_sensitivity(Selection_Sensitivity); }
 
-void Graphs_Section::canvas_color(const QString &text)
+void Graphs_Section::canvas_color(const QString& text)
 {
-    if (Canvas_Color_lineEdit->text() != text)
-        Canvas_Color_lineEdit->setText(text);
+    if (Canvas_Color_lineEdit->text() != text) Canvas_Color_lineEdit->setText(text);
     Canvas_Color_Reset_Button->setVisible(text != Canvas_Color_Text);
     reset_modifier_buttons();
 }
 
-bool Graphs_Section::canvas_color_is_valid(const QString &color_spec)
+bool Graphs_Section::canvas_color_is_valid(const QString& color_spec)
 {
 #if ((DEBUG_SECTION) & DEBUG_GRAPHS)
     clog << ">>> Graphs_Section::canvas_color_is_valid: " << color_spec << endl;
 #endif
     bool accepted = true;
     QString text(color_spec);
-    if (text.toLower() == "none")
-        text = "transparent";
+    if (text.toLower() == "none") text = "transparent";
 
     //	Prevent gratuitous warning message from QColor about invalid color name.
     qInstallMessageHandler(no_warning_messages);
@@ -4649,7 +4595,8 @@ void Graphs_Section::canvas_color_changed()
 {
     //	Avoid redundant editingFinished signals.
     static bool OK = true;
-    if (OK && Canvas_Color_lineEdit->text() != Canvas_Color_Text_Pending && !Defaults_Button->hasFocus())
+    if (OK && Canvas_Color_lineEdit->text() != Canvas_Color_Text_Pending &&
+        !Defaults_Button->hasFocus())
     {
 #if ((DEBUG_SECTION) & DEBUG_GRAPHS)
         clog << ">-< Graphs_Section::canvas_color_changed" << endl;
@@ -4662,26 +4609,18 @@ void Graphs_Section::canvas_color_changed()
 
 void Graphs_Section::select_canvas_color()
 {
-    QColor color(QColorDialog::getColor(color_value(Canvas_Color_lineEdit->text()), (isVisible() ? this : NULL),
+    QColor color(QColorDialog::getColor(color_value(Canvas_Color_lineEdit->text()),
+                                        (isVisible() ? this : NULL),
                                         Title + " - " + tr("Canvas Color")));
-    if (color.isValid())
-        canvas_color_is_valid(color_text(color.rgb()));
+    if (color.isValid()) canvas_color_is_valid(color_text(color.rgb()));
 }
 
-void Graphs_Section::canvas_color_reset()
-{
-    canvas_color_is_valid(Canvas_Color_Text);
-}
+void Graphs_Section::canvas_color_reset() { canvas_color_is_valid(Canvas_Color_Text); }
 
-QString Graphs_Section::color_text(QRgb color)
-{
-    return Preferences_Dialog::color_text(color);
-}
+QString Graphs_Section::color_text(QRgb color) { return Preferences_Dialog::color_text(color); }
 
-QRgb Graphs_Section::color_value(const QString &text)
-{
-    return Preferences_Dialog::color_value(text);
-}
+QRgb Graphs_Section::color_value(const QString& text)
+{ return Preferences_Dialog::color_value(text); }
 
 void Graphs_Section::reset()
 {
@@ -4703,7 +4642,8 @@ void Graphs_Section::reset_modifier_buttons()
 
 void Graphs_Section::reset_defaults_button()
 {
-    Defaults_Button->setEnabled(Selection_Sensitivity_spinBox->value() != Default_Selection_Sensitivity ||
+    Defaults_Button->setEnabled(Selection_Sensitivity_spinBox->value() !=
+                                    Default_Selection_Sensitivity ||
                                 Canvas_Color_lineEdit->text() != Default_Canvas_Color_Text);
 }
 
@@ -4769,8 +4709,8 @@ void Graphs_Section::apply()
 /*=================================================================
   = Constants
   =================================================================*/
-const char *Scripts_Section::CURRENT_SCRIPT_KEY = "Scripts_Current_Script";
-const char *Scripts_Section::SHOW_SCRIPT_KEY = "Scripts_Show_Script";
+const char* Scripts_Section::CURRENT_SCRIPT_KEY = "Scripts_Current_Script";
+const char* Scripts_Section::SHOW_SCRIPT_KEY = "Scripts_Show_Script";
 
 /*=================================================================
   = Defaults
@@ -4783,15 +4723,13 @@ const char *Scripts_Section::SHOW_SCRIPT_KEY = "Scripts_Show_Script";
   = Constructors
   =================================================================*/
 
-Scripts_Section::Scripts_Section(QWidget *parent)
+Scripts_Section::Scripts_Section(QWidget* parent)
 {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SCRIPTS))
     clog << ">>> Graphs_Section" << endl;
 #endif
-    if (parent)
-        Title = parent->windowTitle();
-    else
-        Title = tr("Preferences");
+    if (parent) Title = parent->windowTitle();
+    else Title = tr("Preferences");
     Title += tr(": Graphs");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SCRIPTS))
     clog << "    Title = \"" << Title << '"' << endl;
@@ -4802,19 +4740,16 @@ Scripts_Section::Scripts_Section(QWidget *parent)
 
     if (settings.contains(CURRENT_SCRIPT_KEY))
         Script = settings.value(CURRENT_SCRIPT_KEY, "").toString();
-    else
-        settings.setValue(CURRENT_SCRIPT_KEY, Script = "");
+    else settings.setValue(CURRENT_SCRIPT_KEY, Script = "");
 
-    if (settings.contains(SHOW_SCRIPT_KEY))
-        Show_Script = settings.value(SHOW_SCRIPT_KEY).toBool();
-    else
-        settings.setValue(SHOW_SCRIPT_KEY, Show_Script = DEFAULT_SHOW_SCRIPT);
+    if (settings.contains(SHOW_SCRIPT_KEY)) Show_Script = settings.value(SHOW_SCRIPT_KEY).toBool();
+    else settings.setValue(SHOW_SCRIPT_KEY, Show_Script = DEFAULT_SHOW_SCRIPT);
 
     // Layout Variables
-    QGridLayout *grid_layout = new QGridLayout(this);
+    QGridLayout* grid_layout = new QGridLayout(this);
     int row = 0;
 
-    QLabel *label = new QLabel(tr("Enter Script:"));
+    QLabel* label = new QLabel(tr("Enter Script:"));
     label->setAlignment(Qt::AlignVCenter);
     grid_layout->addWidget(label, row, 0);
 
@@ -4834,7 +4769,8 @@ Scripts_Section::Scripts_Section(QWidget *parent)
     Variables_ListWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
     Variables_ListWidget->setTextElideMode(Qt::ElideNone);
     Variables_ListWidget->setFixedWidth(Variables_ListWidget->sizeHint().width());
-    connect(Variables_ListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)), SLOT(add_variable(QListWidgetItem *)));
+    connect(Variables_ListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+            SLOT(add_variable(QListWidgetItem*)));
     grid_layout->addWidget(Variables_ListWidget);
     ++row;
 
@@ -4847,13 +4783,13 @@ Scripts_Section::Scripts_Section(QWidget *parent)
     ++row;
 
     // Default and Apply Buttons
-    QDialogButtonBox *buttons = new QDialogButtonBox(Qt::Horizontal, this);
+    QDialogButtonBox* buttons = new QDialogButtonBox(Qt::Horizontal, this);
     Defaults_Button = buttons->addButton(tr("Defaults"), QDialogButtonBox::ResetRole);
     Defaults_Button->setIcon(*Defaults_Button_Icon);
     connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
 
     /*	DEFAULTS QACTION*/
-    QAction *action = new QAction(tr("Defaults"), this);
+    QAction* action = new QAction(tr("Defaults"), this);
     action->setShortcut(tr("Ctrl+Shift+D"));
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(action);
@@ -4861,8 +4797,7 @@ Scripts_Section::Scripts_Section(QWidget *parent)
     Defaults_Button->setEnabled(reset_defaults_button());
 
     Apply_Button = buttons->addButton(QDialogButtonBox::Apply);
-    if (Apply_Button_Icon)
-        Apply_Button->setIcon(*Apply_Button_Icon);
+    if (Apply_Button_Icon) Apply_Button->setIcon(*Apply_Button_Icon);
     connect(Apply_Button, SIGNAL(clicked()), SLOT(apply()));
 
     /*	APPLY QACTION*/
@@ -4909,7 +4844,7 @@ void Scripts_Section::defaults()
     Script_TextEdit->clear();
 }
 
-void Scripts_Section::variables_updated(QStringList &pds_variables)
+void Scripts_Section::variables_updated(QStringList& pds_variables)
 {
     Variables_ListWidget->clear();
     Variables_ListWidget->addItem("x_px");
@@ -4931,21 +4866,14 @@ void Scripts_Section::variables_updated(QStringList &pds_variables)
 
 void Scripts_Section::show_script(bool enabled)
 {
-    if (Show_Script_CheckBox->isChecked() != enabled)
-        Show_Script_CheckBox->setChecked(enabled);
-    else
-        reset_modifier_buttons();
+    if (Show_Script_CheckBox->isChecked() != enabled) Show_Script_CheckBox->setChecked(enabled);
+    else reset_modifier_buttons();
 }
 
-void Scripts_Section::script_edited()
-{
-    reset_modifier_buttons();
-}
+void Scripts_Section::script_edited() { reset_modifier_buttons(); }
 
-void Scripts_Section::add_variable(QListWidgetItem *variable)
-{
-    Script_TextEdit->insertPlainText(variable->text());
-}
+void Scripts_Section::add_variable(QListWidgetItem* variable)
+{ Script_TextEdit->insertPlainText(variable->text()); }
 
 /*=================================================================
   = Helpers
@@ -4953,12 +4881,14 @@ void Scripts_Section::add_variable(QListWidgetItem *variable)
 
 bool Scripts_Section::reset_defaults_button()
 {
-    return (Script_TextEdit->toPlainText() != "") || (Show_Script_CheckBox->isChecked() != DEFAULT_SHOW_SCRIPT);
+    return (Script_TextEdit->toPlainText() != "") ||
+           (Show_Script_CheckBox->isChecked() != DEFAULT_SHOW_SCRIPT);
 }
 
 bool Scripts_Section::has_changed()
 {
-    return (Script_TextEdit->toPlainText() != Script) || (Show_Script_CheckBox->isChecked() != Show_Script);
+    return (Script_TextEdit->toPlainText() != Script) ||
+           (Show_Script_CheckBox->isChecked() != Show_Script);
 }
 
 void Scripts_Section::reset_modifier_buttons()
@@ -4967,4 +4897,4 @@ void Scripts_Section::reset_modifier_buttons()
     Apply_Button->setEnabled(has_changed());
 }
 
-} // namespace UA::HiRISE
+}  // namespace UA::HiRISE

@@ -21,8 +21,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef About_HiView_Dialog_hh
-#define About_HiView_Dialog_hh
+#pragma once
 
 #include <QDialog>
 
@@ -30,9 +29,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 class QIcon;
 class QScrollArea;
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class Icon_Button;
@@ -48,12 +45,12 @@ class About_HiView_Dialog : public QDialog
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     /*==============================================================================
         Constructor
@@ -64,19 +61,15 @@ class About_HiView_Dialog : public QDialog
     /*==============================================================================
         Slots
     */
-  private slots:
-
-    void expand_button_toggled(bool down);
+ private:
+    Q_SLOT void expand_button_toggled(bool down);
 
     /*==============================================================================
         Data
     */
-  private:
-    Icon_Button *Expand_Button;
+    Icon_Button* Expand_Button;
     QIcon *Expand_Down_Icon, *Expand_Up_Icon;
-    QScrollArea *Expand_Panel;
+    QScrollArea* Expand_Panel;
 };
 
-} // namespace HiRISE
-} // namespace UA
-#endif
+}  // namespace UA::HiRISE

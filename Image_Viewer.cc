@@ -55,7 +55,6 @@ using UA::HiRISE::JP2_Exception;
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QSlider>
-
 #include <algorithm>
 using std::max;
 using std::min;
@@ -63,11 +62,10 @@ using std::min;
 #include <sstream>
 using std::ostringstream;
 #include <stdexcept>
-using std::invalid_argument;
-#include <iomanip>
 using std::endl;
+using std::invalid_argument;
 
-#if defined(DEBUG_SECTION)
+#ifdef DEBUG_SECTION
 
 #include <QDebug>
 /*******************************************************************************
@@ -115,11 +113,8 @@ using std::endl;
 
 #ifndef WIN32
 #define _DEBUG_OBJECT_ AS_STRING(DEBUG_OBJECT)
-#define OBJECT_CONDITIONAL(expression)                                                                                 \
-    if (QString(_DEBUG_OBJECT_).isEmpty() || QString(_DEBUG_OBJECT_) == objectName())                                  \
-    {                                                                                                                  \
-        expression                                                                                                     \
-    }
+#define OBJECT_CONDITIONAL(expression) \
+    if (QString(_DEBUG_OBJECT_).isEmpty() || QString(_DEBUG_OBJECT_) == objectName()) { expression }
 #else
 #define OBJECT_CONDITIONAL(expression) expression
 #endif
@@ -132,16 +127,15 @@ using std::clog;
 using std::dec;
 using std::hex;
 
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const Image_Viewer::ID = "UA::HiRISE::Image_Viewer ($Revision: 1.137 $ $Date: 2014/05/27 17:32:25 $)";
+const char* const Image_Viewer::ID =
+    "UA::HiRISE::Image_Viewer ($Revision: 1.137 $ $Date: 2014/05/27 17:32:25 $)";
 
 #ifndef DEFAULT_IMAGE_DISPLAY_WIDTH
 #define DEFAULT_IMAGE_DISPLAY_WIDTH 512
@@ -149,7 +143,8 @@ const char *const Image_Viewer::ID = "UA::HiRISE::Image_Viewer ($Revision: 1.137
 #ifndef DEFAULT_IMAGE_DISPLAY_HEIGHT
 #define DEFAULT_IMAGE_DISPLAY_HEIGHT 316
 #endif
-const QSize Image_Viewer::DEFAULT_IMAGE_DISPLAY_SIZE(DEFAULT_IMAGE_DISPLAY_WIDTH, DEFAULT_IMAGE_DISPLAY_HEIGHT);
+const QSize Image_Viewer::DEFAULT_IMAGE_DISPLAY_SIZE(DEFAULT_IMAGE_DISPLAY_WIDTH,
+                                                     DEFAULT_IMAGE_DISPLAY_HEIGHT);
 
 /*==============================================================================
     Application configuration parameters
@@ -177,7 +172,7 @@ double Image_Viewer::Scaling_Major_Increment = SCALING_MAJOR_INCREMENT;
 int Image_Viewer::Horizontal_Scrollbar_Height, Image_Viewer::Vertical_Scrollbar_Width,
     Image_Viewer::Sliding_Scale_Width;
 
-QErrorMessage *Image_Viewer::Error_Message = NULL;
+QErrorMessage* Image_Viewer::Error_Message = NULL;
 
 #ifndef DEFAULT_SCALING_IMMEDIATE
 #define DEFAULT_SCALING_IMMEDIATE true;
@@ -191,14 +186,24 @@ bool Image_Viewer::Default_Scaling_Immediate = DEFAULT_SCALING_IMMEDIATE;
 /*==============================================================================
     Constructors
 */
-Image_Viewer::Image_Viewer(QWidget *parent)
-    : QFrame(parent), Source_Name(), Image_Display(NULL), Horizontal_Scrollbar(NULL), Vertical_Scrollbar(NULL),
-      Scrollbars_Enabled(DEFAULT_SCROLLBARS_ENABLED), Menu_Position(-1, -1), Control_Mode(NO_CONTROL_MODE),
-      Mouse_Drag_Image_Position(-1, -1), Default_Cursor(NULL), Projector(NULL), Block_Image_Updates(true)
+Image_Viewer::Image_Viewer(QWidget* parent)
+    : QFrame(parent),
+      Source_Name(),
+      Image_Display(nullptr),
+      Horizontal_Scrollbar(nullptr),
+      Vertical_Scrollbar(nullptr),
+      Scrollbars_Enabled(DEFAULT_SCROLLBARS_ENABLED),
+      Menu_Position(-1, -1),
+      Control_Mode(NO_CONTROL_MODE),
+      Mouse_Drag_Image_Position(-1, -1),
+      Default_Cursor(nullptr),
+      Projector(nullptr),
+      Block_Image_Updates(true)
 {
     setObjectName("Image_Viewer");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_LAYOUT))
-    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer @ " << (void *)this << ": " << object_pathname(this) << endl;)
+    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer @ " << (void*)this << ": " << object_pathname(this)
+                            << endl;)
 #endif
 
     setFrameStyle(Panel_Frame_Style);
@@ -238,8 +243,7 @@ Image_Viewer::Image_Viewer(QWidget *parent)
     Sliding_Scale->setRange(scale_to_slider(Tiled_Image_Display::min_scale()),
                             scale_to_slider(Tiled_Image_Display::max_scale()));
     Sliding_Scale->setSingleStep(Sliding_Scale->maximum() * Scaling_Minor_Increment);
-    if (!Sliding_Scale->singleStep())
-        Sliding_Scale->setSingleStep(1); //	Minimum increment.
+    if (!Sliding_Scale->singleStep()) Sliding_Scale->setSingleStep(1);  //	Minimum increment.
     Sliding_Scale->setPageStep(Sliding_Scale->maximum() * Scaling_Major_Increment);
     Sliding_Scale->setTracking(default_scaling_immediate());
 
@@ -248,14 +252,14 @@ Image_Viewer::Image_Viewer(QWidget *parent)
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_LAYOUT | DEBUG_SCALE))
     // OBJECT_CONDITIONAL (
     qDebug() << "    Sliding_Scale range: " << slider_to_scale(Sliding_Scale->minimum()) << '/'
-             << Sliding_Scale->minimum() << " - " << slider_to_scale(Sliding_Scale->maximum()) << '/'
-             << Sliding_Scale->maximum() << "\n"
+             << Sliding_Scale->minimum() << " - " << slider_to_scale(Sliding_Scale->maximum())
+             << '/' << Sliding_Scale->maximum() << "\n"
              << "    Sliding_Scale increments: "
-             << "minor - " << Scaling_Minor_Increment << '/' << Sliding_Scale->singleStep() << ", major - "
-             << Scaling_Major_Increment << '/' << Sliding_Scale->pageStep() << "\n"
+             << "minor - " << Scaling_Minor_Increment << '/' << Sliding_Scale->singleStep()
+             << ", major - " << Scaling_Major_Increment << '/' << Sliding_Scale->pageStep() << "\n"
              << "    Sliding_Scale tracking: " << Sliding_Scale->hasTracking() << "\n"
-             << "    Sliding_Scale position: " << Sliding_Scale->sliderPosition() << " [" << Sliding_Scale->value()
-             << "]" << "\n";
+             << "    Sliding_Scale position: " << Sliding_Scale->sliderPosition() << " ["
+             << Sliding_Scale->value() << "]" << "\n";
 #endif
     Sliding_Scale_Width = (Sliding_Scale->sizeHint()).rwidth();
 
@@ -293,22 +297,24 @@ Image_Viewer::Image_Viewer(QWidget *parent)
     //		Image load connection.
     connect(Image_Display, SIGNAL(image_loaded(bool)), SLOT(loaded(bool)));
     //		Image cursor move connection.
-    connect(Image_Display, SIGNAL(image_cursor_moved(const QPoint &, const QPoint &)),
-            SLOT(cursor_moved(const QPoint &, const QPoint &)));
+    connect(Image_Display, SIGNAL(image_cursor_moved(const QPoint&, const QPoint&)),
+            SLOT(cursor_moved(const QPoint&, const QPoint&)));
     //		Image display move propagation.
-    connect(Image_Display, SIGNAL(image_moved(const QPoint &, int)), SIGNAL(image_moved(const QPoint &, int)));
+    connect(Image_Display, SIGNAL(image_moved(const QPoint&, int)),
+            SIGNAL(image_moved(const QPoint&, int)));
     //		Image display resize propagation.
-    connect(Image_Display, SIGNAL(displayed_image_region_resized(const QSize &)),
-            SIGNAL(displayed_image_region_resized(const QSize &)));
-    connect(Image_Display, SIGNAL(display_viewport_resized(const QSize &)),
-            SIGNAL(display_viewport_resized(const QSize &)));
+    connect(Image_Display, SIGNAL(displayed_image_region_resized(const QSize&)),
+            SIGNAL(displayed_image_region_resized(const QSize&)));
+    connect(Image_Display, SIGNAL(display_viewport_resized(const QSize&)),
+            SIGNAL(display_viewport_resized(const QSize&)));
     //		Image scaling propagation.
-    connect(Image_Display, SIGNAL(image_scaled(const QSizeF &, int)), SIGNAL(image_scaled(const QSizeF &, int)));
+    connect(Image_Display, SIGNAL(image_scaled(const QSizeF&, int)),
+            SIGNAL(image_scaled(const QSizeF&, int)));
     //		Image display rendering status propagation.
     connect(Image_Display, SIGNAL(rendering_status(int)), SIGNAL(rendering_status(int)));
     //		Image display status notice propagation.
-    connect(Image_Display, SIGNAL(rendering_status_notice(const QString &)),
-            SIGNAL(rendering_status_notice(const QString &)));
+    connect(Image_Display, SIGNAL(rendering_status_notice(const QString&)),
+            SIGNAL(rendering_status_notice(const QString&)));
     //		Image display status change notice propagation.
     connect(Image_Display, SIGNAL(state_change(int)), SIGNAL(state_change(int)));
 
@@ -321,101 +327,97 @@ Image_Viewer::Image_Viewer(QWidget *parent)
 Image_Viewer::~Image_Viewer()
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    OBJECT_CONDITIONAL(clog << ">-< ~Image_Viewer: @ " << (void *)this << endl;)
+    OBJECT_CONDITIONAL(clog << ">-< ~Image_Viewer: @ " << (void*)this << endl;)
 #endif
 }
 
 /*==============================================================================
     Image
 */
-bool Image_Viewer::image(const QString &source_name, const QSize &display_size)
+bool Image_Viewer::image(const QString& source_name, const QSize& display_size)
 {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::image (QString, QSize) " << object_pathname(this) << endl
+    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::image (QString, QSize) " << object_pathname(this)
+                            << endl
                             << "    source_name = \"" << source_name << '"' << endl
                             << "    display_size = " << display_size << endl;)
 #endif
     bool loaded;
-    if (display_size.isEmpty())
-        loaded = Image_Display->image(source_name, viewport_size());
-    else
-        loaded = Image_Display->image(source_name, display_size);
+    if (display_size.isEmpty()) loaded = Image_Display->image(source_name, viewport_size());
+    else loaded = Image_Display->image(source_name, display_size);
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::image (QString, QSize) " << object_pathname(this) << ": " << boolalpha
-                            << loaded << endl;)
+    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::image (QString, QSize) " << object_pathname(this)
+                            << ": " << boolalpha << loaded << endl;)
 #endif
     return loaded;
 }
 
-bool Image_Viewer::image(const QString &source_name, const QSizeF &scaling)
+bool Image_Viewer::image(const QString& source_name, const QSizeF& scaling)
 {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::image (QString, QSizeF) " << object_pathname(this) << endl
+    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::image (QString, QSizeF) " << object_pathname(this)
+                            << endl
                             << "    source_name = \"" << source_name << '"' << endl
                             << "    scaling = " << scaling << endl;)
 #endif
     bool loaded;
-    if (scaling.isEmpty())
-        loaded = image(source_name, QSize());
-    else
-        loaded = Image_Display->image(source_name, scaling);
+    if (scaling.isEmpty()) loaded = image(source_name, QSize());
+    else loaded = Image_Display->image(source_name, scaling);
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::image (QString, QSizeF) " << object_pathname(this) << ": "
-                            << boolalpha << loaded << endl;)
+    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::image (QString, QSizeF) " << object_pathname(this)
+                            << ": " << boolalpha << loaded << endl;)
 #endif
     return loaded;
 }
 
-bool Image_Viewer::image(const Shared_Image &source_image, const QSize &display_size)
+bool Image_Viewer::image(const Shared_Image& source_image, const QSize& display_size)
 {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::image (Shared_Image, QSize) " << object_pathname(this) << endl
+    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::image (Shared_Image, QSize) "
+                            << object_pathname(this) << endl
                             << "    source_" << *source_image << endl
                             << "    display_size = " << display_size << endl;)
 #endif
     bool loaded;
-    if (display_size.isEmpty())
-        loaded = Image_Display->image(source_image, viewport_size());
-    else
-        loaded = Image_Display->image(source_image, display_size);
+    if (display_size.isEmpty()) loaded = Image_Display->image(source_image, viewport_size());
+    else loaded = Image_Display->image(source_image, display_size);
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::image (Shared_Image, QSize) " << object_pathname(this) << ": "
-                            << boolalpha << loaded << endl;)
+    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::image (Shared_Image, QSize) "
+                            << object_pathname(this) << ": " << boolalpha << loaded << endl;)
 #endif
     return loaded;
 }
 
-bool Image_Viewer::image(const Shared_Image &source_image, const QSizeF &scaling)
+bool Image_Viewer::image(const Shared_Image& source_image, const QSizeF& scaling)
 {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::image (Shared_Image, QSizeF) " << object_pathname(this) << endl
+    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::image (Shared_Image, QSizeF) "
+                            << object_pathname(this) << endl
                             << "    source_" << *source_image << endl
                             << "    scaling = " << scaling << endl;)
 #endif
     bool loaded;
-    if (scaling.isEmpty())
-        loaded = image(source_image, QSize());
-    else
-        loaded = Image_Display->image(source_image, scaling);
+    if (scaling.isEmpty()) loaded = image(source_image, QSize());
+    else loaded = Image_Display->image(source_image, scaling);
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::image (Shared_Image, QSizeF) " << object_pathname(this) << ": "
-                            << boolalpha << loaded << endl;)
+    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::image (Shared_Image, QSizeF) "
+                            << object_pathname(this) << ": " << boolalpha << loaded << endl;)
 #endif
     return loaded;
 }
 
-bool Image_Viewer::image(const QImage &source_image, const QSize &display_size)
+bool Image_Viewer::image(const QImage& source_image, const QSize& display_size)
 {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(
-        LOCKED_LOGGING((clog << ">>> Image_Viewer::image (QImage, QSize) " << object_pathname(this) << endl
-                             << "    source_image @ " << (void *)&source_image << endl
-                             << "    display_size = " << display_size << endl));)
+    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << ">>> Image_Viewer::image (QImage, QSize) "
+                                            << object_pathname(this) << endl
+                                            << "    source_image @ " << (void*)&source_image << endl
+                                            << "    display_size = " << display_size << endl));)
 #endif
     //	Copy the source image.
-    const Plastic_Image *source;
-    Plastic_Image *plastic_image;
-    if ((source = dynamic_cast<const Plastic_Image *>(&source_image)))
+    const Plastic_Image* source;
+    Plastic_Image* plastic_image;
+    if ((source = dynamic_cast<const Plastic_Image*>(&source_image)))  // NOLINT
     {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
         OBJECT_CONDITIONAL(clog << "    cloning the Plastic_Image" << endl;)
@@ -434,34 +436,32 @@ bool Image_Viewer::image(const QImage &source_image, const QSize &display_size)
 #endif
 
     QSize fit_to_size(display_size);
-    if (fit_to_size.isEmpty())
-        fit_to_size = viewport_size();
+    if (fit_to_size.isEmpty()) fit_to_size = viewport_size();
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
     OBJECT_CONDITIONAL(clog << "    fit_to_size = " << fit_to_size << endl;)
 #endif
-    bool registered = image(Shared_Image(plastic_image), fit_to_size);
+    bool const registered = image(Shared_Image(plastic_image), fit_to_size);
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << "<<< Image_Viewer::image " << object_pathname(this) << ": " << boolalpha
-                                            << registered << endl));)
+    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << "<<< Image_Viewer::image " << object_pathname(this)
+                                            << ": " << boolalpha << registered << endl));)
 #endif
     return registered;
 }
 
-bool Image_Viewer::image(const QImage &source_image, const QSizeF &scaling)
+bool Image_Viewer::image(const QImage& source_image, const QSizeF& scaling)
 {
-    if (scaling.isEmpty())
-        return image(source_image, QSize());
+    if (scaling.isEmpty()) return image(source_image, QSize());
 
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(
-        LOCKED_LOGGING((clog << ">>> Image_Viewer::image (QImage, QSizeF) " << object_pathname(this) << endl
-                             << "    source_image @ " << (void *)&source_image << endl
-                             << "    scaling = " << scaling << endl));)
+    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << ">>> Image_Viewer::image (QImage, QSizeF) "
+                                            << object_pathname(this) << endl
+                                            << "    source_image @ " << (void*)&source_image << endl
+                                            << "    scaling = " << scaling << endl));)
 #endif
     //	Copy the source image.
-    const Plastic_Image *source;
-    Plastic_Image *plastic_image;
-    if ((source = dynamic_cast<const Plastic_Image *>(&source_image)))
+    const Plastic_Image* source;
+    Plastic_Image* plastic_image;
+    if ((source = dynamic_cast<const Plastic_Image*>(&source_image)))  // NOLINT
     {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
         OBJECT_CONDITIONAL(clog << "    cloning the Plastic_Image" << endl;)
@@ -479,10 +479,10 @@ bool Image_Viewer::image(const QImage &source_image, const QSizeF &scaling)
     OBJECT_CONDITIONAL(clog << "    new " << *plastic_image << endl;)
 #endif
 
-    bool registered = image(Shared_Image(plastic_image), scaling);
+    bool const registered = image(Shared_Image(plastic_image), scaling);
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << "<<< Image_Viewer::image " << object_pathname(this) << ": " << boolalpha
-                                            << registered << endl));)
+    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << "<<< Image_Viewer::image " << object_pathname(this)
+                                            << ": " << boolalpha << registered << endl));)
 #endif
     return registered;
 }
@@ -490,15 +490,14 @@ bool Image_Viewer::image(const QImage &source_image, const QSizeF &scaling)
 void Image_Viewer::loaded(bool successful)
 {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << ">>> Image_Viewer::loaded " << object_pathname(this) << ": " << boolalpha
-                                            << successful << endl));)
+    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << ">>> Image_Viewer::loaded " << object_pathname(this)
+                                            << ": " << boolalpha << successful << endl));)
 #endif
     Source_Name = Image_Display->image_name();
 
     //	Reset the image display conditions.
     QSize display_size(size());
-    if (!display_size.isValid())
-        display_size = sizeHint();
+    if (!display_size.isValid()) display_size = sizeHint();
     layout_display(display_size);
     update_sliding_scale();
     update_actions();
@@ -516,17 +515,15 @@ void Image_Viewer::loaded(bool successful)
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SIGNALS))
     else
     {
-        OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << "    Image_Viewer::loaded: emit image_loaded " << boolalpha
-                                                << successful << " blocked" << endl));)
+        OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << "    Image_Viewer::loaded: emit image_loaded "
+                                                << boolalpha << successful << " blocked" << endl));)
     }
-    OBJECT_CONDITIONAL(LOCKED_LOGGING((clog << "<<< Image_Viewer::loaded " << object_pathname(this) << endl));)
+    OBJECT_CONDITIONAL(
+        LOCKED_LOGGING((clog << "<<< Image_Viewer::loaded " << object_pathname(this) << endl));)
 #endif
 }
 
-void Image_Viewer::cancel_rendering()
-{
-    Image_Display->cancel_rendering();
-}
+void Image_Viewer::cancel_rendering() { Image_Display->cancel_rendering(); }
 
 /*==============================================================================
     Layout
@@ -538,10 +535,9 @@ void Image_Viewer::layout_display(QSize display_size)
                             << "     display_size = " << display_size << endl;)
 #endif
     QSize scaled_image_size(Image_Display->scaled_image_size());
-    if (display_size.isEmpty())
-        display_size = scaled_image_size;
-    QSize widget_size(display_size);
-    int frame_margin = frameWidth();
+    if (display_size.isEmpty()) display_size = scaled_image_size;
+    QSize const widget_size(display_size);
+    int const frame_margin = frameWidth();
     //	Exclude the frame margins from the image display size.
     display_size.rwidth() -= (frame_margin << 1);
     display_size.rheight() -= (frame_margin << 1);
@@ -552,10 +548,12 @@ void Image_Viewer::layout_display(QSize display_size)
                             << "        image display size = " << display_size << endl
                             << "    displayed_image_region = " << displayed_image_region() << endl
                             << "         scaled_image_size = " << scaled_image_size << endl
-                            << "        scrollbars enabled = " << boolalpha << Scrollbars_Enabled << endl;)
+                            << "        scrollbars enabled = " << boolalpha << Scrollbars_Enabled
+                            << endl;)
 #endif
 
-    bool vertical_scrollbar_visible = false, horizontal_scrollbar_visible = false, sliding_scale_visible = false;
+    bool vertical_scrollbar_visible = false, horizontal_scrollbar_visible = false,
+         sliding_scale_visible = false;
     int sliding_scale_x = 0, sliding_scale_height = 0;
     if (Scrollbars_Enabled && !scaled_image_size.isEmpty())
     {
@@ -565,7 +563,8 @@ void Image_Viewer::layout_display(QSize display_size)
         sliding_scale_height = display_size.rheight() - Horizontal_Scrollbar_Height;
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
         OBJECT_CONDITIONAL(clog << "    Sliding_Scale visible" << endl
-                                << "      image display width reduced by " << Sliding_Scale_Width << endl;)
+                                << "      image display width reduced by " << Sliding_Scale_Width
+                                << endl;)
 #endif
 
         if (scaled_image_size.rheight() > display_size.rheight())
@@ -574,7 +573,8 @@ void Image_Viewer::layout_display(QSize display_size)
             display_size.rwidth() -= Vertical_Scrollbar_Width;
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
             OBJECT_CONDITIONAL(clog << "    Vertical_Scrollbar visible" << endl
-                                    << "      image display width reduced by " << Vertical_Scrollbar_Width << endl;)
+                                    << "      image display width reduced by "
+                                    << Vertical_Scrollbar_Width << endl;)
 #endif
         }
         if (scaled_image_size.rwidth() > display_size.rwidth())
@@ -583,7 +583,8 @@ void Image_Viewer::layout_display(QSize display_size)
             display_size.rheight() -= Horizontal_Scrollbar_Height;
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
             OBJECT_CONDITIONAL(clog << "    Horizontal_Scrollbar visible" << endl
-                                    << "      image display height reduced by " << Horizontal_Scrollbar_Height << endl;)
+                                    << "      image display height reduced by "
+                                    << Horizontal_Scrollbar_Height << endl;)
 #endif
             if (!vertical_scrollbar_visible && scaled_image_size.rheight() > display_size.rheight())
             {
@@ -591,38 +592,43 @@ void Image_Viewer::layout_display(QSize display_size)
                 display_size.rwidth() -= Vertical_Scrollbar_Width;
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
                 OBJECT_CONDITIONAL(clog << "    Vertical_Scrollbar visible" << endl
-                                        << "      image display width reduced by " << Vertical_Scrollbar_Width << endl;)
+                                        << "      image display width reduced by "
+                                        << Vertical_Scrollbar_Width << endl;)
 #endif
             }
         }
     }
 
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-    OBJECT_CONDITIONAL(clog << "    Image_Display geometry, request = " << frame_margin << "x, " << frame_margin
-                            << "y, " << display_size.rwidth() << "w, " << display_size.rheight() << 'h' << endl;)
+    OBJECT_CONDITIONAL(clog << "    Image_Display geometry, request = " << frame_margin << "x, "
+                            << frame_margin << "y, " << display_size.rwidth() << "w, "
+                            << display_size.rheight() << 'h' << endl;)
 #endif
-    Image_Display->setGeometry(frame_margin, frame_margin, display_size.rwidth(), display_size.rheight());
+    Image_Display->setGeometry(frame_margin, frame_margin, display_size.rwidth(),
+                               display_size.rheight());
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-    OBJECT_CONDITIONAL(clog << "    Image_Display geometry,  actual = " << Image_Display->geometry() << endl;)
+    OBJECT_CONDITIONAL(clog << "    Image_Display geometry,  actual = " << Image_Display->geometry()
+                            << endl;)
 #endif
 
     Vertical_Scrollbar->setVisible(vertical_scrollbar_visible);
     if (vertical_scrollbar_visible)
     {
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-        OBJECT_CONDITIONAL(clog << "      Vertical_Scrollbar geometry = " << (frame_margin + display_size.rwidth())
-                                << "x, " << frame_margin << "y, " << Vertical_Scrollbar_Width << "w, "
+        OBJECT_CONDITIONAL(clog << "      Vertical_Scrollbar geometry = "
+                                << (frame_margin + display_size.rwidth()) << "x, " << frame_margin
+                                << "y, " << Vertical_Scrollbar_Width << "w, "
                                 << display_size.rheight() << 'h' << endl;)
 #endif
-        Vertical_Scrollbar->setGeometry(frame_margin + display_size.rwidth(), frame_margin, Vertical_Scrollbar_Width,
-                                        display_size.rheight());
+        Vertical_Scrollbar->setGeometry(frame_margin + display_size.rwidth(), frame_margin,
+                                        Vertical_Scrollbar_Width, display_size.rheight());
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-        OBJECT_CONDITIONAL(clog << "                                    " << Vertical_Scrollbar->geometry() << endl;)
+        OBJECT_CONDITIONAL(clog << "                                    "
+                                << Vertical_Scrollbar->geometry() << endl;)
 #endif
     }
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-    else
-        OBJECT_CONDITIONAL(clog << "    Vertical_Scrollbar not visible" << endl;)
+    else OBJECT_CONDITIONAL(clog << "    Vertical_Scrollbar not visible" << endl;)
 #endif
 
     Horizontal_Scrollbar->setVisible(horizontal_scrollbar_visible);
@@ -630,18 +636,19 @@ void Image_Viewer::layout_display(QSize display_size)
     {
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
         OBJECT_CONDITIONAL(clog << "    Horizontal_Scrollbar geometry = " << frame_margin << "x, "
-                                << (frame_margin + display_size.rheight()) << "y, " << display_size.rwidth() << "w, "
-                                << Horizontal_Scrollbar_Height << 'h' << endl;)
+                                << (frame_margin + display_size.rheight()) << "y, "
+                                << display_size.rwidth() << "w, " << Horizontal_Scrollbar_Height
+                                << 'h' << endl;)
 #endif
-        Horizontal_Scrollbar->setGeometry(frame_margin, frame_margin + display_size.rheight(), display_size.rwidth(),
-                                          Horizontal_Scrollbar_Height);
+        Horizontal_Scrollbar->setGeometry(frame_margin, frame_margin + display_size.rheight(),
+                                          display_size.rwidth(), Horizontal_Scrollbar_Height);
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-        OBJECT_CONDITIONAL(clog << "                                    " << Horizontal_Scrollbar->geometry() << endl;)
+        OBJECT_CONDITIONAL(clog << "                                    "
+                                << Horizontal_Scrollbar->geometry() << endl;)
 #endif
     }
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-    else
-        OBJECT_CONDITIONAL(clog << "    Horizontal_Scrollbar not visible" << endl;)
+    else OBJECT_CONDITIONAL(clog << "    Horizontal_Scrollbar not visible" << endl;)
 #endif
 
     Sliding_Scale->setVisible(sliding_scale_visible);
@@ -649,37 +656,40 @@ void Image_Viewer::layout_display(QSize display_size)
     if (sliding_scale_visible)
     {
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-        OBJECT_CONDITIONAL(clog << "           Sliding_Scale geometry = " << sliding_scale_x << "x, " << frame_margin
-                                << "y, " << Sliding_Scale_Width << "w, " << sliding_scale_height << 'h' << endl;)
+        OBJECT_CONDITIONAL(clog << "           Sliding_Scale geometry = " << sliding_scale_x
+                                << "x, " << frame_margin << "y, " << Sliding_Scale_Width << "w, "
+                                << sliding_scale_height << 'h' << endl;)
 #endif
-        Sliding_Scale->setGeometry(sliding_scale_x, frame_margin, Sliding_Scale_Width, sliding_scale_height);
+        Sliding_Scale->setGeometry(sliding_scale_x, frame_margin, Sliding_Scale_Width,
+                                   sliding_scale_height);
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-        OBJECT_CONDITIONAL(clog << "                                    " << Sliding_Scale->geometry() << endl;)
+        OBJECT_CONDITIONAL(clog << "                                    "
+                                << Sliding_Scale->geometry() << endl;)
 #endif
 
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-        OBJECT_CONDITIONAL(clog << "     Sliding_Scale_Value location = " << sliding_scale_x << "x, "
-                                << (frame_margin + sliding_scale_height) << 'y' << endl;)
+        OBJECT_CONDITIONAL(clog << "     Sliding_Scale_Value location = " << sliding_scale_x
+                                << "x, " << (frame_margin + sliding_scale_height) << 'y' << endl;)
 #endif
         Sliding_Scale_Value->move(sliding_scale_x, frame_margin + sliding_scale_height);
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-        OBJECT_CONDITIONAL(clog << "                                    " << Sliding_Scale_Value->geometry() << endl;)
+        OBJECT_CONDITIONAL(clog << "                                    "
+                                << Sliding_Scale_Value->geometry() << endl;)
 #endif
     }
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
-    else
-        OBJECT_CONDITIONAL(clog << "    Sliding_Scale not visible" << endl;)
+    else OBJECT_CONDITIONAL(clog << "    Sliding_Scale not visible" << endl;)
 #endif
 
     adjust_scrollbars_range();
 
     if (vertical_scrollbar_visible && horizontal_scrollbar_visible)
     {
-        LRC_Widget->move(frame_margin + display_size.rwidth(), frame_margin + display_size.rheight());
+        LRC_Widget->move(frame_margin + display_size.rwidth(),
+                         frame_margin + display_size.rheight());
         LRC_Widget->setVisible(true);
     }
-    else
-        LRC_Widget->setVisible(false);
+    else LRC_Widget->setVisible(false);
 
     if (widget_size != size())
     {
@@ -690,7 +700,8 @@ void Image_Viewer::layout_display(QSize display_size)
     }
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_EVENTS))
     OBJECT_CONDITIONAL(clog << "    displayed_image_region = " << displayed_image_region() << endl
-                            << "<<< Image_Viewer::layout_display " << object_pathname(this) << endl;)
+                            << "<<< Image_Viewer::layout_display " << object_pathname(this)
+                            << endl;)
 #endif
 }
 
@@ -698,17 +709,16 @@ QSize Image_Viewer::sizeHint() const
 {
 #if ((DEBUG_SECTION) & DEBUG_SIZE_HINT)
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::sizeHint" << endl
-                            << "    Image_Display sizeHint = " << Image_Display->sizeHint() << endl;)
+                            << "    Image_Display sizeHint = " << Image_Display->sizeHint()
+                            << endl;)
 #endif
     QSize display_size(Image_Display->sizeHint());
-    if (display_size.isEmpty())
-        display_size = DEFAULT_IMAGE_DISPLAY_SIZE;
+    if (display_size.isEmpty()) display_size = DEFAULT_IMAGE_DISPLAY_SIZE;
     display_size.rwidth() += (frameWidth() << 1);
     display_size.rheight() += (frameWidth() << 1);
     if (Vertical_Scrollbar && Vertical_Scrollbar->isVisible())
         display_size.rwidth() += Vertical_Scrollbar_Width;
-    if (Sliding_Scale && Sliding_Scale->isVisible())
-        display_size.rwidth() += Sliding_Scale_Width;
+    if (Sliding_Scale && Sliding_Scale->isVisible()) display_size.rwidth() += Sliding_Scale_Width;
     if (Horizontal_Scrollbar && Horizontal_Scrollbar->isVisible())
         display_size.rheight() += Horizontal_Scrollbar_Height;
 #if ((DEBUG_SECTION) & DEBUG_SIZE_HINT)
@@ -726,8 +736,7 @@ QSize Image_Viewer::viewport_size() const
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_LOAD_IMAGE))
     OBJECT_CONDITIONAL(clog << "    Image_Display size = " << preferred_size << endl;)
 #endif
-    if (preferred_size.isEmpty())
-        preferred_size = DEFAULT_IMAGE_DISPLAY_SIZE;
+    if (preferred_size.isEmpty()) preferred_size = DEFAULT_IMAGE_DISPLAY_SIZE;
     else
     {
 //	Use the display size sans scrollbars.
@@ -752,34 +761,26 @@ QSize Image_Viewer::viewport_size() const
 QSize Image_Viewer::image_display_size() const
 {
 #if ((DEBUG_SECTION) & DEBUG_LAYOUT)
-    OBJECT_CONDITIONAL(clog << ">-< Image_Viewer::image_display_size: " << Image_Display->size() << endl;)
+    OBJECT_CONDITIONAL(clog << ">-< Image_Viewer::image_display_size: " << Image_Display->size()
+                            << endl;)
 #endif
     return Image_Display->size();
 }
 
 void Image_Viewer::max_source_image_area(int area)
 {
-    if (area < 1)
-        area = 1;
+    if (area < 1) area = 1;
     Image_Display->max_source_image_area((unsigned long)area << 20);
 }
 
 void Image_Viewer::rendering_increment_lines(int rendering_increment)
-{
-    Image_Display->rendering_increment_lines(rendering_increment);
-}
+{ Image_Display->rendering_increment_lines(rendering_increment); }
 
-void Image_Viewer::background_color(QRgb color)
-{
-    Image_Display->background_color(color);
-}
+void Image_Viewer::background_color(QRgb color) { Image_Display->background_color(color); }
 
-void Image_Viewer::tile_size(int size)
-{
-    tile_size(QSize(size, size));
-}
+void Image_Viewer::tile_size(int size) { tile_size(QSize(size, size)); }
 
-void Image_Viewer::tile_size(const QSize &size)
+void Image_Viewer::tile_size(const QSize& size)
 {
     QSize new_size(size);
     if (new_size.rwidth() < Tiled_Image_Display::minimum_tile_dimension())
@@ -795,57 +796,46 @@ void Image_Viewer::tile_size(const QSize &size)
 */
 void Image_Viewer::JPIP_request_timeout(int seconds)
 {
-    if (seconds < 0)
-        seconds = 0;
+    if (seconds < 0) seconds = 0;
     JP2_Reader::default_JPIP_request_timeout((unsigned int)seconds);
 }
 
-int Image_Viewer::JPIP_request_timeout()
-{
-    return JP2_Reader::default_JPIP_request_timeout();
-}
+int Image_Viewer::JPIP_request_timeout() { return JP2_Reader::default_JPIP_request_timeout(); }
 
-void Image_Viewer::JPIP_proxy(const QString &proxy)
-{
-    JP2_Reader::default_jpip_proxy(proxy.toStdString());
-}
+void Image_Viewer::JPIP_proxy(const QString& proxy)
+{ JP2_Reader::default_jpip_proxy(proxy.toStdString()); }
 
 QString Image_Viewer::JPIP_proxy()
-{
-    return QString::fromStdString(JP2_Reader::default_jpip_proxy());
-}
+{ return QString::fromStdString(JP2_Reader::default_jpip_proxy()); }
 
-void Image_Viewer::JPIP_cache_directory(const QString &pathname)
-{
-    JP2_Reader::default_jpip_cache_directory(pathname.toStdString());
-}
+void Image_Viewer::JPIP_cache_directory(const QString& pathname)
+{ JP2_Reader::default_jpip_cache_directory(pathname.toStdString()); }
 
 QString Image_Viewer::JPIP_cache_directory()
-{
-    return QString::fromStdString(JP2_Reader::default_jpip_cache_directory());
-}
+{ return QString::fromStdString(JP2_Reader::default_jpip_cache_directory()); }
 
 /*------------------------------------------------------------------------------
     Scrolling
 */
-bool Image_Viewer::move_image(const QPoint &origin, int band)
+bool Image_Viewer::move_image(const QPoint& origin, int band)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE))
-    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::move_image: " << origin << ", " << band << 'b' << endl;)
+    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::move_image: " << origin << ", " << band << 'b'
+                            << endl;)
 #endif
     bool changed = Image_Display->move_image(origin, band);
-    if (changed)
-        layout_display(size());
+    if (changed) layout_display(size());
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE))
     OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::move_image: " << boolalpha << changed << endl;)
 #endif
     return changed;
 }
 
-bool Image_Viewer::shift_image(const QSize &offsets, int band)
+bool Image_Viewer::shift_image(const QSize& offsets, int band)
 {
 #if ((DEBUG_SECTION) & DEBUG_MOVE)
-    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::shift_image: " << offsets << ", " << band << 'b' << endl;)
+    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::shift_image: " << offsets << ", " << band << 'b'
+                            << endl;)
 #endif
     bool moved = false;
     if (!offsets.isNull())
@@ -867,10 +857,11 @@ bool Image_Viewer::shift_image(const QSize &offsets, int band)
     return moved;
 }
 
-bool Image_Viewer::shift_display(const QSize &offsets, int band)
+bool Image_Viewer::shift_display(const QSize& offsets, int band)
 {
 #if ((DEBUG_SECTION) & DEBUG_MOVE)
-    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::shift_display: " << offsets << ", " << band << 'b' << endl;)
+    OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::shift_display: " << offsets << ", " << band << 'b'
+                            << endl;)
 #endif
     bool moved = false;
     if (!offsets.isNull())
@@ -879,17 +870,13 @@ bool Image_Viewer::shift_display(const QSize &offsets, int band)
 #if ((DEBUG_SECTION) & DEBUG_MOVE)
         OBJECT_CONDITIONAL(clog << "       image_scaling = " << scaled_offsets << endl;)
 #endif
-        if (scaled_offsets.rwidth() >= 1.0)
-            scaled_offsets.rwidth() *= offsets.width();
-        else
-            scaled_offsets.rwidth() = offsets.width() / scaled_offsets.rwidth();
-        if (scaled_offsets.rheight() >= 1.0)
-            scaled_offsets.rheight() *= offsets.height();
-        else
-            scaled_offsets.rheight() = offsets.height() / scaled_offsets.rheight();
+        if (scaled_offsets.rwidth() >= 1.0) scaled_offsets.rwidth() *= offsets.width();
+        else scaled_offsets.rwidth() = offsets.width() / scaled_offsets.rwidth();
+        if (scaled_offsets.rheight() >= 1.0) scaled_offsets.rheight() *= offsets.height();
+        else scaled_offsets.rheight() = offsets.height() / scaled_offsets.rheight();
 #if ((DEBUG_SECTION) & DEBUG_MOVE)
-        OBJECT_CONDITIONAL(clog << "      scaled offsets = " << scaled_offsets << " (" << round_up(scaled_offsets)
-                                << ')' << endl;)
+        OBJECT_CONDITIONAL(clog << "      scaled offsets = " << scaled_offsets << " ("
+                                << round_up(scaled_offsets) << ')' << endl;)
 #endif
         moved = shift_image(round_up(scaled_offsets), band);
     }
@@ -901,17 +888,17 @@ bool Image_Viewer::shift_display(const QSize &offsets, int band)
 
 void Image_Viewer::adjust_scrollbars_range()
 {
-    if (!Scrollbars_Enabled)
-        return;
+    if (!Scrollbars_Enabled) return;
 
 #if ((DEBUG_SECTION) & (DEBUG_SCROLLBARS | DEBUG_LAYOUT))
-    OBJECT_CONDITIONAL(clog << ">>> adjust_scrollbars_range" << endl
-                            << "      Vertical_Scrollbar values: " << Vertical_Scrollbar->value() << " of range "
-                            << Vertical_Scrollbar->minimum() << " - " << Vertical_Scrollbar->maximum() << ", pageStep "
-                            << Vertical_Scrollbar->pageStep() << endl
-                            << "    Horizontal_Scrollbar values: " << Horizontal_Scrollbar->value() << " of range "
-                            << Horizontal_Scrollbar->minimum() << " - " << Horizontal_Scrollbar->maximum()
-                            << ", pageStep " << Horizontal_Scrollbar->pageStep() << endl;)
+    OBJECT_CONDITIONAL(
+        clog << ">>> adjust_scrollbars_range" << endl
+             << "      Vertical_Scrollbar values: " << Vertical_Scrollbar->value() << " of range "
+             << Vertical_Scrollbar->minimum() << " - " << Vertical_Scrollbar->maximum()
+             << ", pageStep " << Vertical_Scrollbar->pageStep() << endl
+             << "    Horizontal_Scrollbar values: " << Horizontal_Scrollbar->value() << " of range "
+             << Horizontal_Scrollbar->minimum() << " - " << Horizontal_Scrollbar->maximum()
+             << ", pageStep " << Horizontal_Scrollbar->pageStep() << endl;)
 #endif
     /*	The scrollbar page step (thumb) size is logically equivalent to
         the size of the display scaled to image space.
@@ -927,7 +914,8 @@ void Image_Viewer::adjust_scrollbars_range()
     display_size.rheight() = display_size.rheight() / scaling.rheight();
 //	static_cast<int>(ceil (display_size.rheight () / scaling.rheight ()));
 #if ((DEBUG_SECTION) & (DEBUG_SCROLLBARS | DEBUG_LAYOUT))
-    OBJECT_CONDITIONAL(clog << "    scaled display size = " << display_size << " (new pageStep)" << endl;)
+    OBJECT_CONDITIONAL(clog << "    scaled display size = " << display_size << " (new pageStep)"
+                            << endl;)
 #endif
     Horizontal_Scrollbar->setPageStep(display_size.rwidth());
     Vertical_Scrollbar->setPageStep(display_size.rheight());
@@ -942,11 +930,9 @@ void Image_Viewer::adjust_scrollbars_range()
     OBJECT_CONDITIONAL(clog << "                image_size = " << size_of_image << endl;)
 #endif
     size_of_image.rwidth() -= display_size.rwidth();
-    if (size_of_image.rwidth() < 0)
-        size_of_image.rwidth() = 0;
+    if (size_of_image.rwidth() < 0) size_of_image.rwidth() = 0;
     size_of_image.rheight() -= display_size.rheight();
-    if (size_of_image.rheight() < 0)
-        size_of_image.rheight() = 0;
+    if (size_of_image.rheight() < 0) size_of_image.rheight() = 0;
     Horizontal_Scrollbar->setMaximum(size_of_image.rwidth());
     Vertical_Scrollbar->setMaximum(size_of_image.rheight());
 
@@ -957,20 +943,19 @@ void Image_Viewer::adjust_scrollbars_range()
 #if ((DEBUG_SECTION) & (DEBUG_SCROLLBARS | DEBUG_LAYOUT))
     OBJECT_CONDITIONAL(clog << "    displayed_image_origin = " << origin << endl;)
 #endif
-    if (Horizontal_Scrollbar->value() != origin.rx())
-        Horizontal_Scrollbar->setValue(origin.rx());
-    if (Vertical_Scrollbar->value() != origin.ry())
-        Vertical_Scrollbar->setValue(origin.ry());
+    if (Horizontal_Scrollbar->value() != origin.rx()) Horizontal_Scrollbar->setValue(origin.rx());
+    if (Vertical_Scrollbar->value() != origin.ry()) Vertical_Scrollbar->setValue(origin.ry());
 
 #if ((DEBUG_SECTION) & (DEBUG_SCROLLBARS | DEBUG_LAYOUT))
-    OBJECT_CONDITIONAL(clog << "      Vertical_Scrollbar values: " << Vertical_Scrollbar->value() << " of range "
-                            << Vertical_Scrollbar->minimum() << " - " << Vertical_Scrollbar->maximum() << ", pageStep "
-                            << Vertical_Scrollbar->pageStep() << endl
-                            << "    Horizontal_Scrollbar values: " << Horizontal_Scrollbar->value() << " of range "
-                            << Horizontal_Scrollbar->minimum() << " - " << Horizontal_Scrollbar->maximum()
-                            << ", pageStep " << Horizontal_Scrollbar->pageStep() << endl
-                            << "    displayed_image_origin = " << displayed_image_origin() << endl
-                            << "<<< adjust_scrollbars_range" << endl;)
+    OBJECT_CONDITIONAL(
+        clog << "      Vertical_Scrollbar values: " << Vertical_Scrollbar->value() << " of range "
+             << Vertical_Scrollbar->minimum() << " - " << Vertical_Scrollbar->maximum()
+             << ", pageStep " << Vertical_Scrollbar->pageStep() << endl
+             << "    Horizontal_Scrollbar values: " << Horizontal_Scrollbar->value() << " of range "
+             << Horizontal_Scrollbar->minimum() << " - " << Horizontal_Scrollbar->maximum()
+             << ", pageStep " << Horizontal_Scrollbar->pageStep() << endl
+             << "    displayed_image_origin = " << displayed_image_origin() << endl
+             << "<<< adjust_scrollbars_range" << endl;)
 #endif
 }
 
@@ -984,15 +969,17 @@ void Image_Viewer::scrollbar_value_changed()
         QPoint origin(round_down(displayed_image_origin()));
 #if ((DEBUG_SECTION) & (DEBUG_SCROLLBARS | DEBUG_LAYOUT | DEBUG_MOVE))
         OBJECT_CONDITIONAL(clog << "    displayed_image_origin = " << origin << endl
-                                << "          scrollbar values = " << Horizontal_Scrollbar->value() << "x, "
-                                << Vertical_Scrollbar->value() << 'y' << endl;)
+                                << "          scrollbar values = " << Horizontal_Scrollbar->value()
+                                << "x, " << Vertical_Scrollbar->value() << 'y' << endl;)
 #endif
-        if (origin.rx() != Horizontal_Scrollbar->value() || origin.ry() != Vertical_Scrollbar->value())
+        if (origin.rx() != Horizontal_Scrollbar->value() ||
+            origin.ry() != Vertical_Scrollbar->value())
         {
 #if ((DEBUG_SECTION) & (DEBUG_SCROLLBARS | DEBUG_LAYOUT | DEBUG_MOVE))
             OBJECT_CONDITIONAL(clog << "    move_image to scrollbar values ..." << endl;)
 #endif
-            Image_Display->move_image(QPoint(Horizontal_Scrollbar->value(), Vertical_Scrollbar->value()));
+            Image_Display->move_image(
+                QPoint(Horizontal_Scrollbar->value(), Vertical_Scrollbar->value()));
         }
 #if ((DEBUG_SECTION) & (DEBUG_SCROLLBARS | DEBUG_LAYOUT | DEBUG_MOVE))
         OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::scrollbar_value_changed" << endl;)
@@ -1013,7 +1000,7 @@ void Image_Viewer::scrollbars(bool enabled)
 /*------------------------------------------------------------------------------
     Scaling
 */
-bool Image_Viewer::scale_image(const QSizeF &scaling, const QPoint &center, int band)
+bool Image_Viewer::scale_image(const QSizeF& scaling, const QPoint& center, int band)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_SLOTS))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::scale_image: " << scaling << endl
@@ -1036,8 +1023,7 @@ bool Image_Viewer::scale_image(const QSizeF &scaling, const QPoint &center, int 
         double scale = qMax(scaling.width(), scaling.height());
         sliding_scale_value(scale);
         int slider_value = scale_to_slider(scale);
-        if (Sliding_Scale->value() != slider_value)
-            Sliding_Scale->setValue(slider_value);
+        if (Sliding_Scale->value() != slider_value) Sliding_Scale->setValue(slider_value);
 
         update_actions();
         Block_Image_Updates = false;
@@ -1048,7 +1034,7 @@ bool Image_Viewer::scale_image(const QSizeF &scaling, const QPoint &center, int 
     return scaled;
 }
 
-bool Image_Viewer::scale_by(const QSizeF &scaling_factors)
+bool Image_Viewer::scale_by(const QSizeF& scaling_factors)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_SLOTS))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::scale_by: " << scaling_factors << endl;)
@@ -1092,8 +1078,8 @@ bool Image_Viewer::scale_by(const QSizeF &scaling_factors)
     }
     QPointF image_position(Image_Display->map_display_to_image(display_position));
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_SLOTS))
-    OBJECT_CONDITIONAL(clog << "      image center position = " << round_down(image_position) << " (" << image_position
-                            << ')' << endl;)
+    OBJECT_CONDITIONAL(clog << "      image center position = " << round_down(image_position)
+                            << " (" << image_position << ')' << endl;)
 #endif
     bool scaled = scale_image(scaling, round_down(image_position));
 
@@ -1103,7 +1089,8 @@ bool Image_Viewer::scale_by(const QSizeF &scaling_factors)
         display_position = Image_Display->mapFromGlobal(QCursor::pos());
         QPoint position(Image_Display->map_image_to_display(image_position));
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_SLOTS))
-        OBJECT_CONDITIONAL(clog << "    current cursor display position = " << display_position << endl
+        OBJECT_CONDITIONAL(clog << "    current cursor display position = " << display_position
+                                << endl
                                 << "      image center display position = " << position << endl;)
 #endif
         if (display_position != position)
@@ -1138,7 +1125,8 @@ bool Image_Viewer::scale_by(const QSizeF &scaling_factors)
             }
 
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_SLOTS))
-            OBJECT_CONDITIONAL(clog << "                     move cursor to = " << position << endl;)
+            OBJECT_CONDITIONAL(clog << "                     move cursor to = " << position
+                                    << endl;)
 #endif
             QCursor::setPos(Image_Display->mapToGlobal(position));
             cursor_moved(position, round_down(image_position));
@@ -1248,8 +1236,8 @@ bool Image_Viewer::fit_image_to_window()
 #endif
     if (!display_viewport.isEmpty())
     {
-        double scale =
-            qMin((double)display_viewport.width() / image_width(), (double)display_viewport.height() / image_height());
+        double scale = qMin((double)display_viewport.width() / image_width(),
+                            (double)display_viewport.height() / image_height());
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
         OBJECT_CONDITIONAL(clog << "               image_size = " << image_size() << endl
                                 << "                    scale = " << scale << endl;)
@@ -1257,14 +1245,16 @@ bool Image_Viewer::fit_image_to_window()
         if ((scaled = scale_image(QSizeF(scale, scale), QPoint(0, 0))))
         {
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
-            OBJECT_CONDITIONAL(clog << "        scaled image size = " << scaled_image_size() << endl;)
+            OBJECT_CONDITIONAL(clog << "        scaled image size = " << scaled_image_size()
+                                    << endl;)
 #endif
             layout_display(size());
             update_actions();
         }
     }
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
-    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::fit_image_to_window: " << boolalpha << scaled << endl;)
+    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::fit_image_to_window: " << boolalpha << scaled
+                            << endl;)
 #endif
     return scaled;
 }
@@ -1286,13 +1276,15 @@ bool Image_Viewer::fit_to_width()
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
         OBJECT_CONDITIONAL(clog << "                    scale = " << scale << endl;)
 #endif
-        if (Vertical_Scrollbar && (int)(scale * size_of_image.rheight()) > size_of_display.rheight())
+        if (Vertical_Scrollbar &&
+            (int)(scale * size_of_image.rheight()) > size_of_display.rheight())
         {
             //	Tall image; the vertical scrollbar will be displayed.
             size_of_display.rwidth() -= Vertical_Scrollbar_Width;
             scale = (double)size_of_display.width() / size_of_image.rwidth();
         }
-        while (size_of_display.rwidth() > 1 && (int)(scale * size_of_image.rwidth()) > size_of_display.rwidth())
+        while (size_of_display.rwidth() > 1 &&
+               (int)(scale * size_of_image.rwidth()) > size_of_display.rwidth())
         {
             --size_of_display.rwidth();
             scale = (double)size_of_display.rwidth() / size_of_image.rwidth();
@@ -1304,14 +1296,16 @@ bool Image_Viewer::fit_to_width()
         if ((scaled = scale_image(QSizeF(scale, scale), QPoint(0, 0))))
         {
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
-            OBJECT_CONDITIONAL(clog << "        scaled image size = " << scaled_image_size() << endl;)
+            OBJECT_CONDITIONAL(clog << "        scaled image size = " << scaled_image_size()
+                                    << endl;)
 #endif
             layout_display(size());
             update_actions();
         }
     }
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
-    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::fit_image_width_to_window: " << boolalpha << scaled << endl;)
+    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::fit_image_width_to_window: " << boolalpha
+                            << scaled << endl;)
 #endif
     return scaled;
 }
@@ -1333,13 +1327,15 @@ bool Image_Viewer::fit_to_height()
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
         OBJECT_CONDITIONAL(clog << "                    scale = " << scale << endl;)
 #endif
-        if (Horizontal_Scrollbar && (int)(scale * size_of_image.rwidth()) > size_of_display.rwidth())
+        if (Horizontal_Scrollbar &&
+            (int)(scale * size_of_image.rwidth()) > size_of_display.rwidth())
         {
             //	Tall image; the horizontal scrollbar will be displayed.
             size_of_display.rheight() -= Horizontal_Scrollbar_Height;
             scale = (double)size_of_display.rheight() / size_of_image.rheight();
         }
-        while (size_of_display.rheight() > 1 && (int)(scale * size_of_image.rheight()) > size_of_display.rheight())
+        while (size_of_display.rheight() > 1 &&
+               (int)(scale * size_of_image.rheight()) > size_of_display.rheight())
         {
             --size_of_display.rheight();
             scale = (double)size_of_display.rheight() / size_of_image.rheight();
@@ -1351,43 +1347,43 @@ bool Image_Viewer::fit_to_height()
         if ((scaled = scale_image(QSizeF(scale, scale), QPoint(0, 0))))
         {
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
-            OBJECT_CONDITIONAL(clog << "        scaled image size = " << scaled_image_size() << endl;)
+            OBJECT_CONDITIONAL(clog << "        scaled image size = " << scaled_image_size()
+                                    << endl;)
 #endif
             layout_display(size());
             update_actions();
         }
     }
 #if ((DEBUG_SECTION) & (DEBUG_SCALE | DEBUG_LAYOUT | DEBUG_SLOTS))
-    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::fit_image_height_to_window: " << boolalpha << scaled << endl;)
+    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::fit_image_height_to_window: " << boolalpha
+                            << scaled << endl;)
 #endif
     return scaled;
 }
 
 bool Image_Viewer::copy_coordinates()
 {
-    if (Image_Display == NULL)
-    {
-        return false;
-    }
+    if (Image_Display == NULL) { return false; }
 
-    QClipboard *cb = QApplication::clipboard();
+    QClipboard* cb = QApplication::clipboard();
 
     const QPoint coord = Image_Display->Get_Saved_Coordinate();
 
     if (Projector && !Projector->is_identity())
-    { // this check will ensure that there is a latitude/longitude coordinate, if not then only x,y can be used.
-        char str[90]; // string is going to take up at least ~53 characters
+    {  // this check will ensure that there is a latitude/longitude coordinate, if not then only x,y
+       // can be used.
+        char str[90];  // string is going to take up at least ~53 characters
         Coordinate coordinate_XY(coord.x(), coord.y());
         Coordinate coordinate_degree = Projector->to_world(coordinate_XY);
         if (!Times_Copied)
         {
-            sprintf(str, "x,y,longitude,latitude\n%.0f,%.0f,%.11f,%.11f", coordinate_XY.X, coordinate_XY.Y,
-                    coordinate_degree.X, coordinate_degree.Y);
+            sprintf(str, "x,y,longitude,latitude\n%.0f,%.0f,%.11f,%.11f", coordinate_XY.X,
+                    coordinate_XY.Y, coordinate_degree.X, coordinate_degree.Y);
         }
         else
         {
-            sprintf(str, "%.0f,%.0f,%.11f,%.11f", coordinate_XY.X, coordinate_XY.Y, coordinate_degree.X,
-                    coordinate_degree.Y);
+            sprintf(str, "%.0f,%.0f,%.11f,%.11f", coordinate_XY.X, coordinate_XY.Y,
+                    coordinate_degree.X, coordinate_degree.Y);
         }
 
         cb->setText(str, QClipboard::Clipboard);
@@ -1395,12 +1391,10 @@ bool Image_Viewer::copy_coordinates()
     }
     else
     {
-        char str[30]; // string is going to take up at least ~8 characters
+        char str[30];  // string is going to take up at least ~8 characters
 
-        if (!Times_Copied)
-            sprintf(str, "x\t%d,y\t%d", coord.x(), coord.y());
-        else
-            sprintf(str, "%d,%d", coord.x(), coord.y());
+        if (!Times_Copied) sprintf(str, "x\t%d,y\t%d", coord.x(), coord.y());
+        else sprintf(str, "%d,%d", coord.x(), coord.y());
         cb->setText(str, QClipboard::Clipboard);
         ++Times_Copied;
     }
@@ -1420,8 +1414,8 @@ void Image_Viewer::sliding_scale_value_changed(int value)
 void Image_Viewer::sliding_scale_value(int value)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SCALE))
-    OBJECT_CONDITIONAL(clog << ">-< Image_Viewer::sliding_scale_value: " << value << " -> " << slider_to_scale(value)
-                            << endl;)
+    OBJECT_CONDITIONAL(clog << ">-< Image_Viewer::sliding_scale_value: " << value << " -> "
+                            << slider_to_scale(value) << endl;)
 #endif
     sliding_scale_value(slider_to_scale(value));
 }
@@ -1444,13 +1438,12 @@ void Image_Viewer::update_sliding_scale()
     scaling.rwidth() = qMax(scaling.width(), scaling.height());
     int value = scale_to_slider(scaling.rwidth());
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SCALE))
-    OBJECT_CONDITIONAL(clog << "     slider = " << Sliding_Scale->value() << " of " << Sliding_Scale->minimum() << " - "
-                            << Sliding_Scale->maximum() << endl
+    OBJECT_CONDITIONAL(clog << "     slider = " << Sliding_Scale->value() << " of "
+                            << Sliding_Scale->minimum() << " - " << Sliding_Scale->maximum() << endl
                             << "    scaling = " << scaling.rwidth() << endl
                             << "     slider = " << value << endl;)
 #endif
-    if (Sliding_Scale->value() != value)
-        Sliding_Scale->setValue(value);
+    if (Sliding_Scale->value() != value) Sliding_Scale->setValue(value);
     sliding_scale_value(scaling.rwidth());
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SCALE))
     OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::update_sliding_scale" << endl;)
@@ -1458,47 +1451,39 @@ void Image_Viewer::update_sliding_scale()
 }
 
 double Image_Viewer::slider_to_scale(int value)
-{
-    return pow(10, static_cast<double>(value) / 100.0);
-}
+{ return pow(10, static_cast<double>(value) / 100.0); }
 
-int Image_Viewer::scale_to_slider(double value)
-{
-    return static_cast<int>(log10(value) * 100.0);
-}
+int Image_Viewer::scale_to_slider(double value) { return static_cast<int>(log10(value) * 100.0); }
 
 void Image_Viewer::min_scale(double scale_factor)
 {
-    if (scale_factor > 0.0)
-        Tiled_Image_Display::min_scale(scale_factor);
+    if (scale_factor > 0.0) Tiled_Image_Display::min_scale(scale_factor);
 }
 
 void Image_Viewer::max_scale(double scale_factor)
 {
-    if (scale_factor >= 1.0)
-        Tiled_Image_Display::max_scale(scale_factor);
+    if (scale_factor >= 1.0) Tiled_Image_Display::max_scale(scale_factor);
 }
 
 void Image_Viewer::scaling_minor_increment(double increment)
 {
-    if (increment > 0.0)
-        Scaling_Minor_Increment = increment;
+    if (increment > 0.0) Scaling_Minor_Increment = increment;
 }
 
 void Image_Viewer::scaling_major_increment(double increment)
 {
-    if (increment > 0.0)
-        Scaling_Major_Increment = increment;
+    if (increment > 0.0) Scaling_Major_Increment = increment;
 }
 
 /*------------------------------------------------------------------------------
     Band and Data Mapping
 */
-bool Image_Viewer::map_bands(const unsigned int *band_map)
+bool Image_Viewer::map_bands(const unsigned int* band_map)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MAP_BANDS))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::map_bands: ";
-                       if (band_map) clog << band_map[0] << ", " << band_map[1] << ", " << band_map[2] << endl;
+                       if (band_map) clog << band_map[0] << ", " << band_map[1] << ", "
+                                          << band_map[2] << endl;
                        else clog << "NULL" << endl;)
 #endif
     bool changed = Image_Display->map_bands(band_map);
@@ -1508,7 +1493,7 @@ bool Image_Viewer::map_bands(const unsigned int *band_map)
     return changed;
 }
 
-bool Image_Viewer::map_data(Data_Map **maps)
+bool Image_Viewer::map_data(Data_Map** maps)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MAP_DATA))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::map_data" << endl;)
@@ -1534,8 +1519,7 @@ void Image_Viewer::create_menus()
 
     Scale_Up_Action = new QAction(tr("Scale &Up"), this);
     key_sequence = QKeySequence(QKeySequence::ZoomIn);
-    if (key_sequence.isEmpty())
-        key_sequence = QKeySequence(tr("Ctrl++"));
+    if (key_sequence.isEmpty()) key_sequence = QKeySequence(tr("Ctrl++"));
     Scale_Up_Action->setShortcut(key_sequence);
     Scale_Up_Action->setEnabled(false);
     connect(Scale_Up_Action, SIGNAL(triggered()), SLOT(scale_up()));
@@ -1543,8 +1527,7 @@ void Image_Viewer::create_menus()
 
     Scale_Down_Action = new QAction(tr("Scale &Down"), this);
     key_sequence = QKeySequence(QKeySequence::ZoomOut);
-    if (key_sequence.isEmpty())
-        key_sequence = QKeySequence(tr("Ctrl+-"));
+    if (key_sequence.isEmpty()) key_sequence = QKeySequence(tr("Ctrl+-"));
     Scale_Down_Action->setShortcut(key_sequence);
     Scale_Down_Action->setEnabled(false);
     connect(Scale_Down_Action, SIGNAL(triggered()), SLOT(scale_down()));
@@ -1585,24 +1568,21 @@ void Image_Viewer::create_menus()
 #endif
 }
 
-QList<QAction *> Image_Viewer::scale_menu_actions() const
+QList<QAction*> Image_Viewer::scale_menu_actions() const
 {
 #if ((DEBUG_SECTION) & DEBUG_MENUS)
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::scale_menu_actions" << endl;)
 #endif
-    QList<QAction *> actions;
-    actions << Scale_Up_Action << Scale_Down_Action << Normal_Size_Action << Fit_to_Window_Action << Fit_to_Width_Action
-            << Fit_to_Height_Action << Copy_Action;
+    QList<QAction*> actions;
+    actions << Scale_Up_Action << Scale_Down_Action << Normal_Size_Action << Fit_to_Window_Action
+            << Fit_to_Width_Action << Fit_to_Height_Action << Copy_Action;
 #if ((DEBUG_SECTION) & DEBUG_MENUS)
     OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::scale_menu_actions" << endl;)
 #endif
     return actions;
 }
 
-QAction *Image_Viewer::copy_coordinates_action() const
-{
-    return Copy_Action;
-}
+QAction* Image_Viewer::copy_coordinates_action() const { return Copy_Action; }
 
 void Image_Viewer::update_actions()
 {
@@ -1623,8 +1603,10 @@ void Image_Viewer::update_scaling_actions()
     else
     {
         QSizeF scaling(image_scaling());
-        Scale_Up_Action->setEnabled(max(scaling.rwidth(), scaling.rheight()) < Image_Display->max_scale());
-        Scale_Down_Action->setEnabled(min(scaling.rwidth(), scaling.rheight()) > Image_Display->min_scale());
+        Scale_Up_Action->setEnabled(max(scaling.rwidth(), scaling.rheight()) <
+                                    Image_Display->max_scale());
+        Scale_Down_Action->setEnabled(min(scaling.rwidth(), scaling.rheight()) >
+                                      Image_Display->min_scale());
         Normal_Size_Action->setEnabled(scaling.rwidth() != 1.0 || scaling.rheight() != 1.0);
     }
 }
@@ -1643,10 +1625,7 @@ void Image_Viewer::update_window_fit_actions()
 
 void Image_Viewer::update_copy_action()
 {
-    if (!Image_Display || image_size().isEmpty())
-    {
-        Copy_Action->setEnabled(false);
-    }
+    if (!Image_Display || image_size().isEmpty()) { Copy_Action->setEnabled(false); }
     else
     {
         Copy_Action->setEnabled(true);
@@ -1662,15 +1641,19 @@ bool Image_Viewer::display_fit_to_image() const
     if (Image_Display)
     {
         QSize display_size(image_display_size()), scaled_size(scaled_image_size()),
-            max_size(QGuiApplication::primaryScreen()->availableGeometry().size() - window()->size() + size());
-        fit = (scaled_size.rwidth() == display_size.rwidth() && scaled_size.rheight() <= display_size.rheight()) ||
-              (scaled_size.rheight() == display_size.rheight() && scaled_size.rwidth() <= display_size.rwidth()) ||
+            max_size(QGuiApplication::primaryScreen()->availableGeometry().size() -
+                     window()->size() + size());
+        fit = (scaled_size.rwidth() == display_size.rwidth() &&
+               scaled_size.rheight() <= display_size.rheight()) ||
+              (scaled_size.rheight() == display_size.rheight() &&
+               scaled_size.rwidth() <= display_size.rwidth()) ||
               display_size == max_size;
         if (!fit)
         {
             QSizeF scaling(image_scaling());
             if (qMin(scaling.rwidth(), scaling.rheight()) == min_scale() &&
-                (scaled_size.rwidth() > display_size.rwidth() || scaled_size.rheight() > display_size.rheight()))
+                (scaled_size.rwidth() > display_size.rwidth() ||
+                 scaled_size.rheight() > display_size.rheight()))
                 fit = true;
         }
 #if ((DEBUG_SECTION) & (DEBUG_MENUS | DEBUG_LAYOUT))
@@ -1680,7 +1663,8 @@ bool Image_Viewer::display_fit_to_image() const
 #endif
     }
 #if ((DEBUG_SECTION) & (DEBUG_MENUS | DEBUG_LAYOUT))
-    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::display_fit_to_image: " << boolalpha << fit << endl;)
+    OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::display_fit_to_image: " << boolalpha << fit
+                            << endl;)
 #endif
     return fit;
 }
@@ -1688,15 +1672,14 @@ bool Image_Viewer::display_fit_to_image() const
 /*==============================================================================
     Events
 */
-void Image_Viewer::resizeEvent(QResizeEvent *event)
+void Image_Viewer::resizeEvent(QResizeEvent* event)
 {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_LAYOUT))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::resizeEvent " << object_pathname(this) << endl
                             << "    from " << event->oldSize() << endl
                             << "      to " << event->size() << endl;)
 #endif
-    if (Image_Display)
-        layout_display(event->size());
+    if (Image_Display) layout_display(event->size());
 
     update_window_fit_actions();
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_LAYOUT))
@@ -1704,7 +1687,7 @@ void Image_Viewer::resizeEvent(QResizeEvent *event)
 #endif
 }
 
-void Image_Viewer::contextMenuEvent(QContextMenuEvent *event)
+void Image_Viewer::contextMenuEvent(QContextMenuEvent* event)
 {
     if ((Control_Mode & CONTROL_MODE))
         //	No context menu while a control mode is in effect.
@@ -1725,7 +1708,7 @@ void Image_Viewer::contextMenuEvent(QContextMenuEvent *event)
 /*------------------------------------------------------------------------------
     Mouse events
 */
-void Image_Viewer::mousePressEvent(QMouseEvent *event)
+void Image_Viewer::mousePressEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::mousePressEvent:" << endl
@@ -1754,7 +1737,7 @@ void Image_Viewer::mousePressEvent(QMouseEvent *event)
 #endif
 }
 
-void Image_Viewer::mouseMoveEvent(QMouseEvent *event)
+void Image_Viewer::mouseMoveEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::mouseMoveEvent:" << endl
@@ -1767,15 +1750,15 @@ void Image_Viewer::mouseMoveEvent(QMouseEvent *event)
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
         OBJECT_CONDITIONAL(clog << "    SHIFT_MODE -" << endl;)
 #endif
-        QPoint position(
-            round_down(map_display_to_image(Image_Display->mapFromGlobal(event->globalPosition()).toPoint())));
+        QPoint position(round_down(
+            map_display_to_image(Image_Display->mapFromGlobal(event->globalPosition()).toPoint())));
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
         OBJECT_CONDITIONAL(clog << "      image position = " << position << endl;)
 #endif
         if (Mouse_Drag_Image_Position.rx() == -1 && Mouse_Drag_Image_Position.ry() == -1)
         {
             //	SHIFT_MODE entered after mousePressEvent.
-            mousePressEvent(event); //	Pretend this was a mousePressEvent.
+            mousePressEvent(event);  //	Pretend this was a mousePressEvent.
             accepted = event->isAccepted();
         }
         else if (position != Mouse_Drag_Image_Position &&
@@ -1794,7 +1777,7 @@ void Image_Viewer::mouseMoveEvent(QMouseEvent *event)
 #endif
 }
 
-void Image_Viewer::mouseReleaseEvent(QMouseEvent *event)
+void Image_Viewer::mouseReleaseEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_MOUSE_EVENTS))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::mouseReleaseEvent" << endl
@@ -1810,13 +1793,11 @@ void Image_Viewer::mouseReleaseEvent(QMouseEvent *event)
         accepted = true;
         if (event->button() == Qt::LeftButton)
         {
-            if (Scale_Down_Action->isEnabled())
-                scale_down();
+            if (Scale_Down_Action->isEnabled()) scale_down();
         }
         else if (event->button() == Qt::MiddleButton)
         {
-            if (Scale_Up_Action->isEnabled())
-                scale_up();
+            if (Scale_Up_Action->isEnabled()) scale_up();
         }
     }
     else
@@ -1829,15 +1810,16 @@ void Image_Viewer::mouseReleaseEvent(QMouseEvent *event)
 #endif
 }
 
-void Image_Viewer::wheelEvent(QWheelEvent *event)
+void Image_Viewer::wheelEvent(QWheelEvent* event)
 {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_MOUSE_EVENTS))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::wheelEvent:" << endl
-                            << "    position = " << event->pos() << endl
-                            << "       delta = " << event->delta() << endl;)
+                            << "    x = " << event->position().x()
+                            << "    y = " << event->position().y() << endl
+                            << "       delta = " << event->angleDelta() << endl;)
 #endif
     bool accepted = false;
-    int delta = event->angleDelta().x() / 8; // TODO should be sqrt(x*x + y*y)?
+    int delta = event->angleDelta().x() / 8;  // TODO should be sqrt(x*x + y*y)?
     if (delta)
     {
         if (Control_Mode == SCALE_MODE)
@@ -1847,12 +1829,13 @@ void Image_Viewer::wheelEvent(QWheelEvent *event)
             {
                 accepted = true;
                 QSizeF scaling(image_scaling());
-                double max_scaling = qMax(scaling.rwidth(), scaling.rheight()),
-                       scale = slider_to_scale(scale_to_slider(max_scaling) + delta);
+                double const max_scaling = qMax(scaling.rwidth(), scaling.rheight());
+                double scale = slider_to_scale(scale_to_slider(max_scaling) + delta);
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_MOUSE_EVENTS))
                 OBJECT_CONDITIONAL(clog << "    SCALE_MODE - scaling = " << scaling << endl
                                         << "         tentative scale = " << scale << endl
-                                        << "    scaling_minor_increment = " << scaling_minor_increment() << endl;)
+                                        << "    scaling_minor_increment = "
+                                        << scaling_minor_increment() << endl;)
 #endif
                 if (qAbs(max_scaling - scale) < scaling_minor_increment())
                 {
@@ -1864,8 +1847,8 @@ void Image_Viewer::wheelEvent(QWheelEvent *event)
                 }
                 scaling.rwidth() = scaling.rheight() = scale;
 
-                QPoint center(
-                    round_down(map_display_to_image(Image_Display->mapFromGlobal(event->globalPosition()).toPoint())));
+                QPoint const center(round_down(map_display_to_image(
+                    Image_Display->mapFromGlobal(event->globalPosition()).toPoint())));
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_MOUSE_EVENTS))
                 OBJECT_CONDITIONAL(clog << "      mouse image position = " << center << endl;)
 #endif
@@ -1885,8 +1868,7 @@ void Image_Viewer::wheelEvent(QWheelEvent *event)
             else if (event->pixelDelta().x() < event->pixelDelta().y())
                 //			shift_display (QSize (0, delta));
                 shift_image(QSize(0, delta));
-            else
-                shift_image(QSize(delta, delta));
+            else shift_image(QSize(delta, delta));
         }
     }
     event->setAccepted(accepted);
@@ -1895,7 +1877,7 @@ void Image_Viewer::wheelEvent(QWheelEvent *event)
 #endif
 }
 
-void Image_Viewer::cursor_moved(const QPoint &display_position, const QPoint &image_position)
+void Image_Viewer::cursor_moved(const QPoint& display_position, const QPoint& image_position)
 {
 //	>>> SIGNAL <<
 #if ((DEBUG_SECTION) & (DEBUG_MOUSE_EVENTS | DEBUG_SIGNALS))
@@ -1931,7 +1913,7 @@ void Image_Viewer::cursor_moved(const QPoint &display_position, const QPoint &im
 /*------------------------------------------------------------------------------
     Key press events
 */
-void Image_Viewer::keyPressEvent(QKeyEvent *event)
+void Image_Viewer::keyPressEvent(QKeyEvent* event)
 {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::keyPressEvent:" << endl
@@ -1956,26 +1938,26 @@ void Image_Viewer::keyPressEvent(QKeyEvent *event)
 #endif
             switch (key)
             {
-            case Qt::Key_Up:
-                if (Scale_Up_Action->isEnabled())
-                {
+                case Qt::Key_Up:
+                    if (Scale_Up_Action->isEnabled())
+                    {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                    OBJECT_CONDITIONAL(clog << "        scale_up" << endl;)
+                        OBJECT_CONDITIONAL(clog << "        scale_up" << endl;)
 #endif
-                    scale_up(-1);
-                    accepted = true;
-                }
-                break;
-            case Qt::Key_Down:
-                if (Scale_Down_Action->isEnabled())
-                {
+                        scale_up(-1);
+                        accepted = true;
+                    }
+                    break;
+                case Qt::Key_Down:
+                    if (Scale_Down_Action->isEnabled())
+                    {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                    OBJECT_CONDITIONAL(clog << "        scale_down" << endl;)
+                        OBJECT_CONDITIONAL(clog << "        scale_down" << endl;)
 #endif
-                    scale_down(-1);
-                    accepted = true;
-                }
-                break;
+                        scale_down(-1);
+                        accepted = true;
+                    }
+                    break;
             }
         }
         else if (Control_Mode == SHIFT_MODE)
@@ -1988,17 +1970,17 @@ void Image_Viewer::keyPressEvent(QKeyEvent *event)
             QSize offsets(0, 0);
             switch (key)
             {
-            case Qt::Key_Up:
-                offsets.rheight() = +1;
-                break;
-            case Qt::Key_Down:
-                offsets.rheight() = -1;
-                break;
-            case Qt::Key_Left:
-                offsets.rwidth() = +1;
-                break;
-            case Qt::Key_Right:
-                offsets.rwidth() = -1;
+                case Qt::Key_Up:
+                    offsets.rheight() = +1;
+                    break;
+                case Qt::Key_Down:
+                    offsets.rheight() = -1;
+                    break;
+                case Qt::Key_Left:
+                    offsets.rwidth() = +1;
+                    break;
+                case Qt::Key_Right:
+                    offsets.rwidth() = -1;
             }
             if (!offsets.isNull())
             {
@@ -2006,7 +1988,8 @@ void Image_Viewer::keyPressEvent(QKeyEvent *event)
                 OBJECT_CONDITIONAL(clog << "      offsets = " << offsets << endl;)
 #endif
                 modifiers &= ~Qt::KeypadModifier;
-                if (modifiers == (Qt::ShiftModifier | Qt::AltModifier) || modifiers == Qt::AltModifier ||
+                if (modifiers == (Qt::ShiftModifier | Qt::AltModifier) ||
+                    modifiers == Qt::AltModifier ||
                     /*
                         Special case: With X11 the Shift-Alt key combination,
                         pressed in that order, sets Qt::ShiftModifier and
@@ -2038,34 +2021,27 @@ void Image_Viewer::keyPressEvent(QKeyEvent *event)
                 accepted = true;
                 switch (key)
                 {
-                case Qt::Key_Up:
-                    if (position.ry() > 0)
-                        --position.ry();
-                    else
-                        nudge = false;
-                    break;
-                case Qt::Key_Down:
-                    if (position.ry() < (Image_Display->height() - 1))
-                        ++position.ry();
-                    else
-                        nudge = false;
-                    break;
-                case Qt::Key_Left:
-                    if (position.rx() > 0)
-                        --position.rx();
-                    else
-                        nudge = false;
-                    break;
-                case Qt::Key_Right:
-                    if (position.rx() < (Image_Display->width() - 1))
-                        ++position.rx();
-                    else
-                        nudge = false;
+                    case Qt::Key_Up:
+                        if (position.ry() > 0) --position.ry();
+                        else nudge = false;
+                        break;
+                    case Qt::Key_Down:
+                        if (position.ry() < (Image_Display->height() - 1)) ++position.ry();
+                        else nudge = false;
+                        break;
+                    case Qt::Key_Left:
+                        if (position.rx() > 0) --position.rx();
+                        else nudge = false;
+                        break;
+                    case Qt::Key_Right:
+                        if (position.rx() < (Image_Display->width() - 1)) ++position.rx();
+                        else nudge = false;
                 }
                 if (nudge)
                 {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                    OBJECT_CONDITIONAL(clog << "        set cursor position to " << position << endl;)
+                    OBJECT_CONDITIONAL(clog << "        set cursor position to " << position
+                                            << endl;)
 #endif
                     QCursor::setPos(Image_Display->mapToGlobal(position));
                     accepted = true;
@@ -2077,7 +2053,8 @@ void Image_Viewer::keyPressEvent(QKeyEvent *event)
     {
         if (Control_Mode == SHIFT_MODE || Control_Mode == NO_CONTROL_MODE)
         {
-            shift_display(QSize(0, ((key == Qt::Key_PageUp) ? Image_Display->height() : -Image_Display->height())));
+            shift_display(QSize(
+                0, ((key == Qt::Key_PageUp) ? Image_Display->height() : -Image_Display->height())));
             accepted = true;
         }
     }
@@ -2098,110 +2075,112 @@ void Image_Viewer::keyPressEvent(QKeyEvent *event)
 #endif
                 switch (key)
                 {
-                case Qt::Key_Plus:
-                case Qt::Key_Equal:
-                    if (Scale_Up_Action->isEnabled())
-                    {
+                    case Qt::Key_Plus:
+                    case Qt::Key_Equal:
+                        if (Scale_Up_Action->isEnabled())
+                        {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                        OBJECT_CONDITIONAL(clog << "    key initiated scale_up" << endl;)
+                            OBJECT_CONDITIONAL(clog << "    key initiated scale_up" << endl;)
 #endif
-                        Image_Display->setCursor(*Scale_Cursor);
-                        scale_up();
-                        Image_Display->setCursor(*Default_Cursor);
-                        accepted = true;
-                    }
-                    break;
-                case Qt::Key_Minus:
-                    if (Scale_Down_Action->isEnabled())
-                    {
+                            Image_Display->setCursor(*Scale_Cursor);
+                            scale_up();
+                            Image_Display->setCursor(*Default_Cursor);
+                            accepted = true;
+                        }
+                        break;
+                    case Qt::Key_Minus:
+                        if (Scale_Down_Action->isEnabled())
+                        {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                        OBJECT_CONDITIONAL(clog << "    key initiated scale_down" << endl;)
+                            OBJECT_CONDITIONAL(clog << "    key initiated scale_down" << endl;)
 #endif
-                        Image_Display->setCursor(*Scale_Cursor);
-                        scale_down();
-                        Image_Display->setCursor(*Default_Cursor);
-                        accepted = true;
-                    }
-                    break;
-                case Qt::Key_Home:
-                case Qt::Key_1:
-                    if (Normal_Size_Action->isEnabled())
-                    {
+                            Image_Display->setCursor(*Scale_Cursor);
+                            scale_down();
+                            Image_Display->setCursor(*Default_Cursor);
+                            accepted = true;
+                        }
+                        break;
+                    case Qt::Key_Home:
+                    case Qt::Key_1:
+                        if (Normal_Size_Action->isEnabled())
+                        {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                        OBJECT_CONDITIONAL(clog << "    key initiated actual_size" << endl;)
+                            OBJECT_CONDITIONAL(clog << "    key initiated actual_size" << endl;)
 #endif
-                        Image_Display->setCursor(*Scale_Cursor);
-                        actual_size();
-                        Image_Display->setCursor(*Default_Cursor);
-                        accepted = true;
-                    }
-                    break;
+                            Image_Display->setCursor(*Scale_Cursor);
+                            actual_size();
+                            Image_Display->setCursor(*Default_Cursor);
+                            accepted = true;
+                        }
+                        break;
                 }
             }
             else
             {
                 switch (key)
                 {
-                //	Check for Control_Mode change.
-                case Qt::Key_Shift:
-                case Qt::Key_Space:
+                    //	Check for Control_Mode change.
+                    case Qt::Key_Shift:
+                    case Qt::Key_Space:
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                    OBJECT_CONDITIONAL(clog << "    " << ((key == Qt::Key_Shift) ? "Shift" : "Space") << endl;)
+                        OBJECT_CONDITIONAL(
+                            clog << "    " << ((key == Qt::Key_Shift) ? "Shift" : "Space") << endl;)
 #endif
-                    if (modifiers == 0 || (modifiers & (Qt::ShiftModifier | Qt::AltModifier)))
-                    {
-                        if (Control_Mode == NO_CONTROL_MODE)
+                        if (modifiers == 0 || (modifiers & (Qt::ShiftModifier | Qt::AltModifier)))
                         {
+                            if (Control_Mode == NO_CONTROL_MODE)
+                            {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                            OBJECT_CONDITIONAL(clog << "    Control_Mode = SHIFT_MODE" << endl;)
+                                OBJECT_CONDITIONAL(clog << "    Control_Mode = SHIFT_MODE" << endl;)
 #endif
-                            Control_Mode = SHIFT_MODE;
-                            Image_Display->setCursor(*Shift_Cursor);
+                                Control_Mode = SHIFT_MODE;
+                                Image_Display->setCursor(*Shift_Cursor);
+                                accepted = true;
+                            }
+                            if (Control_Mode == SCALE_MODE_PENDING)
+                            {
+#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
+                                OBJECT_CONDITIONAL(clog << "    Control_Mode = SCALE_MODE" << endl;)
+#endif
+                                Control_Mode = SCALE_MODE;
+                                Image_Display->setCursor(*Scale_Cursor);
+                                accepted = true;
+                            }
+                        }
+                        break;
+                    case Qt::Key_Z:
+#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
+                        OBJECT_CONDITIONAL(clog << "    Z" << endl;)
+#endif
+                        if (modifiers == Qt::ShiftModifier || modifiers == 0)
+                        {
+                            if (Control_Mode == SHIFT_MODE)
+                            {
+#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
+                                OBJECT_CONDITIONAL(clog << "    Control_Mode = SCALE_MODE" << endl;)
+#endif
+                                Control_Mode = SCALE_MODE;
+                                Image_Display->setCursor(*Scale_Cursor);
+                            }
+                            else
+                            {
+#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
+                                OBJECT_CONDITIONAL(clog << "    Control_Mode = SCALE_MODE_PENDING"
+                                                        << endl;)
+#endif
+                                Control_Mode = SCALE_MODE_PENDING;
+                            }
                             accepted = true;
                         }
-                        if (Control_Mode == SCALE_MODE_PENDING)
-                        {
+                        break;
+                    case Qt::Key_Alt:
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                            OBJECT_CONDITIONAL(clog << "    Control_Mode = SCALE_MODE" << endl;)
+                        OBJECT_CONDITIONAL(clog << "    Alt" << endl;)
 #endif
-                            Control_Mode = SCALE_MODE;
-                            Image_Display->setCursor(*Scale_Cursor);
-                            accepted = true;
-                        }
-                    }
-                    break;
-                case Qt::Key_Z:
-#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                    OBJECT_CONDITIONAL(clog << "    Z" << endl;)
-#endif
-                    if (modifiers == Qt::ShiftModifier || modifiers == 0)
-                    {
                         if (Control_Mode == SHIFT_MODE)
-                        {
-#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                            OBJECT_CONDITIONAL(clog << "    Control_Mode = SCALE_MODE" << endl;)
-#endif
-                            Control_Mode = SCALE_MODE;
-                            Image_Display->setCursor(*Scale_Cursor);
-                        }
-                        else
-                        {
-#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                            OBJECT_CONDITIONAL(clog << "    Control_Mode = SCALE_MODE_PENDING" << endl;)
-#endif
-                            Control_Mode = SCALE_MODE_PENDING;
-                        }
-                        accepted = true;
-                    }
-                    break;
-                case Qt::Key_Alt:
-#if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-                    OBJECT_CONDITIONAL(clog << "    Alt" << endl;)
-#endif
-                    if (Control_Mode == SHIFT_MODE)
-                        //	Shift-Alt page scrolling.
-                        accepted = true;
-                    break;
+                            //	Shift-Alt page scrolling.
+                            accepted = true;
+                        break;
                 }
                 if (!accepted && Control_Mode != NO_CONTROL_MODE)
                 {
@@ -2225,19 +2204,17 @@ void Image_Viewer::keyPressEvent(QKeyEvent *event)
                         releaseKeyboard();
                     }
                 }
-                else if (accepted)
-                    grabKeyboard();
+                else if (accepted) grabKeyboard();
             }
         }
     event->setAccepted(accepted);
-    if (!accepted)
-        QWidget::keyPressEvent(event);
+    if (!accepted) QWidget::keyPressEvent(event);
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
     OBJECT_CONDITIONAL(clog << "<<< Image_Viewer::keyPressEvent" << endl;)
 #endif
 }
 
-void Image_Viewer::keyReleaseEvent(QKeyEvent *event)
+void Image_Viewer::keyReleaseEvent(QKeyEvent* event)
 {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
     OBJECT_CONDITIONAL(clog << ">>> Image_Viewer::keyReleaseEvent:" << endl
@@ -2250,28 +2227,24 @@ void Image_Viewer::keyReleaseEvent(QKeyEvent *event)
         int mode = -1;
         switch (event->key())
         {
-        case Qt::Key_Shift:
-        case Qt::Key_Space:
-            if (Control_Mode == SCALE_MODE)
-                mode = SCALE_MODE_PENDING;
-            else if (Control_Mode == SHIFT_MODE)
-                mode = NO_CONTROL_MODE;
-            break;
-        case Qt::Key_Z:
-            if (Control_Mode == SCALE_MODE)
-                mode = SHIFT_MODE;
-            else if (Control_Mode != NO_CONTROL_MODE)
-                mode = NO_CONTROL_MODE;
+            case Qt::Key_Shift:
+            case Qt::Key_Space:
+                if (Control_Mode == SCALE_MODE) mode = SCALE_MODE_PENDING;
+                else if (Control_Mode == SHIFT_MODE) mode = NO_CONTROL_MODE;
+                break;
+            case Qt::Key_Z:
+                if (Control_Mode == SCALE_MODE) mode = SHIFT_MODE;
+                else if (Control_Mode != NO_CONTROL_MODE) mode = NO_CONTROL_MODE;
         }
         if (mode >= 0)
         {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_KEY_EVENTS))
-            OBJECT_CONDITIONAL(clog << "    Control_Mode = " << control_mode_description(mode) << endl;)
+            OBJECT_CONDITIONAL(clog << "    Control_Mode = " << control_mode_description(mode)
+                                    << endl;)
 #endif
             Control_Mode = mode;
             change_cursor();
-            if (mode == NO_CONTROL_MODE)
-                releaseKeyboard();
+            if (mode == NO_CONTROL_MODE) releaseKeyboard();
         }
     }
     QWidget::keyReleaseEvent(event);
@@ -2280,31 +2253,29 @@ void Image_Viewer::keyReleaseEvent(QKeyEvent *event)
 #endif
 }
 
-void Image_Viewer::default_cursor(QCursor *cursor)
+void Image_Viewer::default_cursor(QCursor* cursor)
 {
-    if (!cursor)
-        cursor = Reticule_Cursor;
+    if (!cursor) cursor = Reticule_Cursor;
     if (Default_Cursor != cursor)
     {
         Default_Cursor = cursor;
-        if (Control_Mode == NO_CONTROL_MODE)
-            Image_Display->setCursor(*Default_Cursor);
+        if (Control_Mode == NO_CONTROL_MODE) Image_Display->setCursor(*Default_Cursor);
     }
 }
 
 void Image_Viewer::change_cursor()
 {
-    QCursor *cursor;
+    QCursor* cursor;
     switch (Control_Mode)
     {
-    case SHIFT_MODE:
-        cursor = Shift_Cursor;
-        break;
-    case SCALE_MODE:
-        cursor = Scale_Cursor;
-        break;
-    default:
-        cursor = Default_Cursor;
+        case SHIFT_MODE:
+            cursor = Shift_Cursor;
+            break;
+        case SCALE_MODE:
+            cursor = Scale_Cursor;
+            break;
+        default:
+            cursor = Default_Cursor;
     }
     Image_Display->setCursor(*cursor);
 }
@@ -2314,17 +2285,17 @@ QString Image_Viewer::control_mode_description(int control_mode)
     QString description("unknown");
     switch (control_mode)
     {
-    case NO_CONTROL_MODE:
-        description = "NO_CONTROL_MODE";
-        break;
-    case SHIFT_MODE:
-        description = "SHIFT_MODE";
-        break;
-    case SCALE_MODE:
-        description = "SCALE_MODE";
-        break;
-    case SCALE_MODE_PENDING:
-        description = "SCALE_MODE_PENDING";
+        case NO_CONTROL_MODE:
+            description = "NO_CONTROL_MODE";
+            break;
+        case SHIFT_MODE:
+            description = "SHIFT_MODE";
+            break;
+        case SCALE_MODE:
+            description = "SCALE_MODE";
+            break;
+        case SCALE_MODE_PENDING:
+            description = "SCALE_MODE_PENDING";
     }
     description += " (";
     description += QString::number(control_mode);
@@ -2335,7 +2306,7 @@ QString Image_Viewer::control_mode_description(int control_mode)
 /*==============================================================================
     Utilities
 */
-void Image_Viewer::error_message(QErrorMessage *dialog)
+void Image_Viewer::error_message(QErrorMessage* dialog)
 {
     //	Share the Error_Message dialog with the Tiled_Image_Display.
     Tiled_Image_Display::error_message(Error_Message = dialog);
@@ -2344,7 +2315,7 @@ void Image_Viewer::error_message(QErrorMessage *dialog)
 /*==============================================================================
     World Information
  */
-void Image_Viewer::projection(Projection *projector)
+void Image_Viewer::projection(Projection* projector)
 {
     if (Projector != projector)
     {
@@ -2353,5 +2324,4 @@ void Image_Viewer::projection(Projection *projector)
     }
 }
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE

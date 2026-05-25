@@ -21,10 +21,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Utilities_hh
-#define HiView_Utilities_hh
-
-#ifndef DOXYGEN_PROCESSING
+#pragma once
 
 #include <QColor>
 #include <QMutex>
@@ -45,9 +42,7 @@ class QFont;
 #include <ostream>
 #include <string>
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 
 /*==============================================================================
@@ -55,13 +50,13 @@ namespace HiRISE
 */
 
 //	Thread safe DEBUG_SECTION log (clog) locking.
-#if defined(DEBUG_SECTION)
+#ifdef DEBUG_SECTION
 extern QMutex Log_Lock;
 #define LOCK_LOG Log_Lock.lock()
 #define UNLOCK_LOG Log_Lock.unlock()
-#define LOCKED_LOGGING(expression)                                                                                     \
-    LOCK_LOG;                                                                                                          \
-    expression;                                                                                                        \
+#define LOCKED_LOGGING(expression) \
+    LOCK_LOG;                      \
+    expression;                    \
     UNLOCK_LOG
 #endif
 
@@ -69,55 +64,45 @@ extern QMutex Log_Lock;
     Output operators
 */
 //!	QPoint output operator.
-inline std::ostream &operator<<(std::ostream &stream, const QPoint &point)
-{
-    return stream << point.x() << "x, " << point.y() << 'y';
-}
+inline std::ostream& operator<<(std::ostream& stream, const QPoint& point)
+{ return stream << point.x() << "x, " << point.y() << 'y'; }
 
 //!	QPointF output operator.
-inline std::ostream &operator<<(std::ostream &stream, const QPointF &point)
-{
-    return stream << point.x() << "x, " << point.y() << 'y';
-}
+inline std::ostream& operator<<(std::ostream& stream, const QPointF& point)
+{ return stream << point.x() << "x, " << point.y() << 'y'; }
 
 //!	QSize output operator.
-inline std::ostream &operator<<(std::ostream &stream, const QSize &size)
-{
-    return stream << size.width() << "w, " << size.height() << 'h';
-}
+inline std::ostream& operator<<(std::ostream& stream, const QSize& size)
+{ return stream << size.width() << "w, " << size.height() << 'h'; }
 
 //!	QSizeF output operator.
-inline std::ostream &operator<<(std::ostream &stream, const QSizeF &size)
-{
-    return stream << size.width() << "w, " << size.height() << 'h';
-}
+inline std::ostream& operator<<(std::ostream& stream, const QSizeF& size)
+{ return stream << size.width() << "w, " << size.height() << 'h'; }
 
 //!	QRect output operator.
-inline std::ostream &operator<<(std::ostream &stream, const QRect &rectangle)
+inline std::ostream& operator<<(std::ostream& stream, const QRect& rectangle)
 {
     return stream << rectangle.x() << "x, " << rectangle.y() << "y, " << rectangle.width() << "w, "
                   << rectangle.height() << 'h';
 }
 
 //!	QRectF output operator.
-inline std::ostream &operator<<(std::ostream &stream, const QRectF &rectangle)
+inline std::ostream& operator<<(std::ostream& stream, const QRectF& rectangle)
 {
     return stream << rectangle.x() << "x, " << rectangle.y() << "y, " << rectangle.width() << "w, "
                   << rectangle.height() << 'h';
 }
 
 //!	QColor output operator.
-inline std::ostream &operator<<(std::ostream &stream, const QColor &color)
+inline std::ostream& operator<<(std::ostream& stream, const QColor& color)
 {
-    return stream << std::hex << std::uppercase << std::setfill('0') << '#' << std::setw(8) << color.rgba() << std::dec
-                  << std::nouppercase << std::setfill(' ');
+    return stream << std::hex << std::uppercase << std::setfill('0') << '#' << std::setw(8)
+                  << color.rgba() << std::dec << std::nouppercase << std::setfill(' ');
 }
 
 //!	QString output operator.
-inline std::ostream &operator<<(std::ostream &stream, const QString &qstring)
-{
-    return stream << qPrintable(qstring);
-}
+inline std::ostream& operator<<(std::ostream& stream, const QString& qstring)
+{ return stream << qPrintable(qstring); }
 
 /*------------------------------------------------------------------------------
     Rounders
@@ -154,44 +139,27 @@ inline std::ostream &operator<<(std::ostream &stream, const QString &qstring)
 #endif
 
 inline int round_down(double value)
-{
-    return static_cast<int>(value + ((value > 0.0) ? TO_INTEGER_EPSILON : -TO_INTEGER_EPSILON));
-}
+{ return static_cast<int>(value + ((value > 0.0) ? TO_INTEGER_EPSILON : -TO_INTEGER_EPSILON)); }
 
 inline int round_up(double value)
-{
-    return static_cast<int>(value > 0.0 ? ceil(value) : floor(value));
-}
+{ return static_cast<int>(value > 0.0 ? ceil(value) : floor(value)); }
 
-inline QPoint round_down(const QPointF &point)
-{
-    return QPoint(round_down(point.x()), round_down(point.y()));
-}
+inline QPoint round_down(const QPointF& point)
+{ return {round_down(point.x()), round_down(point.y())}; }
 
-inline QPoint round_up(const QPointF &point)
-{
-    return QPoint(round_up(point.x()), round_up(point.y()));
-}
+inline QPoint round_up(const QPointF& point) { return {round_up(point.x()), round_up(point.y())}; }
 
-inline QSize round_down(const QSizeF &size)
-{
-    return QSize(round_down(size.width()), round_down(size.height()));
-}
+inline QSize round_down(const QSizeF& size)
+{ return {round_down(size.width()), round_down(size.height())}; }
 
-inline QSize round_up(const QSizeF &size)
-{
-    return QSize(round_up(size.width()), round_up(size.height()));
-}
+inline QSize round_up(const QSizeF& size)
+{ return {round_up(size.width()), round_up(size.height())}; }
 
-inline QRect round_down(const QRectF &rect)
-{
-    return QRect(round_down(rect.topLeft()), round_down(rect.size()));
-}
+inline QRect round_down(const QRectF& rect)
+{ return QRect(round_down(rect.topLeft()), round_down(rect.size())); }
 
-inline QRect round_up(const QRectF &rect)
-{
-    return QRect(round_up(rect.topLeft()), round_up(rect.size()));
-}
+inline QRect round_up(const QRectF& rect)
+{ return QRect(round_up(rect.topLeft()), round_up(rect.size())); }
 
 double round_to(double value, int decimal_places);
 
@@ -204,7 +172,7 @@ double round_to(double value, int decimal_places);
     @param	a_string	A std::string to be converted.
     @return	A copy of the string in uppercase form.
 */
-std::string uppercase(const std::string &a_string);
+std::string uppercase(const std::string& a_string);
 
 /**	Remove all occurances of a character from a string.
 
@@ -213,7 +181,7 @@ std::string uppercase(const std::string &a_string);
     @return	A copy of the string with all occurances of the
         character removed.
 */
-std::string remove(const std::string &a_string, const char character);
+std::string remove(const std::string& a_string, char character);
 
 /**	Replace all occurances of a character in a string with a new character.
 
@@ -223,7 +191,7 @@ std::string remove(const std::string &a_string, const char character);
     @return	A copy of the string with all occurances of the
         old character replaced with the new character.
 */
-std::string replace(const std::string &a_string, const char old_character, const char new_character);
+std::string replace(const std::string& a_string, char old_character, char new_character);
 
 /**	Compare two C-strings.
 
@@ -236,7 +204,7 @@ std::string replace(const std::string &a_string, const char old_character, const
         if false the case of the strings is ignored.
     @return	true if the strings match; false otherwise.
 */
-bool compare(const char *this_string, const char *that_string, bool case_sensitive = false);
+bool compare(const char* this_string, const char* that_string, bool case_sensitive = false);
 
 /*------------------------------------------------------------------------------
     Miscellaneous
@@ -298,7 +266,7 @@ int hex_digits(unsigned long long value);
     @return	A QString with the possibly wrapped pathname that will
         display within the wrap length.
 */
-QString wrapped_pathname(const QString &pathname, int wrap_length, const QFont &font);
+QString wrapped_pathname(const QString& pathname, int wrap_length, const QFont& font);
 
 /**	Get the fully qualified name for a QObject.
 
@@ -310,11 +278,10 @@ QString wrapped_pathname(const QString &pathname, int wrap_length, const QFont &
     @return	A QString containing the fully qualified pathname for the
         object.
 */
-inline QString object_pathname(const QObject *object)
+inline QString object_pathname(const QObject* object)
 {
     QString pathname(object->objectName());
-    while ((object = object->parent()))
-        pathname.prepend('.').prepend(object->objectName());
+    while ((object = object->parent())) pathname.prepend('.').prepend(object->objectName());
     return pathname;
 }
 
@@ -324,15 +291,15 @@ inline QString object_pathname(const QObject *object)
 //!	HiView utility functions.
 class HiView_Utilities
 {
-  public:
+ public:
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     //!	JP2 metadata PDS label file URL parameter name.
-    static const char *const PDS_LABEL_URL_PARAMETER;
+    static const char* const PDS_LABEL_URL_PARAMETER;
 
     //!	Filename extension for a PDS label file associated with the JP2 file.
-    static const char *const PDS_LABEL_FILENAME_EXT;
+    static const char* const PDS_LABEL_FILENAME_EXT;
 
     /**	Test if a string provides a valid URL representation.
 
@@ -340,7 +307,8 @@ class HiView_Utilities
 
         <i>protocol</i><b>://<i>hostname</i>[<b>:</b><i>port</i>]<b>/</b><i>source</i>
 
-        where the <i>protocol</i> is either "jpip" or "http(s)" (case insensitive).
+        where the <i>protocol</i> is either "jpip" or "http(s)" (case
+       insensitive).
 
         The <i>hostname</i>, <i>port</i> and <i>source</i> are not checked
         to have valid values, however both the <i>hostname</i> and
@@ -351,7 +319,7 @@ class HiView_Utilities
         @return	true if the URL appears to be valid; false otherwise.
         @see	UA::HiRISE::is_valid_URL(const std::string&, std::string*, int)
     */
-    static bool is_URL(const QString &URL);
+    static bool is_URL(const QString& URL);
 
     /**	Tests if a string provides a valid JPIP URL representation.
 
@@ -362,26 +330,20 @@ class HiView_Utilities
         @return	true if the URL appears to be a valid JPIP URL; false otherwise.
         @see	UA::HiRISE::is_JPIP_URL(const std::string&)
     */
-    static bool is_JPIP_URL(const QString &URL);
+    static bool is_JPIP_URL(const QString& URL);
 
     //!	Band numbering is indexed (from 0), rather than counted (from 1) flag.
     static bool Band_Numbering_Indexed;
 
-    inline static int band_index_to_number(int band)
-    {
-        return Band_Numbering_Indexed ? band : (band + 1);
-    }
-    inline static int band_number_to_index(int band)
-    {
-        return Band_Numbering_Indexed ? band : (band - 1);
-    }
+    static int band_index_to_number(int band) { return Band_Numbering_Indexed ? band : (band + 1); }
+    static int band_number_to_index(int band) { return Band_Numbering_Indexed ? band : (band - 1); }
 
     static QString image_reader_formats_file_filters();
     static QStringList image_reader_formats();
     static QString image_writer_formats_file_filters();
     static QStringList image_writer_formats();
-    static QString file_filters_from(QStringList &list);
-    static QString file_filter_for(const QString &format);
+    static QString file_filters_from(QStringList& list);
+    static QString file_filter_for(const QString& format);
 
     /**	Generate a URL for a potential source of PDS metadata from a model
         URL.
@@ -404,20 +366,18 @@ class HiView_Utilities
         If the resulting URL specifies the "jpip" protocol scheme this is
         replaced with "https".
 
-        @param	Source_Name	A QString which is the original path or URL to the image.
+        @param	Source_Name	A QString which is the original path or URL to
+       the image.
         @param	model_URL	A QUrl providing a model for the URL to be
             generated.
         @return	A QUrl for a potential source of PDS metadata associated with
             the source image.
     */
-    static QUrl PDS_metadata_URL(const QString &Source_Name, const QUrl &model_URL);
+    static QUrl PDS_metadata_URL(const QString& Source_Name, const QUrl& model_URL);
 
-  private:
+ private:
     static QString Image_Reader_Formats_File_Filters, Image_Writer_Formats_File_Filters;
     static QStringList *Image_Reader_Formats, *Image_Writer_Formats;
 };
 
-} // namespace HiRISE
-} // namespace UA
-#endif
-#endif
+}  // namespace UA::HiRISE

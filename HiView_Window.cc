@@ -50,7 +50,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #define QT_USE_FAST_CONCATENATION
 #define QT_USE_FAST_OPERATOR_PLUS
-#include <QString>
+#include <QtCore/qmath.h>
 
 #include <QAction>
 #include <QCloseEvent>
@@ -79,12 +79,12 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QRubberBand>
 #include <QSettings>
 #include <QStatusBar>
+#include <QString>
 #include <QTimer>
 #include <QToolBar>
 #include <QToolButton>
 #include <QUrl>
 #include <QVBoxLayout>
-#include <QtCore/qmath.h>
 
 //	Image metadata parameters.
 #include "PVL.hh"
@@ -94,11 +94,11 @@ using idaeim::PVL::Parameter;
 #include <string>
 using std::string;
 
-#ifdef __APPLE__
+#ifdef Q_OS_MACOS
 #include "Mac_Voice_Adapter.hh"
 #endif
 
-#if defined(DEBUG_SECTION)
+#ifdef DEBUG_SECTION
 /*	DEBUG_SECTION controls
 
     DEBUG_SECTION report selection options.
@@ -138,10 +138,10 @@ using std::string;
 #define DEBUG_SECTION DEBUG_OVERVIEW
 #endif
 
-#include "Projection.hh"
-
 #include <iomanip>
 #include <iostream>
+
+#include "Projection.hh"
 using std::boolalpha;
 using std::clog;
 using std::dec;
@@ -150,14 +150,15 @@ using std::hex;
 using std::showbase;
 using std::uppercase;
 
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
 namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const HiView_Window::ID = "UA::HiRISE::HiView_Window ($Revision: 1.235 $ $Date: 2014/08/05 17:58:08 $)";
+const char* const HiView_Window::ID =
+    "UA::HiRISE::HiView_Window ($Revision: 1.235 $ $Date: 2014/08/05 17:58:08 $)";
 
 #ifndef IMAGE_DISPLAY_MIN_WIDTH
 #define IMAGE_DISPLAY_MIN_WIDTH 300
@@ -179,7 +180,7 @@ const char *const HiView_Window::ID = "UA::HiRISE::HiView_Window ($Revision: 1.2
 #endif
 
 #ifndef DEFAULT_VIEW_SPEECH_RECOG
-#ifdef __APPLE__
+#ifdef Q_OS_MACOS
 #define DEFAULT_VIEW_SPEECH_RECOG true
 #else
 #define DEFAULT_VIEW_SPEECH_RECOG false
@@ -224,7 +225,7 @@ const char *const HiView_Window::ID = "UA::HiRISE::HiView_Window ($Revision: 1.2
 */
 bool HiView_Window::Restore_Layout;
 
-QErrorMessage *HiView_Window::Error_Message = NULL;
+QErrorMessage* HiView_Window::Error_Message = NULL;
 
 #ifndef X_BUTTON_ICON
 #define X_BUTTON_ICON ":/Images/X_button.png"
@@ -265,54 +266,70 @@ enum
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
 QString dock_areas_names(Qt::DockWidgetAreas areas)
 {
-    if (areas == Qt::NoDockWidgetArea)
-        return "none";
+    if (areas == Qt::NoDockWidgetArea) return "none";
 
     QString name;
 
-    if (areas & Qt::LeftDockWidgetArea)
-        name = "left";
+    if (areas & Qt::LeftDockWidgetArea) name = "left";
     if (areas & Qt::RightDockWidgetArea)
     {
-        if (!name.isEmpty())
-            name += ", ";
+        if (!name.isEmpty()) name += ", ";
         name += "right";
     }
     if (areas & Qt::TopDockWidgetArea)
     {
-        if (!name.isEmpty())
-            name += ", ";
+        if (!name.isEmpty()) name += ", ";
         name += "top";
     }
     if (areas & Qt::BottomDockWidgetArea)
     {
-        if (!name.isEmpty())
-            name += ", ";
+        if (!name.isEmpty()) name += ", ";
         name += "bottom";
     }
     return name;
 }
 #endif
-} // namespace
+}  // namespace
 
 /*==============================================================================
     Constructors
 */
-HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layout_Restoration restore_layout,
-                             QWidget *parent, Qt::WindowFlags flags)
-    : QMainWindow(parent, flags), About_Dialog(NULL), Selected_Tool(NULL), Source_Name(source),
-      Startup_Stage(STARTUP_SPLASH), Image_Loading(false), Network_Reply(NULL), Image_Activity_Indicator(NULL),
-      Image_Info(NULL), Location(new Location_Mapper), Image_View(NULL), Selected_Image_Region(0, 0, 0, 0),
-      Selection_Modification(0), Selection_Start(-1, -1), Region_Overlay(NULL), Selected_Area(NULL),
-      Image_Metadata_Dialog(NULL), Metadata(NULL), Image_Line(0, 0, 0, 0), Distance_Tool(false), Navigator(NULL),
-      Navigator_Fit(true), Statistics(NULL), Statistics_Refresh_Needed(false), Data_Mapper(NULL),
-      Open_File_Dialog(NULL), Image_Save_Dialog(NULL), Image_Saved(NULL)
+HiView_Window::HiView_Window(const QString& source, const QSizeF& scaling,
+                             Layout_Restoration restore_layout, QWidget* parent,
+                             Qt::WindowFlags flags)
+    : QMainWindow(parent, flags),
+      About_Dialog(NULL),
+      Selected_Tool(NULL),
+      Source_Name(source),
+      Startup_Stage(STARTUP_SPLASH),
+      Image_Loading(false),
+      Network_Reply(NULL),
+      Image_Activity_Indicator(NULL),
+      Image_Info(NULL),
+      Location(new Location_Mapper),
+      Image_View(NULL),
+      Selected_Image_Region(0, 0, 0, 0),
+      Selection_Modification(0),
+      Selection_Start(-1, -1),
+      Region_Overlay(NULL),
+      Selected_Area(NULL),
+      Image_Metadata_Dialog(NULL),
+      Metadata(NULL),
+      Image_Line(0, 0, 0, 0),
+      Distance_Tool(false),
+      Navigator(NULL),
+      Navigator_Fit(true),
+      Statistics(NULL),
+      Statistics_Refresh_Needed(false),
+      Data_Mapper(NULL),
+      Open_File_Dialog(NULL),
+      Image_Save_Dialog(NULL),
+      Image_Saved(NULL)
 {
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
     clog << boolalpha;
 #endif
-    if (qApp->applicationName().isEmpty())
-        qApp->setApplicationName("HiView");
+    if (qApp->applicationName().isEmpty()) qApp->setApplicationName("HiView");
     setObjectName(qApp->applicationName());
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
     clog << ">>> HiView_Window: " << object_pathname(this) << endl;
@@ -326,7 +343,7 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
     Data_Mapper_Tool::error_message(Error_Message);
     Metadata_Dialog::error_message(Error_Message);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
-    clog << "    shared Error_Message @ " << (void *)Error_Message << endl;
+    clog << "    shared Error_Message @ " << (void*)Error_Message << endl;
 #endif
 
     /*	Use the text file configuration settings format.
@@ -361,9 +378,9 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
     Plastic_Image::default_auto_update(false);
 
     //	Central widget.
-    QWidget *central_area = new QWidget(this);
+    QWidget* central_area = new QWidget(this);
     central_area->setObjectName("Central_Area");
-    QVBoxLayout *vertical_layout = new QVBoxLayout(central_area);
+    QVBoxLayout* vertical_layout = new QVBoxLayout(central_area);
     central_area->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 //	Image source selection bar.
@@ -371,10 +388,10 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
     clog << "    create_source_selections ..." << endl;
 #endif
     create_source_selections();
-    QHBoxLayout *horizontal_layout = new QHBoxLayout;
+    QHBoxLayout* horizontal_layout = new QHBoxLayout;
     horizontal_layout->addWidget(Source_Selections, 100);
-    connect(Preferences, SIGNAL(source_list_changed(const QStringList &)),
-            SLOT(source_selections(const QStringList &)));
+    connect(Preferences, SIGNAL(source_list_changed(const QStringList&)),
+            SLOT(source_selections(const QStringList&)));
 
     //	Image loading activity indicator.
     int indicator_size = Source_Selections->sizeHint().rheight() + 2;
@@ -399,19 +416,25 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
     horizontal_layout->addWidget(Image_Info);
     horizontal_layout->addStretch();
     vertical_layout->addLayout(horizontal_layout);
-    connect(Preferences, SIGNAL(longitude_direction_changed(int)), Image_Info, SLOT(longitude_direction(int)));
-    connect(Preferences, SIGNAL(longitude_units_changed(int)), Image_Info, SLOT(longitude_units(int)));
-    connect(Preferences, SIGNAL(latitude_units_changed(int)), Image_Info, SLOT(latitude_units(int)));
-    connect(Preferences, SIGNAL(script_changed(const QString &)), Image_Info, SLOT(script_changed(const QString &)));
-    connect(Preferences, SIGNAL(show_script_changed(bool)), Image_Info, SLOT(show_script_changed(bool)));
-    connect(Image_Info, SIGNAL(variables_updated(QStringList &)), Preferences,
-            SIGNAL(variables_updated(QStringList &)));
+    connect(Preferences, &Preferences_Dialog::longitude_direction_changed, Image_Info,
+            &Image_Info_Panel::longitude_direction);
+    connect(Preferences, SIGNAL(longitude_units_changed(int)), Image_Info,
+            SLOT(longitude_units(int)));
+    connect(Preferences, SIGNAL(latitude_units_changed(int)), Image_Info,
+            SLOT(latitude_units(int)));
+    connect(Preferences, SIGNAL(script_changed(const QString&)), Image_Info,
+            SLOT(script_changed(const QString&)));
+    connect(Preferences, SIGNAL(show_script_changed(bool)), Image_Info,
+            SLOT(show_script_changed(bool)));
+    connect(Image_Info, SIGNAL(variables_updated(QStringList&)), Preferences,
+            SIGNAL(variables_updated(QStringList&)));
     //	Image metadata dialog.
     Image_Metadata_Dialog = new Metadata_Dialog(NULL, this, Qt::Window);
     Image_Metadata_Dialog->root_name("Metadata");
     Image_Metadata_Dialog->root_visible(DEFAULT_METADATA_ROOT_VISIBLE);
     Image_Metadata_Dialog->alternating_row_colors(DEFAULT_METADATA_STRIPED);
-    connect(Image_Metadata_Dialog, SIGNAL(visibility_changed(bool)), SLOT(view_image_metadata(bool)));
+    connect(Image_Metadata_Dialog, SIGNAL(visibility_changed(bool)),
+            SLOT(view_image_metadata(bool)));
 
 //	Image viewer pane.
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
@@ -437,10 +460,11 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
                 SIGNAL (rendering_status_notice (const QString&)),
                 SLOT (show_status_message (const QString&)));
     */
-    connect(statusBar(), SIGNAL(messageChanged(const QString &)), SLOT(status_message_changed(const QString &)));
-    Icon_Button *X_button = new Icon_Button(QIcon(X_BUTTON_ICON));
+    connect(statusBar(), SIGNAL(messageChanged(const QString&)),
+            SLOT(status_message_changed(const QString&)));
+    Icon_Button* X_button = new Icon_Button(QIcon(X_BUTTON_ICON));
     connect(X_button,
-            SIGNAL(clicked(bool)), //	Always emits false.
+            SIGNAL(clicked(bool)),  //	Always emits false.
             SLOT(view_status_bar(bool)));
     statusBar()->addPermanentWidget(X_button);
     statusBar()->setVisible(false);
@@ -452,9 +476,10 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
 #endif
     Network_Access_Manager = new QNetworkAccessManager(this);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE | DEBUG_DROP_IMAGE))
-    clog << "    Network_Access_Manager @ " << (void *)Network_Access_Manager << endl;
+    clog << "    Network_Access_Manager @ " << (void*)Network_Access_Manager << endl;
 #endif
-    connect(Network_Access_Manager, SIGNAL(finished(QNetworkReply *)), SLOT(load_image(QNetworkReply *)));
+    connect(Network_Access_Manager, SIGNAL(finished(QNetworkReply*)),
+            SLOT(load_image(QNetworkReply*)));
 
     //------------------------------------------------------------------------------
     //	Dockable tools.
@@ -513,11 +538,11 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
     //	Layout restoration flag.
     if (restore_layout == PREFERENCES_RESTORE_LAYOUT)
         Restore_Layout = Preferences->restore_layout();
-    else
-        Restore_Layout = restore_layout;
+    else Restore_Layout = restore_layout;
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
     clog << "    Restore_Layout = " << Restore_Layout << " - "
-         << ((restore_layout == PREFERENCES_RESTORE_LAYOUT) ? "from Preferences" : "user specified") << endl;
+         << ((restore_layout == PREFERENCES_RESTORE_LAYOUT) ? "from Preferences" : "user specified")
+         << endl;
 #endif
 
     //	Initial source to load after the splash image (may be empty).
@@ -526,11 +551,11 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
     if (scaling.isEmpty() && Preferences->initial_scale() != Preferences->INITIAL_SCALE_AUTO_FIT)
         //	Use the Preferences setting for the initial scaling.
         Initial_Scaling.rwidth() = Initial_Scaling.rheight() = Preferences->initial_scale();
-    else
-        Initial_Scaling = scaling;
+    else Initial_Scaling = scaling;
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
     clog << "    Initial_Scaling = " << Initial_Scaling << " - from "
-         << ((scaling.isEmpty() && Preferences->initial_scale() != Preferences->INITIAL_SCALE_AUTO_FIT)
+         << ((scaling.isEmpty() &&
+              Preferences->initial_scale() != Preferences->INITIAL_SCALE_AUTO_FIT)
                  ? "Preferences"
                  : "command line")
          << endl;
@@ -539,7 +564,8 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
     //	Begin with the splash image.
     QImage default_image(SPLASH_IMAGE);
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
-    clog << "    load SPLASH_IMAGE \"" << SPLASH_IMAGE << "\" image @ " << (void *)&default_image << endl;
+    clog << "    load SPLASH_IMAGE \"" << SPLASH_IMAGE << "\" image @ " << (void*)&default_image
+         << endl;
 #endif
     if (!load_image(default_image, QSizeF(1.0, 1.0)))
     {
@@ -551,19 +577,18 @@ HiView_Window::HiView_Window(const QString &source, const QSizeF &scaling, Layou
         Startup_Stage = STARTUP_COMPLETE;
     }
 
-    if (Error_Message->isVisible())
-        Error_Message->raise();
+    if (Error_Message->isVisible()) Error_Message->raise();
 
     //	Filter tooltip events.
     qApp->installEventFilter(this);
 
-    HiView_Application *application = dynamic_cast<HiView_Application *>(qApp);
+    HiView_Application* application = dynamic_cast<HiView_Application*>(qApp);
     if (application)
     {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
         clog << "    connect to HiView_Application file_open_request" << endl;
 #endif
-        connect(application, SIGNAL(file_open_request(const QString &)), SLOT(open(const QString &)));
+        connect(application, SIGNAL(file_open_request(const QString&)), SLOT(open(const QString&)));
     }
 
 #ifdef __APPLE__
@@ -598,19 +623,13 @@ void HiView_Window::recognizer_toggled(bool enable)
 {
     if (enable)
     {
-        if (adapter)
-        {
-            adapter->toggle(enable);
-        }
+        if (adapter) { adapter->toggle(enable); }
         else
         {
             adapter = new Mac_Voice_Adapter(Image_View, Statistics, Data_Mapper);
         }
     }
-    else if (adapter)
-    {
-        adapter->toggle(enable);
-    }
+    else if (adapter) { adapter->toggle(enable); }
 }
 #endif
 
@@ -646,22 +665,29 @@ void HiView_Window::configure()
     if (pathname.isEmpty() || !file_info.exists() || !file_info.isDir())
         pathname = QDir::currentPath();
     Save_Image_Dialog::Default_Directory = pathname;
-    Save_Image_Dialog::Default_Image_Format = settings.value("Save_Image_Format", QString()).toString();
+    Save_Image_Dialog::Default_Image_Format =
+        settings.value("Save_Image_Format", QString()).toString();
 
-    View_Tooltips_Action->setChecked(settings.value("View_Tooltips", DEFAULT_VIEW_TOOLTIPS).toBool());
+    View_Tooltips_Action->setChecked(
+        settings.value("View_Tooltips", DEFAULT_VIEW_TOOLTIPS).toBool());
 
 #ifdef __APPLE__
-    View_SpeechRecog_Action->setChecked(settings.value("View_SpeechRecog", DEFAULT_VIEW_SPEECH_RECOG).toBool());
+    View_SpeechRecog_Action->setChecked(
+        settings.value("View_SpeechRecog", DEFAULT_VIEW_SPEECH_RECOG).toBool());
 #endif
 
-    View_Image_Info_Action->setChecked(settings.value("View_Image_Info", DEFAULT_VIEW_IMAGE_INFO).toBool());
+    View_Image_Info_Action->setChecked(
+        settings.value("View_Image_Info", DEFAULT_VIEW_IMAGE_INFO).toBool());
 
-    View_Image_Metadata_Action->setChecked(settings.value("View_Image_Metadata", DEFAULT_VIEW_IMAGE_METADATA).toBool());
+    View_Image_Metadata_Action->setChecked(
+        settings.value("View_Image_Metadata", DEFAULT_VIEW_IMAGE_METADATA).toBool());
 
-    View_Status_Bar_Action->setChecked(settings.value("View_Status_Bar", DEFAULT_VIEW_STATUS_BAR).toBool());
+    View_Status_Bar_Action->setChecked(
+        settings.value("View_Status_Bar", DEFAULT_VIEW_STATUS_BAR).toBool());
 
     Navigator_Tool::default_immediate_mode(
-        settings.value("Navigator_Immediate_Mode", Navigator_Tool::default_immediate_mode()).toBool());
+        settings.value("Navigator_Immediate_Mode", Navigator_Tool::default_immediate_mode())
+            .toBool());
 
     /*
     Auto_Resize_Action->setChecked
@@ -672,12 +698,9 @@ void HiView_Window::configure()
     Line_Color = QColor(settings.value("Line_Color", "#ff0000").toString());
 
     //	Clean out obsolete settings.
-    if (settings.contains("View_Navigator"))
-        settings.remove("View_Navigator");
-    if (settings.contains("View_Statistics"))
-        settings.remove("View_Statistics");
-    if (settings.contains("View_Data_Mapper"))
-        settings.remove("View_Data_Mapper");
+    if (settings.contains("View_Navigator")) settings.remove("View_Navigator");
+    if (settings.contains("View_Statistics")) settings.remove("View_Statistics");
+    if (settings.contains("View_Data_Mapper")) settings.remove("View_Data_Mapper");
 
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "<<< HiView_Window::configure" << endl;
@@ -691,7 +714,8 @@ void HiView_Window::save_configuration()
          << "    Organization - " << qApp->organizationName() << endl
          << "     Application - " << qApp->applicationName() << endl;
 #endif
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, qApp->organizationName(), qApp->applicationName());
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, qApp->organizationName(),
+                       qApp->applicationName());
 
     settings.setValue("Source_Directory", Source_Directory);
     settings.setValue("View_Tooltips", View_Tooltips_Action->isChecked());
@@ -712,22 +736,21 @@ void HiView_Window::save_configuration()
         if (!pathname.isEmpty())
         {
             QFileInfo file_info(pathname);
-            if (!file_info.isDir())
-                pathname = file_info.dir().absolutePath();
+            if (!file_info.isDir()) pathname = file_info.dir().absolutePath();
             settings.setValue("Save_Image_Directory", pathname);
         }
         pathname = Image_Save_Dialog->image_format();
-        if (!pathname.isEmpty())
-            settings.setValue("Save_Image_Format", pathname);
+        if (!pathname.isEmpty()) settings.setValue("Save_Image_Format", pathname);
     }
 
-    if (Navigator)
-        settings.setValue("Navigator_Immediate_Mode", Navigator->immediate_mode());
+    if (Navigator) settings.setValue("Navigator_Immediate_Mode", Navigator->immediate_mode());
 
     if (Statistics)
     {
-        settings.setValue("Statistics_Upper_Limit_Offset", Statistics->source_statistics()->stats().upper_limit());
-        settings.setValue("Statistics_Lower_Limit_Offset", Statistics->source_statistics()->stats().lower_limit());
+        settings.setValue("Statistics_Upper_Limit_Offset",
+                          Statistics->source_statistics()->stats().upper_limit());
+        settings.setValue("Statistics_Lower_Limit_Offset",
+                          Statistics->source_statistics()->stats().lower_limit());
     }
 
     if (Data_Mapper)
@@ -739,8 +762,7 @@ void HiView_Window::save_configuration()
         for (int band = 0; band < 3; ++band)
         {
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
-            if (band)
-                clog << ',';
+            if (band) clog << ',';
             clog << ' ' << Data_Mapper->upper_bound_percent(band);
 #endif
             values.append(QVariant(Data_Mapper->upper_bound_percent(band)));
@@ -754,8 +776,7 @@ void HiView_Window::save_configuration()
         for (int band = 0; band < 3; ++band)
         {
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
-            if (band)
-                clog << ',';
+            if (band) clog << ',';
             clog << ' ' << Data_Mapper->lower_bound_percent(band);
 #endif
             values.append(QVariant(Data_Mapper->lower_bound_percent(band)));
@@ -781,8 +802,8 @@ void HiView_Window::save_layout()
     QString application_geometry(qApp->applicationName() + "_Geometry"),
         application_state(qApp->applicationName() + "_State");
 #if ((DEBUG_SECTION) & DEBUG_LAYOUT)
-    clog << "    saving " << Preferences_Dialog::LAYOUT_GEOMETRY_SECTION << ' ' << application_geometry << " and "
-         << application_state << " settings" << endl;
+    clog << "    saving " << Preferences_Dialog::LAYOUT_GEOMETRY_SECTION << ' '
+         << application_geometry << " and " << application_state << " settings" << endl;
 #endif
     QSettings settings;
     settings.beginGroup(Preferences_Dialog::LAYOUT_GEOMETRY_SECTION);
@@ -803,22 +824,14 @@ void HiView_Window::restore_layout()
     settings.beginGroup(Preferences_Dialog::LAYOUT_GEOMETRY_SECTION);
 
     //	Cleanup obsolete settings.
-    if (settings.contains("Main_Window"))
-        settings.remove("Main_Window");
-    if (settings.contains("Image_Display"))
-        settings.remove("Image_Display");
-    if (settings.contains("Navigator_Tool"))
-        settings.remove("Navigator_Tool");
-    if (settings.contains("Navigator_Tool_Dock"))
-        settings.remove("Navigator_Tool_Dock");
-    if (settings.contains("Data_Mapper_Tool"))
-        settings.remove("Data_Mapper_Tool");
-    if (settings.contains("Data_Mapper_Tool_Dock"))
-        settings.remove("Data_Mapper_Tool_Dock");
-    if (settings.contains("Statistics_Tools"))
-        settings.remove("Statistics_Tools");
-    if (settings.contains("Statistics_Tools_Dock"))
-        settings.remove("Statistics_Tools_Dock");
+    if (settings.contains("Main_Window")) settings.remove("Main_Window");
+    if (settings.contains("Image_Display")) settings.remove("Image_Display");
+    if (settings.contains("Navigator_Tool")) settings.remove("Navigator_Tool");
+    if (settings.contains("Navigator_Tool_Dock")) settings.remove("Navigator_Tool_Dock");
+    if (settings.contains("Data_Mapper_Tool")) settings.remove("Data_Mapper_Tool");
+    if (settings.contains("Data_Mapper_Tool_Dock")) settings.remove("Data_Mapper_Tool_Dock");
+    if (settings.contains("Statistics_Tools")) settings.remove("Statistics_Tools");
+    if (settings.contains("Statistics_Tools_Dock")) settings.remove("Statistics_Tools_Dock");
 
     QString application_geometry(qApp->applicationName() + "_Geometry"),
         application_state(qApp->applicationName() + "_State");
@@ -886,24 +899,22 @@ void HiView_Window::restore_layout()
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_INITIALIZE | DEBUG_MENUS | DEBUG_LOAD_IMAGE))
         clog << "    Image_Info visible = " << View_Image_Info_Action->isChecked() << endl;
 #endif
-        if (View_Image_Info_Action->isChecked())
-            view_image_info(true);
+        if (View_Image_Info_Action->isChecked()) view_image_info(true);
     }
     if (Image_Metadata_Dialog)
     {
         View_Image_Metadata_Action->setEnabled(true);
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_INITIALIZE | DEBUG_MENUS | DEBUG_LOAD_IMAGE))
-        clog << "    Image_Metadta_Dialog visible = " << View_Image_Metadata_Action->isChecked() << endl;
+        clog << "    Image_Metadta_Dialog visible = " << View_Image_Metadata_Action->isChecked()
+             << endl;
 #endif
-        if (View_Image_Metadata_Action->isChecked())
-            view_image_metadata(true);
+        if (View_Image_Metadata_Action->isChecked()) view_image_metadata(true);
     }
     View_Status_Bar_Action->setEnabled(true);
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_INITIALIZE | DEBUG_MENUS | DEBUG_LOAD_IMAGE))
     clog << "    status bar visible = " << View_Status_Bar_Action->isChecked() << endl;
 #endif
-    if (View_Status_Bar_Action->isChecked())
-        view_status_bar(true);
+    if (View_Status_Bar_Action->isChecked()) view_status_bar(true);
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_INITIALIZE | DEBUG_MENUS | DEBUG_LOAD_IMAGE))
     clog << "<<< HiView_Window::restore_layout" << endl;
 #endif
@@ -917,7 +928,7 @@ void HiView_Window::create_menus()
 #if ((DEBUG_SECTION) & (DEBUG_INITIALIZE | DEBUG_MENUS))
     clog << ">>> HiView_Window::create_menus" << endl;
 #endif
-    QAction *action;
+    QAction* action;
     QKeySequence key_sequence;
 
     //	Disable context menu event.
@@ -934,8 +945,7 @@ void HiView_Window::create_menus()
 
     Open_File_Action = new QAction(tr("&Open File..."), this);
     key_sequence = QKeySequence(QKeySequence::Open);
-    if (key_sequence.isEmpty())
-        key_sequence = QKeySequence(tr("Ctrl+O"));
+    if (key_sequence.isEmpty()) key_sequence = QKeySequence(tr("Ctrl+O"));
     Open_File_Action->setShortcut(key_sequence);
     connect(Open_File_Action, SIGNAL(triggered()), SLOT(open_file()));
     File_Menu->addAction(Open_File_Action);
@@ -947,8 +957,7 @@ void HiView_Window::create_menus()
 
     Save_Action = new QAction(tr("&Save..."), this);
     key_sequence = QKeySequence(QKeySequence::Save);
-    if (key_sequence.isEmpty())
-        key_sequence = QKeySequence(tr("Ctrl+S"));
+    if (key_sequence.isEmpty()) key_sequence = QKeySequence(tr("Ctrl+S"));
     Save_Action->setShortcut(key_sequence);
     connect(Save_Action, SIGNAL(triggered()), SLOT(save_image()));
     File_Menu->addAction(Save_Action);
@@ -973,8 +982,7 @@ void HiView_Window::create_menus()
 #if QT_VERSION >= 0x40600
     key_sequence = QKeySequence(QKeySequence::Quit);
 #endif
-    if (key_sequence.isEmpty())
-        key_sequence = QKeySequence(tr("Ctrl+Q"));
+    if (key_sequence.isEmpty()) key_sequence = QKeySequence(tr("Ctrl+Q"));
     Quit_Action->setShortcut(key_sequence);
     connect(Quit_Action, SIGNAL(triggered()), SLOT(close()));
     Quit_Action->setMenuRole(QAction::QuitRole);
@@ -997,7 +1005,7 @@ void HiView_Window::create_menus()
     View_Image_Info_Action->setShortcut(tr("Ctrl+I"));
     View_Image_Info_Action->setCheckable(true);
     View_Image_Info_Action->setChecked(false);
-    View_Image_Info_Action->setEnabled(false); //	Enabled later (restore_layout).
+    View_Image_Info_Action->setEnabled(false);  //	Enabled later (restore_layout).
     connect(View_Image_Info_Action,
             /*
                 N.B.: The toggled signal is emitted when setChecked is called;
@@ -1018,7 +1026,7 @@ void HiView_Window::create_menus()
     View_Navigator_Action->setShortcut(tr("Ctrl+N"));
     View_Navigator_Action->setCheckable(true);
     View_Navigator_Action->setChecked(false);
-    View_Navigator_Action->setEnabled(false); //	Enabled later.
+    View_Navigator_Action->setEnabled(false);  //	Enabled later.
     connect(View_Navigator_Action, SIGNAL(triggered(bool)), SLOT(view_navigator(bool)));
     View_Menu->addAction(View_Navigator_Action);
 
@@ -1026,7 +1034,7 @@ void HiView_Window::create_menus()
     View_Statistics_Action->setShortcut(tr("Ctrl+T"));
     View_Statistics_Action->setCheckable(true);
     View_Statistics_Action->setChecked(false);
-    View_Statistics_Action->setEnabled(false); //	Enabled later.
+    View_Statistics_Action->setEnabled(false);  //	Enabled later.
     connect(View_Statistics_Action, SIGNAL(triggered(bool)), SLOT(view_statistics(bool)));
     View_Menu->addAction(View_Statistics_Action);
 
@@ -1034,7 +1042,7 @@ void HiView_Window::create_menus()
     View_Data_Mapper_Action->setShortcut(tr("Ctrl+D"));
     View_Data_Mapper_Action->setCheckable(true);
     View_Data_Mapper_Action->setChecked(false);
-    View_Data_Mapper_Action->setEnabled(false); //	Enabled later.
+    View_Data_Mapper_Action->setEnabled(false);  //	Enabled later.
     connect(View_Data_Mapper_Action, SIGNAL(triggered(bool)), SLOT(view_data_mapper(bool)));
     View_Menu->addAction(View_Data_Mapper_Action);
 
@@ -1058,7 +1066,7 @@ void HiView_Window::create_menus()
     View_Status_Bar_Action->setShortcut(tr("Ctrl+B"));
     View_Status_Bar_Action->setCheckable(true);
     View_Status_Bar_Action->setChecked(false);
-    View_Status_Bar_Action->setEnabled(false); //	Enabled later.
+    View_Status_Bar_Action->setEnabled(false);  //	Enabled later.
     connect(View_Status_Bar_Action, SIGNAL(triggered(bool)), SLOT(view_status_bar(bool)));
     View_Menu->addAction(View_Status_Bar_Action);
 
@@ -1099,8 +1107,8 @@ void HiView_Window::create_menus()
     Help_Action->setEnabled(!Preferences->documentation_location().isEmpty());
     Help_Menu->addAction(Help_Action);
     connect(Help_Action, SIGNAL(triggered()), SLOT(help()));
-    connect(Preferences, SIGNAL(documentation_location_changed(const QString &)),
-            SLOT(help_documentation(const QString &)));
+    connect(Preferences, SIGNAL(documentation_location_changed(const QString&)),
+            SLOT(help_documentation(const QString&)));
 
     action = new QAction(tr("About &HiView"), this);
     connect(action, SIGNAL(triggered()), SLOT(about()));
@@ -1148,15 +1156,11 @@ void HiView_Window::create_menus()
 
 void HiView_Window::toggle_distance_tool(bool enabled)
 {
-    if (Distance_Tool_Action->isChecked() != enabled)
-        Distance_Tool_Action->setChecked(enabled);
+    if (Distance_Tool_Action->isChecked() != enabled) Distance_Tool_Action->setChecked(enabled);
     else
     {
         Distance_Tool = enabled;
-        if (Distance_Tool)
-        {
-            reset_selected_region();
-        }
+        if (Distance_Tool) { reset_selected_region(); }
         else
         {
             // turn off line
@@ -1180,8 +1184,7 @@ void HiView_Window::view_image_info(bool enabled)
     if (View_Image_Info_Action->isChecked() != enabled)
         //	Toggle the action, if it is enabled, which is connected here.
         View_Image_Info_Action->setChecked(enabled);
-    else if (View_Image_Info_Action->isEnabled() && Image_Info)
-        Image_Info->setVisible(enabled);
+    else if (View_Image_Info_Action->isEnabled() && Image_Info) Image_Info->setVisible(enabled);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MENUS))
     clog << "<<< HiView_Window::view_image_info" << endl;
 #endif
@@ -1203,10 +1206,7 @@ void HiView_Window::view_image_metadata(bool enabled)
 #endif
 }
 
-void HiView_Window::auto_resize(bool enabled)
-{
-    Auto_Resize_Action->setChecked(enabled);
-}
+void HiView_Window::auto_resize(bool enabled) { Auto_Resize_Action->setChecked(enabled); }
 
 void HiView_Window::fit_window_to_image()
 {
@@ -1227,21 +1227,18 @@ void HiView_Window::fit_window_to_image()
     //	Adjusted window size.
     QSize window_size(size());
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MENUS | DEBUG_LAYOUT))
-    clog << "         desired size = " << scaled_size << endl << "          window size = " << window_size << endl;
+    clog << "         desired size = " << scaled_size << endl
+         << "          window size = " << window_size << endl;
 #endif
     window_size -= Image_View->size();
     window_size += scaled_size;
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MENUS | DEBUG_LAYOUT))
     clog << "        adjusted size = " << window_size << endl;
 #endif
-    if (window_size.rwidth() < minimumWidth())
-        window_size.rwidth() = minimumWidth();
-    if (window_size.rwidth() > maximumWidth())
-        window_size.rwidth() = maximumWidth();
-    if (window_size.rheight() < minimumHeight())
-        window_size.rheight() = minimumHeight();
-    if (window_size.rheight() > maximumHeight())
-        window_size.rheight() = maximumHeight();
+    if (window_size.rwidth() < minimumWidth()) window_size.rwidth() = minimumWidth();
+    if (window_size.rwidth() > maximumWidth()) window_size.rwidth() = maximumWidth();
+    if (window_size.rheight() < minimumHeight()) window_size.rheight() = minimumHeight();
+    if (window_size.rheight() > maximumHeight()) window_size.rheight() = maximumHeight();
 
 //	Resize the window to the adjusted size.
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MENUS | DEBUG_LAYOUT))
@@ -1259,8 +1256,7 @@ void HiView_Window::update_window_fit_action()
     clog << ">>> HiView_Window::update_window_fit_action" << endl;
 #endif
     bool fit = false;
-    if (Image_View)
-        fit = Image_View->display_fit_to_image();
+    if (Image_View) fit = Image_View->display_fit_to_image();
     Fit_to_Image_Action->setEnabled(!fit);
 
 #if ((DEBUG_SECTION) & DEBUG_MENUS)
@@ -1269,7 +1265,7 @@ void HiView_Window::update_window_fit_action()
     return;
 }
 
-void HiView_Window::displayed_image_region_resized(const QSize &)
+void HiView_Window::displayed_image_region_resized(const QSize&)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
     clog << ">>> HiView_Window::displayed_image_region_resized" << endl;
@@ -1285,24 +1281,20 @@ void HiView_Window::help()
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_HELP))
     clog << ">-< HiView_Window::help" << endl
          << "    documentation_location = " << Preferences->documentation_location() << endl
-         << "    default_documentation_filename = " << Preferences->default_documentation_filename() << endl;
+         << "    default_documentation_filename = " << Preferences->default_documentation_filename()
+         << endl;
 #endif
-    if (Preferences->documentation_location().isEmpty())
-        Help_Action->setEnabled(false);
-    else
-        Preferences->help_docs()->help(Preferences->default_documentation_filename());
+    if (Preferences->documentation_location().isEmpty()) Help_Action->setEnabled(false);
+    else Preferences->help_docs()->help(Preferences->default_documentation_filename());
 }
 
-void HiView_Window::help_documentation(const QString &location)
-{
-    Help_Action->setEnabled(!location.isEmpty());
-}
+void HiView_Window::help_documentation(const QString& location)
+{ Help_Action->setEnabled(!location.isEmpty()); }
 
 void HiView_Window::about()
 {
-    if (!About_Dialog)
-        About_Dialog = new About_HiView_Dialog;
-    About_Dialog->show(); //	Run non-modal (exec is modal).
+    if (!About_Dialog) About_Dialog = new About_HiView_Dialog;
+    About_Dialog->show();  //	Run non-modal (exec is modal).
 }
 
 /*==============================================================================
@@ -1329,7 +1321,8 @@ void HiView_Window::create_source_selections()
     for (int index = 0; index < Source_Selections->count(); index++)
         clog << "    " << index << ": " << Source_Selections->itemText(index) << endl;
 #endif
-    connect(Source_Selections, SIGNAL(currentTextChanged(const QString &)), SLOT(open(const QString &)));
+    connect(Source_Selections, SIGNAL(currentTextChanged(const QString&)),
+            SLOT(open(const QString&)));
 #if ((DEBUG_SECTION) & (DEBUG_SOURCE_SELECTIONS | DEBUG_INITIALIZE))
     clog << "<<< HiView_Window::create_source_selections" << endl;
 #endif
@@ -1338,40 +1331,29 @@ void HiView_Window::create_source_selections()
 #ifndef DOXYGEN_PROCESSING
 namespace
 {
-bool operator==(const QComboBox &list, const QStringList &strings)
+bool operator==(const QComboBox& list, const QStringList& strings)
 {
     bool matched = false;
     if (list.count() == strings.count())
     {
         int count = list.count();
         while (count--)
-            if (list.itemText(count) != strings.at(count))
-                break;
-        if (count < 0)
-            matched = true;
+            if (list.itemText(count) != strings.at(count)) break;
+        if (count < 0) matched = true;
     }
     return matched;
 }
 
-bool operator==(const QStringList &strings, const QComboBox &list)
-{
-    return list == strings;
-}
+bool operator==(const QStringList& strings, const QComboBox& list) { return list == strings; }
 
-bool operator!=(const QComboBox &list, const QStringList &strings)
-{
-    return !(list == strings);
-}
+bool operator!=(const QComboBox& list, const QStringList& strings) { return !(list == strings); }
 
-bool operator!=(const QStringList &strings, const QComboBox &list)
-{
-    return !(list == strings);
-}
+bool operator!=(const QStringList& strings, const QComboBox& list) { return !(list == strings); }
 
-} // namespace
+}  // namespace
 #endif
 
-void HiView_Window::display_image_name(const QString &source_name)
+void HiView_Window::display_image_name(const QString& source_name)
 {
     //	Set the source name as used here in the Image_Viewer.
     Image_View->image_name(source_name);
@@ -1392,7 +1374,7 @@ void HiView_Window::display_image_name(const QString &source_name)
     setWindowTitle(title);
 }
 
-void HiView_Window::add_source_selection(const QString &name)
+void HiView_Window::add_source_selection(const QString& name)
 {
 #if ((DEBUG_SECTION) & DEBUG_SOURCE_SELECTIONS)
     clog << ">>> HiView_Window::add_source_selection: " << name << endl;
@@ -1408,7 +1390,7 @@ void HiView_Window::add_source_selection(const QString &name)
 #endif
 }
 
-void HiView_Window::remove_source_selection(const QString &name)
+void HiView_Window::remove_source_selection(const QString& name)
 {
     int index = Preferences->source_list().indexOf(name);
     if (index >= 0)
@@ -1421,7 +1403,7 @@ void HiView_Window::remove_source_selection(const QString &name)
     }
 }
 
-void HiView_Window::source_selections(const QStringList &source_list)
+void HiView_Window::source_selections(const QStringList& source_list)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_SOURCE_SELECTIONS))
     clog << ">>> HiView_Window::source_selections:" << endl;
@@ -1455,19 +1437,16 @@ void HiView_Window::source_selections(const QStringList &source_list)
 #endif
         Source_Selections->clear();
         Source_Selections->addItems(source_list);
-        if (Source_Name.isEmpty())
-            Source_Selections->setCurrentIndex(-1);
-        else
-            Source_Selections->setCurrentIndex(0);
+        if (Source_Name.isEmpty()) Source_Selections->setCurrentIndex(-1);
+        else Source_Selections->setCurrentIndex(0);
     }
-    else
-        Source_Selections->setCurrentIndex(0);
+    else Source_Selections->setCurrentIndex(0);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_SOURCE_SELECTIONS))
     clog << "<<< HiView_Window::source_selections" << endl;
 #endif
 }
 
-bool HiView_Window::URL_source(QString &name)
+bool HiView_Window::URL_source(QString& name)
 {
 #if ((DEBUG_SECTION) & DEBUG_HELPERS)
     clog << ">>> URL_source: " << name << endl;
@@ -1482,8 +1461,7 @@ bool HiView_Window::URL_source(QString &name)
             int index = 5;
             if (name[index] == '/')
                 //	Remove redundant '/' characters.
-                while ((index + 1) < name.size() && name[index + 1] == '/')
-                    ++index;
+                while ((index + 1) < name.size() && name[index + 1] == '/') ++index;
 /*
     On UNIX systems the file URL has the form "file:///foo/bar".
     On MS/Windows the file URL has the form "file:///D:/foo/bar";
@@ -1496,7 +1474,8 @@ bool HiView_Window::URL_source(QString &name)
 #endif
             name.remove(0, index);
         }
-        else if (HiView_Utilities::is_URL(name) || name.startsWith("http://", Qt::CaseInsensitive) ||
+        else if (HiView_Utilities::is_URL(name) ||
+                 name.startsWith("http://", Qt::CaseInsensitive) ||
                  name.startsWith("https://", Qt::CaseInsensitive))
             source_is_URL = true;
 
@@ -1566,7 +1545,7 @@ bool HiView_Window::URL_source(QString &name)
     return source_is_URL;
 }
 
-bool HiView_Window::JPIP_source(QString &source_name) const
+bool HiView_Window::JPIP_source(QString& source_name) const
 {
 #if ((DEBUG_SECTION) & DEBUG_HELPERS)
     clog << ">>> JPIP_source: " << source_name << endl;
@@ -1615,8 +1594,7 @@ bool HiView_Window::JPIP_source(QString &source_name) const
                         hostname*/
                     = URL.host();
                 int port = Preferences->JPIP_server_port();
-                if (port <= 0)
-                    port = URL.port();
+                if (port <= 0) port = URL.port();
 
                 URL.clear();
                 URL.setScheme("jpip");
@@ -1639,7 +1617,7 @@ bool HiView_Window::JPIP_source(QString &source_name) const
 */
 void HiView_Window::tool_location_changed()
 {
-    QDockWidget *tool = dynamic_cast<QDockWidget *>(sender());
+    QDockWidget* tool = dynamic_cast<QDockWidget*>(sender());
     if (tool)
     {
         make_way_for(tool);
@@ -1647,12 +1625,12 @@ void HiView_Window::tool_location_changed()
     }
 }
 
-void HiView_Window::make_way_for(QDockWidget *tool)
+void HiView_Window::make_way_for(QDockWidget* tool)
 {
-    if (!tool)
-        return;
+    if (!tool) return;
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
-    clog << ">>> HiView_Window::make_way_for: " << (void *)tool << ' ' << tool->windowTitle() << endl;
+    clog << ">>> HiView_Window::make_way_for: " << (void*)tool << ' ' << tool->windowTitle()
+         << endl;
 #endif
     if (!tool->isWindow())
     {
@@ -1682,8 +1660,7 @@ void HiView_Window::make_way_for(QDockWidget *tool)
             guess = true;
 #endif
         }
-        else
-            max_height = screen_height - (max_height - current_height);
+        else max_height = screen_height - (max_height - current_height);
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
         clog << "                   tool isWindow = " << tool->isWindow() << endl
              << "                  tool dock area = " << dock_area << endl
@@ -1692,10 +1669,12 @@ void HiView_Window::make_way_for(QDockWidget *tool)
              << "         available screen height = " << screen_height << endl
              << "                frameSize height = " << frameSize().height() << endl
              << "      main window current height = " << current_height << endl
-             << "                      max height = " << max_height << (guess ? " (guess)" : "") << endl;
+             << "                      max height = " << max_height << (guess ? " (guess)" : "")
+             << endl;
 #endif
-        if (current_height > max_height && Statistics && Statistics != tool && Statistics->isVisible() &&
-            !Statistics->isWindow() && vertically_overlapping_docks(dock_area, dockWidgetArea(Statistics)))
+        if (current_height > max_height && Statistics && Statistics != tool &&
+            Statistics->isVisible() && !Statistics->isWindow() &&
+            vertically_overlapping_docks(dock_area, dockWidgetArea(Statistics)))
         {
             current_height -= Statistics->height();
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
@@ -1706,8 +1685,9 @@ void HiView_Window::make_way_for(QDockWidget *tool)
 #endif
             Statistics->setVisible(false);
         }
-        if (current_height > max_height && Data_Mapper && Data_Mapper != tool && Data_Mapper->isVisible() &&
-            !Data_Mapper->isWindow() && vertically_overlapping_docks(dock_area, dockWidgetArea(Data_Mapper)))
+        if (current_height > max_height && Data_Mapper && Data_Mapper != tool &&
+            Data_Mapper->isVisible() && !Data_Mapper->isWindow() &&
+            vertically_overlapping_docks(dock_area, dockWidgetArea(Data_Mapper)))
         {
             current_height -= Data_Mapper->height();
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
@@ -1718,8 +1698,9 @@ void HiView_Window::make_way_for(QDockWidget *tool)
 #endif
             Data_Mapper->setVisible(false);
         }
-        if (current_height > max_height && Navigator && Navigator != tool && Navigator->isVisible() &&
-            !Navigator->isWindow() && vertically_overlapping_docks(dock_area, dockWidgetArea(Navigator)))
+        if (current_height > max_height && Navigator && Navigator != tool &&
+            Navigator->isVisible() && !Navigator->isWindow() &&
+            vertically_overlapping_docks(dock_area, dockWidgetArea(Navigator)))
         {
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
             clog << "    hide Navigator" << endl
@@ -1737,42 +1718,48 @@ void HiView_Window::make_way_for(QDockWidget *tool)
 bool HiView_Window::vertically_overlapping_docks(Qt::DockWidgetArea this_dock_area,
                                                  Qt::DockWidgetArea that_dock_area) const
 {
-    if (this_dock_area == that_dock_area)
-        return true;
+    if (this_dock_area == that_dock_area) return true;
 
     if ((this_dock_area == Qt::LeftDockWidgetArea && that_dock_area == Qt::RightDockWidgetArea) ||
         (this_dock_area == Qt::RightDockWidgetArea && that_dock_area == Qt::LeftDockWidgetArea))
         return false;
 
     if (this_dock_area == corner(Qt::TopLeftCorner))
-        return that_dock_area == corner(Qt::BottomLeftCorner) || that_dock_area == Qt::LeftDockWidgetArea;
+        return that_dock_area == corner(Qt::BottomLeftCorner) ||
+               that_dock_area == Qt::LeftDockWidgetArea;
     if (this_dock_area == corner(Qt::TopRightCorner))
-        return that_dock_area == corner(Qt::BottomRightCorner) || that_dock_area == Qt::RightDockWidgetArea;
+        return that_dock_area == corner(Qt::BottomRightCorner) ||
+               that_dock_area == Qt::RightDockWidgetArea;
     if (this_dock_area == corner(Qt::BottomLeftCorner))
-        return that_dock_area == corner(Qt::TopLeftCorner) || that_dock_area == Qt::LeftDockWidgetArea;
+        return that_dock_area == corner(Qt::TopLeftCorner) ||
+               that_dock_area == Qt::LeftDockWidgetArea;
     if (this_dock_area == corner(Qt::BottomRightCorner))
-        return that_dock_area == corner(Qt::TopRightCorner) || that_dock_area == Qt::RightDockWidgetArea;
+        return that_dock_area == corner(Qt::TopRightCorner) ||
+               that_dock_area == Qt::RightDockWidgetArea;
 
     //	this_dock_area does not occupy a corner; check against that_dock_area.
     if (that_dock_area == corner(Qt::TopLeftCorner))
-        return this_dock_area == corner(Qt::BottomLeftCorner) || this_dock_area == Qt::LeftDockWidgetArea;
+        return this_dock_area == corner(Qt::BottomLeftCorner) ||
+               this_dock_area == Qt::LeftDockWidgetArea;
     if (that_dock_area == corner(Qt::TopRightCorner))
-        return this_dock_area == corner(Qt::BottomRightCorner) || this_dock_area == Qt::RightDockWidgetArea;
+        return this_dock_area == corner(Qt::BottomRightCorner) ||
+               this_dock_area == Qt::RightDockWidgetArea;
     if (that_dock_area == corner(Qt::BottomLeftCorner))
-        return this_dock_area == corner(Qt::TopLeftCorner) || this_dock_area == Qt::LeftDockWidgetArea;
+        return this_dock_area == corner(Qt::TopLeftCorner) ||
+               this_dock_area == Qt::LeftDockWidgetArea;
     if (that_dock_area == corner(Qt::BottomRightCorner))
-        return this_dock_area == corner(Qt::TopRightCorner) || this_dock_area == Qt::RightDockWidgetArea;
+        return this_dock_area == corner(Qt::TopRightCorner) ||
+               this_dock_area == Qt::RightDockWidgetArea;
 
     //	that_dock does not occupy a corner either.
     return false;
 }
 
-void HiView_Window::resize_tool(QDockWidget *tool)
+void HiView_Window::resize_tool(QDockWidget* tool)
 {
-    if (!tool)
-        return;
+    if (!tool) return;
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
-    clog << ">>> HiView_Window::resize_tool: " << (void *)tool << ' ' << tool->windowTitle() << endl
+    clog << ">>> HiView_Window::resize_tool: " << (void*)tool << ' ' << tool->windowTitle() << endl
          << "    isWindow = " << tool->isWindow() << endl
          << "    dockWidgetArea = " << dockWidgetArea(tool) << endl;
 #endif
@@ -1782,10 +1769,8 @@ void HiView_Window::resize_tool(QDockWidget *tool)
         if (tool->isWindow() || dock_area & (Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea))
         {
             //	No constraints.
-            if (tool == Statistics)
-                Statistics->visible_graph(true);
-            else if (tool == Data_Mapper)
-                Data_Mapper->visible_graph(true);
+            if (tool == Statistics) Statistics->visible_graph(true);
+            else if (tool == Data_Mapper) Data_Mapper->visible_graph(true);
         }
         else
         {
@@ -1793,10 +1778,8 @@ void HiView_Window::resize_tool(QDockWidget *tool)
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
             clog << "    constrain -" << endl << "    sizeHint ante = " << tool->sizeHint() << endl;
 #endif
-            if (tool == Statistics)
-                Statistics->visible_graph(false);
-            else if (tool == Data_Mapper)
-                Data_Mapper->visible_graph(false);
+            if (tool == Statistics) Statistics->visible_graph(false);
+            else if (tool == Data_Mapper) Data_Mapper->visible_graph(false);
 
             /*	Force the tool to shrink to minimal size in a side dock.
 
@@ -1814,7 +1797,8 @@ void HiView_Window::resize_tool(QDockWidget *tool)
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
             clog << "    sizeHint post = " << tool->sizeHint() << endl;
 #endif
-            if (Navigator->isVisible() && !Navigator->isWindow() && dockWidgetArea(Navigator) == dock_area)
+            if (Navigator->isVisible() && !Navigator->isWindow() &&
+                dockWidgetArea(Navigator) == dock_area)
             {
                 if (Navigator == tool)
                 {
@@ -1877,8 +1861,7 @@ void HiView_Window::resize_tool(QDockWidget *tool)
             tool->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         }
     }
-    if (tool == Navigator)
-        Navigator_Fit = false;
+    if (tool == Navigator) Navigator_Fit = false;
 #if ((DEBUG_SECTION) & (DEBUG_LAYOUT | DEBUG_SLOTS))
     clog << "<<< HiView_Window::resize_tool" << endl;
 #endif
@@ -1891,32 +1874,34 @@ void HiView_Window::tool_position()
 #endif
     QObject
         //	Expected to be a QAction of the Tool_Position_Menu.
-        *source = sender();
+        * source = sender();
 
     if (!Selected_Tool)
     {
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
         clog << "    no Selected_Tool" << endl;
 #endif
-        Selected_Tool = dynamic_cast<QDockWidget *>(QApplication::focusWidget());
+        Selected_Tool = dynamic_cast<QDockWidget*>(QApplication::focusWidget());
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
-        if (!Selected_Tool)
-            clog << "    no tool with focus" << endl;
+        if (!Selected_Tool) clog << "    no tool with focus" << endl;
 #endif
     }
 
     if (Selected_Tool)
     {
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
-        clog << "    Selected_Tool = " << (void *)Selected_Tool << ' ' << Selected_Tool->windowTitle() << endl;
+        clog << "    Selected_Tool = " << (void*)Selected_Tool << ' '
+             << Selected_Tool->windowTitle() << endl;
 #endif
         Qt::DockWidgetArea dock_area = dockWidgetArea(Selected_Tool);
         Qt::DockWidgetAreas allowed_areas = Selected_Tool->allowedAreas();
         bool is_floating = Selected_Tool->isFloating();
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
         clog << "       isFloating = " << is_floating << endl
-             << "        dock_area = " << dock_areas_names(dock_area) << " (" << dock_area << ')' << endl
-             << "    allowed_areas = " << dock_areas_names(allowed_areas) << " (" << allowed_areas << ')' << endl;
+             << "        dock_area = " << dock_areas_names(dock_area) << " (" << dock_area << ')'
+             << endl
+             << "    allowed_areas = " << dock_areas_names(allowed_areas) << " (" << allowed_areas
+             << ')' << endl;
 #endif
         if (source == Close_Position)
         {
@@ -1974,17 +1959,14 @@ void HiView_Window::tool_position()
                     Selected_Tool->setFloating(false);
                 }
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
-                else
-                    clog << "      no change" << endl;
+                else clog << "      no change" << endl;
 #endif
             }
             else
             {
-                if (selected_area & allowed_areas)
-                    addDockWidget(selected_area, Selected_Tool);
+                if (selected_area & allowed_areas) addDockWidget(selected_area, Selected_Tool);
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
-                else
-                    clog << "      no change" << endl;
+                else clog << "      no change" << endl;
 #endif
             }
         }
@@ -2006,49 +1988,58 @@ void HiView_Window::create_navigator()
     Navigator = new Navigator_Tool(this);
     Navigator->setVisible(false);
     Navigator->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    Navigator->displayed_image_region_resized(round_down((Image_View->displayed_image_region()).size()));
+    Navigator->displayed_image_region_resized(
+        round_down((Image_View->displayed_image_region()).size()));
     addDockWidget(Qt::LeftDockWidgetArea, Navigator);
 
     //	Tool position actions.
     Navigator->addActions(Tool_Position_Menu->actions());
     //	Context menu handling.
-    connect(Navigator, SIGNAL(tool_context_menu_requested(QDockWidget *, QContextMenuEvent *)),
-            SLOT(tool_context_menu_requested(QDockWidget *, QContextMenuEvent *)));
+    connect(Navigator, SIGNAL(tool_context_menu_requested(QDockWidget*, QContextMenuEvent*)),
+            SLOT(tool_context_menu_requested(QDockWidget*, QContextMenuEvent*)));
 
     //	View Navigator selection.
     connect(Navigator, SIGNAL(visibilityChanged(bool)), SLOT(navigator_visibility_changed(bool)));
     //	Dock area change.
-    connect(Navigator, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), SLOT(tool_location_changed()));
+    connect(Navigator, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),
+            SLOT(tool_location_changed()));
     connect(Navigator, SIGNAL(topLevelChanged(bool)), SLOT(tool_location_changed()));
 
     //	Image pixel value.
-    connect(Image_View, SIGNAL(image_pixel_value(const Plastic_Image::Triplet &, const Plastic_Image::Triplet &)),
-            Navigator, SLOT(image_pixel_value(const Plastic_Image::Triplet &, const Plastic_Image::Triplet &)));
+    connect(Image_View,
+            SIGNAL(image_pixel_value(const Plastic_Image::Triplet&, const Plastic_Image::Triplet&)),
+            Navigator,
+            SLOT(image_pixel_value(const Plastic_Image::Triplet&, const Plastic_Image::Triplet&)));
 
     //	Band map changed.
-    connect(Navigator, SIGNAL(bands_mapped(const unsigned int *)), Image_View, SLOT(map_bands(const unsigned int *)));
+    connect(Navigator, SIGNAL(bands_mapped(const unsigned int*)), Image_View,
+            SLOT(map_bands(const unsigned int*)));
 
     //	Displayed band numbering changed.
-    connect(Preferences, SIGNAL(band_numbers_indexed_changed(bool)), Navigator, SLOT(refresh_band_numbers()));
+    connect(Preferences, SIGNAL(band_numbers_indexed_changed(bool)), Navigator,
+            SLOT(refresh_band_numbers()));
 
     //	Image cursor moved.
-    connect(Image_View, SIGNAL(image_cursor_moved(const QPoint &, const QPoint &)), Navigator,
-            SLOT(image_cursor_moved(const QPoint &, const QPoint &)));
+    connect(Image_View, SIGNAL(image_cursor_moved(const QPoint&, const QPoint&)), Navigator,
+            SLOT(image_cursor_moved(const QPoint&, const QPoint&)));
 
     //	Image origin moved.
-    connect(Image_View, SIGNAL(image_moved(const QPoint &, int)), Navigator, SLOT(move_region(const QPoint &, int)));
-    connect(Navigator, SIGNAL(region_moved(const QPoint &, int)), Image_View, SLOT(move_image(const QPoint &, int)));
+    connect(Image_View, SIGNAL(image_moved(const QPoint&, int)), Navigator,
+            SLOT(move_region(const QPoint&, int)));
+    connect(Navigator, SIGNAL(region_moved(const QPoint&, int)), Image_View,
+            SLOT(move_image(const QPoint&, int)));
 
     //	Image display region size change.
-    connect(Image_View, SIGNAL(displayed_image_region_resized(const QSize &)), Navigator,
-            SLOT(displayed_image_region_resized(const QSize &)));
-    connect(Image_View, SIGNAL(display_viewport_resized(const QSize &)), Navigator,
-            SLOT(display_viewport_resized(const QSize &)));
+    connect(Image_View, SIGNAL(displayed_image_region_resized(const QSize&)), Navigator,
+            SLOT(displayed_image_region_resized(const QSize&)));
+    connect(Image_View, SIGNAL(display_viewport_resized(const QSize&)), Navigator,
+            SLOT(display_viewport_resized(const QSize&)));
 
     //	Image scaling change.
-    connect(Image_View, SIGNAL(image_scaled(const QSizeF &, int)), Navigator, SLOT(scale_image(const QSizeF &, int)));
-    connect(Navigator, SIGNAL(image_scaled(const QSizeF &, const QPoint &, int)), Image_View,
-            SLOT(scale_image(const QSizeF &, const QPoint &, int)));
+    connect(Image_View, SIGNAL(image_scaled(const QSizeF&, int)), Navigator,
+            SLOT(scale_image(const QSizeF&, int)));
+    connect(Navigator, SIGNAL(image_scaled(const QSizeF&, const QPoint&, int)), Image_View,
+            SLOT(scale_image(const QSizeF&, const QPoint&, int)));
 
 #if ((DEBUG_SECTION) & (DEBUG_NAVIGATOR | DEBUG_INITIALIZE))
     clog << "<<< HiView_Window::create_navigator" << endl;
@@ -2063,8 +2054,7 @@ void HiView_Window::view_navigator(bool enabled)
     if (View_Navigator_Action->isChecked() != enabled)
         //	Toggle the action, if it is enabled, which is connected here.
         View_Navigator_Action->setChecked(enabled);
-    else if (View_Navigator_Action->isEnabled() && Navigator)
-        Navigator->setVisible(enabled);
+    else if (View_Navigator_Action->isEnabled() && Navigator) Navigator->setVisible(enabled);
 #if ((DEBUG_SECTION) & (DEBUG_NAVIGATOR | DEBUG_SLOTS | DEBUG_MENUS))
     clog << "<<< HiView_Window::view_navigator" << endl;
 #endif
@@ -2103,34 +2093,36 @@ void HiView_Window::create_statistics_panels()
     //	Tool position actions.
     Statistics->addActions(Tool_Position_Menu->actions());
     //	Context menu handling.
-    connect(Statistics, SIGNAL(tool_context_menu_requested(QDockWidget *, QContextMenuEvent *)),
-            SLOT(tool_context_menu_requested(QDockWidget *, QContextMenuEvent *)));
+    connect(Statistics, SIGNAL(tool_context_menu_requested(QDockWidget*, QContextMenuEvent*)),
+            SLOT(tool_context_menu_requested(QDockWidget*, QContextMenuEvent*)));
 
     //	Preferences parameters.
     Statistics->source_statistics()->canvas_color(Preferences->canvas_color());
-    connect(Preferences, SIGNAL(canvas_color_changed(QRgb)), Statistics->source_statistics(), SLOT(canvas_color(QRgb)));
+    connect(Preferences, SIGNAL(canvas_color_changed(QRgb)), Statistics->source_statistics(),
+            SLOT(canvas_color(QRgb)));
     Statistics->display_statistics()->canvas_color(Preferences->canvas_color());
     connect(Preferences, SIGNAL(canvas_color_changed(QRgb)), Statistics->display_statistics(),
             SLOT(canvas_color(QRgb)));
     Statistics->source_statistics()->selection_distance(Preferences->selection_sensitivity());
-    connect(Preferences, SIGNAL(selection_sensitivity_changed(int)), Statistics->source_statistics(),
-            SLOT(selection_distance(int)));
-    connect(Preferences, SIGNAL(band_numbers_indexed_changed(bool)), Statistics->source_statistics(),
-            SLOT(refresh_band_numbers()));
-    connect(Preferences, SIGNAL(band_numbers_indexed_changed(bool)), Statistics->display_statistics(),
-            SLOT(refresh_band_numbers()));
+    connect(Preferences, SIGNAL(selection_sensitivity_changed(int)),
+            Statistics->source_statistics(), SLOT(selection_distance(int)));
+    connect(Preferences, SIGNAL(band_numbers_indexed_changed(bool)),
+            Statistics->source_statistics(), SLOT(refresh_band_numbers()));
+    connect(Preferences, SIGNAL(band_numbers_indexed_changed(bool)),
+            Statistics->display_statistics(), SLOT(refresh_band_numbers()));
 
     //	View Statistics selection.
     connect(Statistics, SIGNAL(visibilityChanged(bool)), SLOT(statistics_visibility_changed(bool)));
     connect(Statistics, SIGNAL(section_changed(int)), SLOT(statistics_section_changed(int)));
     //	Dock area change.
-    connect(Statistics, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), SLOT(tool_location_changed()));
+    connect(Statistics, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),
+            SLOT(tool_location_changed()));
     connect(Statistics, SIGNAL(topLevelChanged(bool)), SLOT(tool_location_changed()));
 
     if (Navigator)
         //	Navigator band mapping.
-        connect(Navigator, SIGNAL(bands_mapped(const unsigned int *)), Statistics->source_statistics(),
-                SLOT(band_map(const unsigned int *)));
+        connect(Navigator, SIGNAL(bands_mapped(const unsigned int*)),
+                Statistics->source_statistics(), SLOT(band_map(const unsigned int*)));
 
 #if ((DEBUG_SECTION) & (DEBUG_INITIALIZE | DEBUG_STATISTICS))
     clog << "<<< HiView_Window::create_statistics_panels" << endl;
@@ -2145,8 +2137,7 @@ void HiView_Window::view_statistics(bool enabled)
     if (View_Statistics_Action->isChecked() != enabled)
         //	Toggle the action, if it is enabled, which is connected here.
         View_Statistics_Action->setChecked(enabled);
-    else if (View_Statistics_Action->isEnabled() && Statistics)
-        Statistics->setVisible(enabled);
+    else if (View_Statistics_Action->isEnabled() && Statistics) Statistics->setVisible(enabled);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_STATISTICS | DEBUG_MENUS))
     clog << "<<< HiView_Window::view_statistics" << endl;
 #endif
@@ -2163,8 +2154,7 @@ void HiView_Window::statistics_visibility_changed(bool visible)
         make_way_for(Statistics);
         resize_tool(Statistics);
     }
-    else
-        reset_selected_region();
+    else reset_selected_region();
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_STATISTICS))
     clog << "<<< HiView_Window::statistics_visibility_changed" << endl;
 #endif
@@ -2175,22 +2165,17 @@ void HiView_Window::statistics_section_changed(int section_index)
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_STATISTICS))
     clog << ">-< HiView_Window::statistics_section_changed: " << section_index << endl;
 #endif
-    if (section_index == Statistics_Tools::DISPLAY_STATISTICS_INDEX)
-        refresh_display_statistics();
+    if (section_index == Statistics_Tools::DISPLAY_STATISTICS_INDEX) refresh_display_statistics();
 }
 
-bool HiView_Window::statistics_are_visible() const
-{
-    return Statistics && Statistics->isVisible();
-}
+bool HiView_Window::statistics_are_visible() const { return Statistics && Statistics->isVisible(); }
 
 void HiView_Window::refresh_statistics()
 {
 #if ((DEBUG_SECTION) & DEBUG_STATISTICS)
     clog << ">>> HiView_Window::refresh_statistics" << endl;
 #endif
-    if (!(Statistics_Refresh_Needed = !refresh_source_statistics()))
-        refresh_display_statistics();
+    if (!(Statistics_Refresh_Needed = !refresh_source_statistics())) refresh_display_statistics();
 #if ((DEBUG_SECTION) & DEBUG_STATISTICS)
     clog << "<<< HiView_Window::refresh_statistics" << endl;
 #endif
@@ -2212,7 +2197,8 @@ bool HiView_Window::refresh_source_statistics()
 #endif
         if (selected_region.intersects(round_down(Image_View->displayed_image_region())) &&
             //	Refresh the histograms data.
-            Image_View->source_data_histograms(Statistics->source_statistics()->stats().histograms(), selected_region))
+            Image_View->source_data_histograms(
+                Statistics->source_statistics()->stats().histograms(), selected_region))
         {
 #if ((DEBUG_SECTION) & DEBUG_STATISTICS)
             clog << "    refresh source_statistics" << endl;
@@ -2237,9 +2223,10 @@ bool HiView_Window::refresh_source_statistics()
                 // Statistics->source_statistics()->stats().mean_value_excluding_exceptions(2));
             }
             // Image_Info->set_property("region_area_px", (unsigned long
-            // long)selected_region.width()*selected_region.height()); Image_Info->set_property("region_width_px",
-            // (unsigned int)selected_region.width()); Image_Info->set_property("region_height_px", (unsigned
-            // int)selected_region.height()); Image_Info->evaluate_script();
+            // long)selected_region.width()*selected_region.height());
+            // Image_Info->set_property("region_width_px", (unsigned int)selected_region.width());
+            // Image_Info->set_property("region_height_px", (unsigned int)selected_region.height());
+            // Image_Info->evaluate_script();
         }
     }
 
@@ -2263,8 +2250,8 @@ void HiView_Window::refresh_display_statistics()
 #endif
         if (selected_region.intersects(Image_View->image_display_region()) &&
             //	Refresh the histograms data.
-            Image_View->display_data_histograms(Statistics->display_statistics()->stats().histograms(),
-                                                selected_region))
+            Image_View->display_data_histograms(
+                Statistics->display_statistics()->stats().histograms(), selected_region))
         {
 #if ((DEBUG_SECTION) & DEBUG_STATISTICS)
             clog << "    refresh display_statistics" << endl;
@@ -2284,8 +2271,7 @@ QRect HiView_Window::selected_source_region() const
         if (Selection_Modification)
             //	Selection being modified is empty.
             return QRect();
-        else
-            return round_down(Image_View->displayed_image_region());
+        else return round_down(Image_View->displayed_image_region());
     }
     return round_down(Selected_Image_Region);
 }
@@ -2297,8 +2283,7 @@ QRect HiView_Window::selected_display_region() const
         if (Selection_Modification)
             //	Selection being modified is empty.
             return QRect();
-        else
-            return Image_View->image_display_region();
+        else return Image_View->image_display_region();
     }
     return Image_View->map_image_to_display(Selected_Image_Region);
 }
@@ -2313,7 +2298,7 @@ void HiView_Window::create_data_mapper()
 #endif
     //	Used in lieu of source image data maps.
     int amount = MAX_DISPLAY_VALUE + 1;
-    Data_Maps = new Data_Map *[3];
+    Data_Maps = new Data_Map*[3];
     Data_Maps[0] = new Data_Map(amount);
     Data_Maps[1] = new Data_Map(amount);
     Data_Maps[2] = new Data_Map(amount);
@@ -2335,19 +2320,23 @@ void HiView_Window::create_data_mapper()
     //	Tool position actions.
     Data_Mapper->addActions(Tool_Position_Menu->actions());
     //	Context menu handling.
-    connect(Data_Mapper, SIGNAL(tool_context_menu_requested(QDockWidget *, QContextMenuEvent *)),
-            SLOT(tool_context_menu_requested(QDockWidget *, QContextMenuEvent *)));
+    connect(Data_Mapper, SIGNAL(tool_context_menu_requested(QDockWidget*, QContextMenuEvent*)),
+            SLOT(tool_context_menu_requested(QDockWidget*, QContextMenuEvent*)));
 
     //	Preferences parameters.
     Data_Mapper->canvas_color(Preferences->canvas_color());
     connect(Preferences, SIGNAL(canvas_color_changed(QRgb)), Data_Mapper, SLOT(canvas_color(QRgb)));
     Data_Mapper->selection_distance(Preferences->selection_sensitivity());
-    connect(Preferences, SIGNAL(selection_sensitivity_changed(int)), Data_Mapper, SLOT(selection_distance(int)));
-    connect(Preferences, SIGNAL(band_numbers_indexed_changed(bool)), Data_Mapper, SLOT(refresh_band_numbers()));
+    connect(Preferences, SIGNAL(selection_sensitivity_changed(int)), Data_Mapper,
+            SLOT(selection_distance(int)));
+    connect(Preferences, SIGNAL(band_numbers_indexed_changed(bool)), Data_Mapper,
+            SLOT(refresh_band_numbers()));
     for (int band = 0; band < 3; ++band)
     {
-        Data_Mapper->upper_default_contrast_stretch(Preferences->contrast_stretch_upper(band), band);
-        Data_Mapper->lower_default_contrast_stretch(Preferences->contrast_stretch_lower(band), band);
+        Data_Mapper->upper_default_contrast_stretch(Preferences->contrast_stretch_upper(band),
+                                                    band);
+        Data_Mapper->lower_default_contrast_stretch(Preferences->contrast_stretch_lower(band),
+                                                    band);
     }
     connect(Preferences, SIGNAL(contrast_stretch_upper_changed(double, int)), Data_Mapper,
             SLOT(upper_default_contrast_stretch(double, int)));
@@ -2355,15 +2344,17 @@ void HiView_Window::create_data_mapper()
             SLOT(lower_default_contrast_stretch(double, int)));
 
     //	View Data_Mapper selection.
-    connect(Data_Mapper, SIGNAL(visibilityChanged(bool)), SLOT(data_mapper_visibility_changed(bool)));
+    connect(Data_Mapper, SIGNAL(visibilityChanged(bool)),
+            SLOT(data_mapper_visibility_changed(bool)));
     //	Dock area change.
-    connect(Data_Mapper, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), SLOT(tool_location_changed()));
+    connect(Data_Mapper, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),
+            SLOT(tool_location_changed()));
     connect(Data_Mapper, SIGNAL(topLevelChanged(bool)), SLOT(tool_location_changed()));
 
     if (Navigator)
         //	Navigator band mapping.
-        connect(Navigator, SIGNAL(bands_mapped(const unsigned int *)), Data_Mapper,
-                SLOT(band_map(const unsigned int *)));
+        connect(Navigator, SIGNAL(bands_mapped(const unsigned int*)), Data_Mapper,
+                SLOT(band_map(const unsigned int*)));
 
     //	Persistent settings.
     QSettings settings;
@@ -2382,8 +2373,8 @@ void HiView_Window::create_data_mapper()
             if (!OK)
             {
                 QMessageBox::warning((isVisible() ? this : NULL), tr("HiView Configuration"),
-                                     tr("The ") + "Saturation_Upper_Bound_Percents[" + QString::number(band) + "] \"" +
-                                         values[band].toString() +
+                                     tr("The ") + "Saturation_Upper_Bound_Percents[" +
+                                         QString::number(band) + "] \"" + values[band].toString() +
                                          tr("\" value is invalid - a number is required.\n\n") +
                                          tr("This value is ignored."));
                 upper[band] = -1.0;
@@ -2392,8 +2383,7 @@ void HiView_Window::create_data_mapper()
     }
     if (settings.contains("Saturation_Lower_Bound_Percents"))
         values = settings.value("Saturation_Lower_Bound_Percents").toList();
-    else
-        values.clear();
+    else values.clear();
     for (int band = 0; band < 3; ++band)
     {
         if (band < values.count())
@@ -2402,8 +2392,8 @@ void HiView_Window::create_data_mapper()
             if (!OK)
             {
                 QMessageBox::warning((isVisible() ? this : NULL), tr("HiView Configuration"),
-                                     tr("The ") + "Saturation_Lower_Bound_Percents[" + QString::number(band) + "] \"" +
-                                         values[band].toString() +
+                                     tr("The ") + "Saturation_Lower_Bound_Percents[" +
+                                         QString::number(band) + "] \"" + values[band].toString() +
                                          tr("\" value is invalid - a number is required.\n\n") +
                                          tr("This value is ignored."));
                 lower[band] = -1.0;
@@ -2419,32 +2409,41 @@ void HiView_Window::create_data_mapper()
     {
         connect(Data_Mapper, SIGNAL(selected_bands_changed(int)), Statistics->source_statistics(),
                 SLOT(bands_selected(int)));
-        connect(Data_Mapper, SIGNAL(upper_bound_values_changed(const QVector<int> &)), Statistics->source_statistics(),
-                SLOT(upper_bound_values(const QVector<int> &)));
-        connect(Data_Mapper, SIGNAL(lower_bound_values_changed(const QVector<int> &)), Statistics->source_statistics(),
-                SLOT(lower_bound_values(const QVector<int> &)));
-        connect(Data_Mapper, SIGNAL(upper_bound_percents_changed(const QVector<double> &)),
-                Statistics->source_statistics(), SLOT(upper_bound_percents(const QVector<double> &)));
-        connect(Data_Mapper, SIGNAL(lower_bound_percents_changed(const QVector<double> &)),
-                Statistics->source_statistics(), SLOT(lower_bound_percents(const QVector<double> &)));
+        connect(Data_Mapper, SIGNAL(upper_bound_values_changed(const QVector<int>&)),
+                Statistics->source_statistics(), SLOT(upper_bound_values(const QVector<int>&)));
+        connect(Data_Mapper, SIGNAL(lower_bound_values_changed(const QVector<int>&)),
+                Statistics->source_statistics(), SLOT(lower_bound_values(const QVector<int>&)));
+        connect(Data_Mapper, SIGNAL(upper_bound_percents_changed(const QVector<double>&)),
+                Statistics->source_statistics(),
+                SLOT(upper_bound_percents(const QVector<double>&)));
+        connect(Data_Mapper, SIGNAL(lower_bound_percents_changed(const QVector<double>&)),
+                Statistics->source_statistics(),
+                SLOT(lower_bound_percents(const QVector<double>&)));
 
         //	And back atcha.
-        connect(Statistics->source_statistics(), SIGNAL(upper_bound_values_changed(const QVector<int> &)), Data_Mapper,
-                SLOT(upper_bound_values(const QVector<int> &)));
-        connect(Statistics->source_statistics(), SIGNAL(lower_bound_values_changed(const QVector<int> &)), Data_Mapper,
-                SLOT(lower_bound_values(const QVector<int> &)));
-        connect(Statistics->source_statistics(), SIGNAL(upper_bound_percents_changed(const QVector<double> &)),
-                Data_Mapper, SLOT(actual_upper_bound_percents(const QVector<double> &)));
-        connect(Statistics->source_statistics(), SIGNAL(lower_bound_percents_changed(const QVector<double> &)),
-                Data_Mapper, SLOT(actual_lower_bound_percents(const QVector<double> &)));
-        connect(Statistics->source_statistics(), SIGNAL(upper_limit_changed(int)), Data_Mapper, SLOT(upper_limit(int)));
-        connect(Statistics->source_statistics(), SIGNAL(lower_limit_changed(int)), Data_Mapper, SLOT(lower_limit(int)));
+        connect(Statistics->source_statistics(),
+                SIGNAL(upper_bound_values_changed(const QVector<int>&)), Data_Mapper,
+                SLOT(upper_bound_values(const QVector<int>&)));
+        connect(Statistics->source_statistics(),
+                SIGNAL(lower_bound_values_changed(const QVector<int>&)), Data_Mapper,
+                SLOT(lower_bound_values(const QVector<int>&)));
+        connect(Statistics->source_statistics(),
+                SIGNAL(upper_bound_percents_changed(const QVector<double>&)), Data_Mapper,
+                SLOT(actual_upper_bound_percents(const QVector<double>&)));
+        connect(Statistics->source_statistics(),
+                SIGNAL(lower_bound_percents_changed(const QVector<double>&)), Data_Mapper,
+                SLOT(actual_lower_bound_percents(const QVector<double>&)));
+        connect(Statistics->source_statistics(), SIGNAL(upper_limit_changed(int)), Data_Mapper,
+                SLOT(upper_limit(int)));
+        connect(Statistics->source_statistics(), SIGNAL(lower_limit_changed(int)), Data_Mapper,
+                SLOT(lower_limit(int)));
 
         //	Initialize the statistics limits.
         int upper_limit, lower_limit;
-        upper_limit =
-            settings.value("Statistics_Upper_Limit_Offset", Statistics->source_statistics()->stats().upper_limit())
-                .toInt(&OK);
+        upper_limit = settings
+                          .value("Statistics_Upper_Limit_Offset",
+                                 Statistics->source_statistics()->stats().upper_limit())
+                          .toInt(&OK);
         if (!OK)
         {
             QMessageBox::warning((isVisible() ? this : NULL), tr("HiView Configuration"),
@@ -2454,9 +2453,10 @@ void HiView_Window::create_data_mapper()
                                      tr("The default value of 0 is being used."));
             upper_limit = 0;
         }
-        lower_limit =
-            settings.value("Statistics_Lower_Limit_Offset", Statistics->source_statistics()->stats().lower_limit())
-                .toInt(&OK);
+        lower_limit = settings
+                          .value("Statistics_Lower_Limit_Offset",
+                                 Statistics->source_statistics()->stats().lower_limit())
+                          .toInt(&OK);
         if (!OK)
         {
             QMessageBox::warning((isVisible() ? this : NULL), tr("HiView Configuration"),
@@ -2470,24 +2470,21 @@ void HiView_Window::create_data_mapper()
     }
 
     //	Add the Data Map menus.
-    QMenu *menu;
-    QList<QAction *> actions;
+    QMenu* menu;
+    QList<QAction*> actions;
     int index;
 
     menu = Data_Map_Menu->addMenu(tr("&Band Selections"));
     actions = Data_Mapper->band_selection_actions();
-    for (index = 0; index < actions.size(); index++)
-        menu->addAction(actions.at(index));
+    for (index = 0; index < actions.size(); index++) menu->addAction(actions.at(index));
 
     menu = Data_Map_Menu->addMenu(tr("&Presets"));
     actions = Data_Mapper->presets_actions();
-    for (index = 0; index < actions.size(); index++)
-        menu->addAction(actions.at(index));
+    for (index = 0; index < actions.size(); index++) menu->addAction(actions.at(index));
 
     menu = Data_Map_Menu->addMenu(tr("&File"));
     actions = Data_Mapper->file_actions();
-    for (index = 0; index < actions.size(); index++)
-        menu->addAction(actions.at(index));
+    for (index = 0; index < actions.size(); index++) menu->addAction(actions.at(index));
 
     Data_Map_Menu->addAction(Data_Mapper->default_contrast_stretch_action());
     Data_Map_Menu->addAction(Data_Mapper->restore_original_contrast_stretch_action());
@@ -2495,7 +2492,8 @@ void HiView_Window::create_data_mapper()
     Data_Map_Menu->addAction(Data_Mapper->percents_actual_to_settings_action());
 
     //	Done last to avoid unnecessary signal handling.
-    connect(Data_Mapper, SIGNAL(data_maps_changed(Data_Map **)), Image_View, SLOT(map_data(Data_Map **)));
+    connect(Data_Mapper, SIGNAL(data_maps_changed(Data_Map**)), Image_View,
+            SLOT(map_data(Data_Map**)));
 
 #if ((DEBUG_SECTION) & (DEBUG_DATA_MAPPER | DEBUG_INITIALIZE))
     clog << "<<< HiView_Window::create_data_mapper" << endl;
@@ -2510,8 +2508,7 @@ void HiView_Window::view_data_mapper(bool enabled)
     if (View_Data_Mapper_Action->isChecked() != enabled)
         //	Toggle the action, if it is enabled, which is connected here.
         View_Data_Mapper_Action->setChecked(enabled);
-    else if (View_Data_Mapper_Action->isEnabled() && Data_Mapper)
-        Data_Mapper->setVisible(enabled);
+    else if (View_Data_Mapper_Action->isEnabled() && Data_Mapper) Data_Mapper->setVisible(enabled);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_DATA_MAPPER | DEBUG_MENUS))
     clog << "<<< HiView_Window::view_data_mapper" << endl;
 #endif
@@ -2594,14 +2591,14 @@ void HiView_Window::create_image_viewer()
 #if ((DEBUG_SECTION) & (DEBUG_IMAGE_VIEWER | DEBUG_LAYOUT))
     clog << "    minimum Image_Viewer size = " << Image_View->minimumSize() << endl;
 #endif
-    Image_View->source_image_rendering(true); //	Source image renderer.
+    Image_View->source_image_rendering(true);  //	Source image renderer.
     Image_View->default_source_image_rendering(false);
 
 #if ((DEBUG_SECTION) & DEBUG_IMAGE_VIEWER)
     clog << "    add scale menu items from Image_Viewer" << endl;
 #endif
     //	Add the scale menu actions from the Image_Viewer to the main View menu.
-    QList<QAction *> scale_actions(Image_View->scale_menu_actions());
+    QList<QAction*> scale_actions(Image_View->scale_menu_actions());
     /*
     // Add copy coordinates action from the Image_Viewer to the main File menu.
     File_Menu->addAction (Image_View->copy_coordinates_action());
@@ -2627,29 +2624,35 @@ void HiView_Window::create_image_viewer()
     connect(Preferences, SIGNAL(rendering_increment_lines_changed(int)), Image_View,
             SLOT(rendering_increment_lines(int)));
     Image_View->background_color(Preferences->background_color());
-    connect(Preferences, SIGNAL(background_color_changed(QRgb)), Image_View, SLOT(background_color(QRgb)));
-    connect(Preferences, SIGNAL(line_color_changed(const QColor &)), SLOT(line_color(const QColor &)));
+    connect(Preferences, SIGNAL(background_color_changed(QRgb)), Image_View,
+            SLOT(background_color(QRgb)));
+    connect(Preferences, SIGNAL(line_color_changed(const QColor&)),
+            SLOT(line_color(const QColor&)));
     Image_View->JPIP_proxy(Preferences->JPIP_proxy());
-    connect(Preferences, SIGNAL(JPIP_proxy_changed(const QString &)), Image_View, SLOT(JPIP_proxy(const QString &)));
+    connect(Preferences, SIGNAL(JPIP_proxy_changed(const QString&)), Image_View,
+            SLOT(JPIP_proxy(const QString&)));
     Image_View->JPIP_cache_directory(Preferences->JPIP_cache_directory());
-    connect(Preferences, SIGNAL(JPIP_cache_directory_changed(const QString &)), Image_View,
-            SLOT(JPIP_cache_directory(const QString &)));
+    connect(Preferences, SIGNAL(JPIP_cache_directory_changed(const QString&)), Image_View,
+            SLOT(JPIP_cache_directory(const QString&)));
     Image_View->JPIP_request_timeout(Preferences->JPIP_request_timeout());
-    connect(Preferences, SIGNAL(JPIP_request_timeout_changed(int)), Image_View, SLOT(JPIP_request_timeout(int)));
+    connect(Preferences, SIGNAL(JPIP_request_timeout_changed(int)), Image_View,
+            SLOT(JPIP_request_timeout(int)));
     Image_View->max_source_image_area(Preferences->max_source_image_area_MB());
-    connect(Preferences, SIGNAL(max_source_image_area_MB_changed(int)), Image_View, SLOT(max_source_image_area(int)));
+    connect(Preferences, SIGNAL(max_source_image_area_MB_changed(int)), Image_View,
+            SLOT(max_source_image_area(int)));
 
     //	Watch for image loaded.
     connect(Image_View, SIGNAL(image_loaded(bool)), SLOT(image_loaded(bool)));
 
     //	Track the image cursor location for image region selection modification.
-    connect(Image_View, SIGNAL(image_cursor_moved(const QPoint &, const QPoint &)),
-            SLOT(image_cursor_moved(const QPoint &, const QPoint &)));
+    connect(Image_View, SIGNAL(image_cursor_moved(const QPoint&, const QPoint&)),
+            SLOT(image_cursor_moved(const QPoint&, const QPoint&)));
 
     //	Watch for changes that affect image statistics.
-    connect(Image_View, SIGNAL(image_moved(const QPoint &, int)), SLOT(image_moved(const QPoint &, int)));
-    connect(Image_View, SIGNAL(displayed_image_region_resized(const QSize &)),
-            SLOT(displayed_image_region_resized(const QSize &)));
+    connect(Image_View, SIGNAL(image_moved(const QPoint&, int)),
+            SLOT(image_moved(const QPoint&, int)));
+    connect(Image_View, SIGNAL(displayed_image_region_resized(const QSize&)),
+            SLOT(displayed_image_region_resized(const QSize&)));
     connect(Image_View, SIGNAL(state_change(int)), SLOT(image_viewer_state_change(int)));
     /*
     //	Track rendering status.
@@ -2661,17 +2664,21 @@ void HiView_Window::create_image_viewer()
 
     if (Image_Info)
     {
-        connect(Image_View, SIGNAL(image_cursor_moved(const QPoint &, const QPoint &)), Image_Info,
-                SLOT(cursor_location(const QPoint &, const QPoint &)));
-        connect(Image_View, SIGNAL(image_pixel_value(const Plastic_Image::Triplet &, const Plastic_Image::Triplet &)),
-                Image_Info, SLOT(pixel_value(const Plastic_Image::Triplet &, const Plastic_Image::Triplet &)));
-        connect(Image_View, SIGNAL(image_scaled(const QSizeF &, int)), Image_Info,
-                SLOT(image_scale(const QSizeF &, int)));
+        connect(Image_View, SIGNAL(image_cursor_moved(const QPoint&, const QPoint&)), Image_Info,
+                SLOT(cursor_location(const QPoint&, const QPoint&)));
+        connect(
+            Image_View,
+            SIGNAL(image_pixel_value(const Plastic_Image::Triplet&, const Plastic_Image::Triplet&)),
+            Image_Info,
+            SLOT(pixel_value(const Plastic_Image::Triplet&, const Plastic_Image::Triplet&)));
+        connect(Image_View, SIGNAL(image_scaled(const QSizeF&, int)), Image_Info,
+                SLOT(image_scale(const QSizeF&, int)));
         Image_Info->image_scale(QSizeF(1, 1));
     }
 
     if (Image_Activity_Indicator)
-        connect(Image_Activity_Indicator, SIGNAL(button_clicked(int)), SLOT(activity_indicator_clicked(int)));
+        connect(Image_Activity_Indicator, SIGNAL(button_clicked(int)),
+                SLOT(activity_indicator_clicked(int)));
 #if ((DEBUG_SECTION) & DEBUG_IMAGE_VIEWER)
     clog << "<<< HiView_Window::create_image_viewer" << endl;
 #endif
@@ -2745,17 +2752,17 @@ bool HiView_Window::load_initial_source()
     return loading;
 }
 
-void HiView_Window::open(const QString &source_name)
+void HiView_Window::open(const QString& source_name)
 {
-    if (source_name.isEmpty())
-        return;
+    if (source_name.isEmpty()) return;
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_DROP_IMAGE | DEBUG_SLOTS | DEBUG_OVERVIEW))
     clog << ">>> HiView_Window::open: " << source_name << endl;
 #endif
     if (Startup_Stage)
     {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_DROP_IMAGE | DEBUG_SLOTS | DEBUG_OVERVIEW))
-        clog << "    Startup_Stage = " << Startup_Stage << endl << "<<< HiView_Window::open" << endl;
+        clog << "    Startup_Stage = " << Startup_Stage << endl
+             << "<<< HiView_Window::open" << endl;
 #endif
         Initial_Source = source_name;
         return;
@@ -2799,7 +2806,8 @@ void HiView_Window::open(const QString &source_name)
             path segment (and still access a default source). So a simple
             HTTP URL syntax test is applied here.
         */
-        (name.startsWith("http://", Qt::CaseInsensitive) || name.startsWith("https://", Qt::CaseInsensitive)))
+        (name.startsWith("http://", Qt::CaseInsensitive) ||
+         name.startsWith("https://", Qt::CaseInsensitive)))
         //	HTTP URL.
         load_URL(name);
     else
@@ -2811,8 +2819,7 @@ void HiView_Window::open(const QString &source_name)
         if (!JPIP_source(name) && HiView_Application::is_jpip_passthru_link(name))
         {
             QString Requested_Link = HiView_Application::parse_jpip_passthru_link(name);
-            if (!Requested_Link.isEmpty())
-                name = Requested_Link;
+            if (!Requested_Link.isEmpty()) name = Requested_Link;
         }
 
         if (name != source_name)
@@ -2846,10 +2853,12 @@ void HiView_Window::open_file()
             the strange and inconsistent behavior with links makes it unacceptable
             for use with HiView.
         */
-        Open_File_Dialog = new QFileDialog(this, tr("Open Image File"), Source_Directory, file_filters);
+        Open_File_Dialog =
+            new QFileDialog(this, tr("Open Image File"), Source_Directory, file_filters);
         Open_File_Dialog->setAcceptMode(QFileDialog::AcceptOpen);
         Open_File_Dialog->setFileMode(QFileDialog::ExistingFile);
-        Open_File_Dialog->setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontResolveSymlinks);
+        Open_File_Dialog->setOptions(QFileDialog::DontUseNativeDialog |
+                                     QFileDialog::DontResolveSymlinks);
     }
     if (Open_File_Dialog->exec())
     {
@@ -2860,8 +2869,7 @@ void HiView_Window::open_file()
             if (HiView_Application::is_jpip_passthru_link(source_name))
             {
                 QString Requested_Link = HiView_Application::parse_jpip_passthru_link(source_name);
-                if (!Requested_Link.isEmpty())
-                    source_name = Requested_Link;
+                if (!Requested_Link.isEmpty()) source_name = Requested_Link;
             }
 
             load_image(source_name);
@@ -2878,7 +2886,7 @@ void HiView_Window::open_URL()
     Source_Selections->lineEdit()->selectAll();
 }
 
-bool HiView_Window::load_image(const QString &source_name, const QSizeF &scaling)
+bool HiView_Window::load_image(const QString& source_name, const QSizeF& scaling)
 {
 //	N.B.: Massaging of the source_name is done by the open method.
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
@@ -2896,28 +2904,29 @@ bool HiView_Window::load_image(const QString &source_name, const QSizeF &scaling
     bool registered = false;
     QSizeF image_scaling(scaling);
 
-    if (image_scaling.isEmpty() && Preferences->initial_scale() != Preferences->INITIAL_SCALE_AUTO_FIT)
+    if (image_scaling.isEmpty() &&
+        Preferences->initial_scale() != Preferences->INITIAL_SCALE_AUTO_FIT)
     {
 //	Use the Preferences setting for the initial scaling.
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-        LOCKED_LOGGING((clog << "    using Preferences initial_scale = " << Preferences->initial_scale() << endl));
+        LOCKED_LOGGING((clog << "    using Preferences initial_scale = "
+                             << Preferences->initial_scale() << endl));
 #endif
         image_scaling.rwidth() = image_scaling.rheight() = Preferences->initial_scale();
     }
 
-    if (image_scaling.isEmpty())
-        registered = load_image(source_name, QSize());
+    if (image_scaling.isEmpty()) registered = load_image(source_name, QSize());
     else
     {
         Source_Name_Loading = source_name;
         load_image_start();
 
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-        LOCKED_LOGGING((clog << "    Image_View request for image ----------------------------" << endl));
+        LOCKED_LOGGING(
+            (clog << "    Image_View request for image ----------------------------" << endl));
 #endif
         registered = Image_View->image(source_name, image_scaling);
-        if (!registered)
-            load_image_failed();
+        if (!registered) load_image_failed();
     }
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     LOCKED_LOGGING((clog << "<<< HiView_Window::load_image: " << registered << endl));
@@ -2925,7 +2934,7 @@ bool HiView_Window::load_image(const QString &source_name, const QSizeF &scaling
     return registered;
 }
 
-bool HiView_Window::load_image(const QString &source_name, const QSize &display_size)
+bool HiView_Window::load_image(const QString& source_name, const QSize& display_size)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     LOCKED_LOGGING((clog << ">>> HiView_Window::load_image: " << source_name << endl
@@ -2951,21 +2960,22 @@ bool HiView_Window::load_image(const QString &source_name, const QSize &display_
     }
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
     LOCKED_LOGGING((clog << "    specified displayed size = " << displayed_size << endl
-                         << "    Image_View request for image ----------------------------" << endl));
+                         << "    Image_View request for image ----------------------------"
+                         << endl));
 #endif
     bool registered = Image_View->image(source_name, displayed_size);
-    if (!registered)
-        load_image_failed();
+    if (!registered) load_image_failed();
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     LOCKED_LOGGING((clog << "<<< HiView_Window::load_image: " << registered << endl));
 #endif
     return registered;
 }
 
-bool HiView_Window::load_image(const QImage &source_image, const QSizeF &scaling)
+bool HiView_Window::load_image(const QImage& source_image, const QSizeF& scaling)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
-    LOCKED_LOGGING((clog << ">>> HiView_Window::load_image: QImage @ " << (void *)&source_image << endl
+    LOCKED_LOGGING((clog << ">>> HiView_Window::load_image: QImage @ " << (void*)&source_image
+                         << endl
                          << "    scaling = " << scaling << endl));
 #endif
     bool registered;
@@ -2985,24 +2995,24 @@ bool HiView_Window::load_image(const QImage &source_image, const QSizeF &scaling
         {
 //	Use the Preferences setting for the initial scaling.
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-            LOCKED_LOGGING((clog << "    using Preferences initial_scale = " << Preferences->initial_scale() << endl));
+            LOCKED_LOGGING((clog << "    using Preferences initial_scale = "
+                                 << Preferences->initial_scale() << endl));
 #endif
             image_scaling.rwidth() = image_scaling.rheight() = Preferences->initial_scale();
         }
     }
 
-    if (image_scaling.isEmpty())
-        registered = load_image(source_image, QSize());
+    if (image_scaling.isEmpty()) registered = load_image(source_image, QSize());
     else
     {
         load_image_start();
 
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
-        LOCKED_LOGGING((clog << "    Image_View request for image ----------------------------" << endl));
+        LOCKED_LOGGING(
+            (clog << "    Image_View request for image ----------------------------" << endl));
 #endif
         registered = Image_View->image(source_image, image_scaling);
-        if (!registered)
-            load_image_failed();
+        if (!registered) load_image_failed();
     }
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     LOCKED_LOGGING((clog << "<<< HiView_Window::load_image: " << registered << endl));
@@ -3010,31 +3020,31 @@ bool HiView_Window::load_image(const QImage &source_image, const QSizeF &scaling
     return registered;
 }
 
-bool HiView_Window::load_image(const QImage &source_image, const QSize &display_size)
+bool HiView_Window::load_image(const QImage& source_image, const QSize& display_size)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
-    LOCKED_LOGGING((clog << ">>> HiView_Window::load_image: QImage @ " << (void *)&source_image << endl
+    LOCKED_LOGGING((clog << ">>> HiView_Window::load_image: QImage @ " << (void*)&source_image
+                         << endl
                          << "                display_size = " << display_size << endl));
 #endif
     load_image_start();
 
     QSize displayed_size(display_size);
-    if (displayed_size.isEmpty())
-        displayed_size = Image_View->viewport_size();
+    if (displayed_size.isEmpty()) displayed_size = Image_View->viewport_size();
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
     LOCKED_LOGGING((clog << "    preferred displayed size = " << displayed_size << endl
-                         << "    Image_View request for image ----------------------------" << endl));
+                         << "    Image_View request for image ----------------------------"
+                         << endl));
 #endif
     bool registered = Image_View->image(source_image, displayed_size);
-    if (!registered)
-        load_image_failed();
+    if (!registered) load_image_failed();
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     LOCKED_LOGGING((clog << "<<< HiView_Window::load_image: " << registered << endl));
 #endif
     return registered;
 }
 
-void HiView_Window::load_URL(const QString &source_name)
+void HiView_Window::load_URL(const QString& source_name)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_DROP_IMAGE | DEBUG_SLOTS | DEBUG_OVERVIEW))
     clog << ">>> HiView_Window::load_URL: " << source_name << endl;
@@ -3052,22 +3062,20 @@ void HiView_Window::load_URL(const QString &source_name)
 #endif
 }
 
-bool HiView_Window::load_image(QNetworkReply *network_reply)
+bool HiView_Window::load_image(QNetworkReply* network_reply)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_DROP_IMAGE | DEBUG_SLOTS | DEBUG_OVERVIEW))
     clog << ">>> HiView_Window::load_image: from network data" << endl;
 #endif
     bool loaded = false;
-    if (network_reply->error())
-        load_image_failed(network_reply->errorString());
+    if (network_reply->error()) load_image_failed(network_reply->errorString());
     else
     {
         QImage image;
         if (image.load(network_reply, 0))
             //	Pass the image on to the load sequence.
             loaded = load_image(image);
-        else
-            load_image_failed();
+        else load_image_failed();
     }
     network_reply->deleteLater();
     Network_Reply = NULL;
@@ -3102,18 +3110,19 @@ void HiView_Window::image_loaded(bool successful)
         }
 
         //	Reset the Image Metadata Dialog.
-        if (Image_Metadata_Dialog)
-            reset_metadata();
+        if (Image_Metadata_Dialog) reset_metadata();
 
         //	Reset the Navigator Tool.
         if (Navigator)
         {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS))
-            LOCKED_LOGGING((clog << "    Navigator image assignment  -----------------------------" << endl
+            LOCKED_LOGGING((clog << "    Navigator image assignment  -----------------------------"
+                                 << endl
                                  << "    " << *(Image_View->image()) << endl));
 #endif
             Navigator->image(Image_View->image(), Source_Name);
-            Navigator->displayed_image_region_resized(round_down((Image_View->displayed_image_region()).size()));
+            Navigator->displayed_image_region_resized(
+                round_down((Image_View->displayed_image_region()).size()));
             Navigator->updateGeometry();
         }
 
@@ -3123,14 +3132,15 @@ void HiView_Window::image_loaded(bool successful)
         if (Statistics)
         {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS))
-            LOCKED_LOGGING((clog << "    Statistics data bands - " << Image_View->image_bands() << ", precision - "
-                                 << Image_View->image_data_precision() << endl));
+            LOCKED_LOGGING((clog << "    Statistics data bands - " << Image_View->image_bands()
+                                 << ", precision - " << Image_View->image_data_precision()
+                                 << endl));
 #endif
             Statistics->source_statistics()->data_structure(Image_View->image_bands(),
                                                             Image_View->image_data_precision());
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS))
             LOCKED_LOGGING((clog << "    Statistics assignment of Image_View band_map @ "
-                                 << (void *)Image_View->band_map() << endl));
+                                 << (void*)Image_View->band_map() << endl));
 #endif
             Statistics->source_statistics()->band_map(Image_View->band_map());
         }
@@ -3158,21 +3168,22 @@ void HiView_Window::image_loaded(bool successful)
             }
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS))
             LOCKED_LOGGING((clog << "    Data_Mapper assignment of Image_View data_maps @ "
-                                 << (void *)Image_View->data_maps() << endl));
+                                 << (void*)Image_View->data_maps() << endl));
 #endif
             Data_Mapper->data_maps(Image_View->data_maps());
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS))
             LOCKED_LOGGING((clog << "    Data_Mapper assignment of Image_View band_map @ "
-                                 << (void *)Image_View->band_map() << endl));
+                                 << (void*)Image_View->band_map() << endl));
 #endif
             Data_Mapper->band_map(Image_View->band_map());
 
             if (Statistics)
             {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS))
-                LOCKED_LOGGING((clog << "    Data_Mapper assignment of Statistics limits offsets "
-                                     << Statistics->source_statistics()->lower_limit_offset() << ", "
-                                     << Statistics->source_statistics()->upper_limit_offset() << endl));
+                LOCKED_LOGGING((clog
+                                << "    Data_Mapper assignment of Statistics limits offsets "
+                                << Statistics->source_statistics()->lower_limit_offset() << ", "
+                                << Statistics->source_statistics()->upper_limit_offset() << endl));
 #endif
                 Data_Mapper->upper_limit(Statistics->source_statistics()->upper_limit_offset());
                 Data_Mapper->lower_limit(Statistics->source_statistics()->lower_limit_offset());
@@ -3185,11 +3196,11 @@ void HiView_Window::image_loaded(bool successful)
                 refresh_statistics ();
                 */
             }
-        } // end if Data_Mapper
+        }  // end if Data_Mapper
 
         Source_Name_Loading.clear();
         Image_View->setFocus(Qt::OtherFocusReason);
-    } // end if successful
+    }  // end if successful
     else
     {
         load_image_failed();
@@ -3205,18 +3216,16 @@ void HiView_Window::image_loaded(bool successful)
         show();
     }
 
-    if (successful && (Startup_Stage || Auto_Resize_Action->isChecked()))
-        fit_window_to_image();
+    if (successful && (Startup_Stage || Auto_Resize_Action->isChecked())) fit_window_to_image();
 
     if (Startup_Stage)
     {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS | DEBUG_INITIALIZE | DEBUG_OVERVIEW))
         LOCKED_LOGGING((clog << "    Startup_Stage = " << Startup_Stage << endl));
 #endif
-        if (Image_Activity_Indicator)
-            Image_Activity_Indicator->state(ACTIVITY_OFF);
+        if (Image_Activity_Indicator) Image_Activity_Indicator->state(ACTIVITY_OFF);
 
-        HiView_Application *application = dynamic_cast<HiView_Application *>(qApp);
+        HiView_Application* application = dynamic_cast<HiView_Application*>(qApp);
 
         // qApp->flush ();
         qApp->sendPostedEvents();
@@ -3227,7 +3236,7 @@ void HiView_Window::image_loaded(bool successful)
             //	No source specified on the command line.
             if (application)
                 //	Try for a source passed via the application's FileOpen event.
-                Initial_Source = application->Requested_Pathname;
+                Initial_Source = application->requestedPathname();
             if (Initial_Source.isEmpty() &&
                 // TODO is this a bug or is it intended to happen only when restoring layout?
                 /*Restore_Layout && */
@@ -3266,16 +3275,15 @@ void HiView_Window::image_loaded(bool successful)
             LOCKED_LOGGING((clog << "<<< HiView_Window::image_loaded" << endl));
 #endif
             return;
-        } // end else (Initial_source is not empty)
+        }  // end else (Initial_source is not empty)
         //	Proceed directly to continue_startup.
         continue_startup();
-    } // end if (startup stage)
+    }  // end if (startup stage)
     else
         //	Re-enable image loading actions.
         image_load_actions(true);
 
-    if (Error_Message->isVisible())
-        Error_Message->raise();
+    if (Error_Message->isVisible()) Error_Message->raise();
 
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS | DEBUG_OVERVIEW))
     LOCKED_LOGGING((clog << "<<< HiView_Window::image_loaded" << endl));
@@ -3291,15 +3299,17 @@ void HiView_Window::continue_startup()
     {
         Image_Activity_Indicator->state(ACTIVITY_OFF);
         Image_Activity_Indicator->start_delay(Activity_Indicator::default_start_delay());
-        Image_Activity_Indicator->state_color(ACTIVITY_VISIBLE_RENDERING,
-                                              Activity_Indicator::default_state_color(ACTIVITY_VISIBLE_RENDERING));
+        Image_Activity_Indicator->state_color(
+            ACTIVITY_VISIBLE_RENDERING,
+            Activity_Indicator::default_state_color(ACTIVITY_VISIBLE_RENDERING));
     }
 
     //	Possibly restore the previous layout.
     restore_layout();
 
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS | DEBUG_INITIALIZE))
-    LOCKED_LOGGING((clog << "    Startup_Stage set to STARTUP_SPLASH_SCALING (" << STARTUP_SPLASH_SCALING << ')' << endl
+    LOCKED_LOGGING((clog << "    Startup_Stage set to STARTUP_SPLASH_SCALING ("
+                         << STARTUP_SPLASH_SCALING << ')' << endl
                          << "    fit_image_to_window ..." << endl));
 #endif
     /*	Possibly scale the splash image to the restored layout viewport size.
@@ -3319,10 +3329,10 @@ void HiView_Window::continue_startup()
     The Startup_Stage will be reset by load_initial_source.
 */
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_SLOTS | DEBUG_INITIALIZE))
-        LOCKED_LOGGING((clog << "    no image scaling" << endl << "    load_initial_source ..." << endl));
+        LOCKED_LOGGING((clog << "    no image scaling" << endl
+                             << "    load_initial_source ..." << endl));
 #endif
-        if (Preferences->restore_last_source())
-            load_initial_source();
+        if (Preferences->restore_last_source()) load_initial_source();
     }
 
     image_load_actions(true);
@@ -3336,8 +3346,7 @@ void HiView_Window::load_image_start()
     //	Disable image loading actions while image loading is in progress.
     image_load_actions(false);
 
-    if (Image_Activity_Indicator)
-        Image_Activity_Indicator->state(ACTIVITY_VISIBLE_RENDERING);
+    if (Image_Activity_Indicator) Image_Activity_Indicator->state(ACTIVITY_VISIBLE_RENDERING);
 
     if (Source_Name_Loading.isEmpty())
     {
@@ -3345,17 +3354,15 @@ void HiView_Window::load_image_start()
         Source_Selections->clearEditText();
         Source_Selections->setCurrentIndex(-1);
     }
-    else
-        show_status_message(tr("Loading image: ") += Source_Name_Loading);
+    else show_status_message(tr("Loading image: ") += Source_Name_Loading);
 }
 
-void HiView_Window::load_image_failed(const QString &reason)
+void HiView_Window::load_image_failed(const QString& reason)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     clog << ">>> HiView_Window::load_image_failed:" << endl << "    reason - " << reason << endl;
 #endif
-    if (Image_Activity_Indicator)
-        Image_Activity_Indicator->state(ACTIVITY_OFF);
+    if (Image_Activity_Indicator) Image_Activity_Indicator->state(ACTIVITY_OFF);
 
     QString report(tr("Failed to load image"));
     if (!Source_Name_Loading.isEmpty())
@@ -3371,8 +3378,7 @@ void HiView_Window::load_image_failed(const QString &reason)
         Source_Selections->setEditText(Source_Name_Loading);
         Source_Selections->lineEdit()->selectAll();
     }
-    else
-        report += '.';
+    else report += '.';
 
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
     clog << "    status message = " << report << endl;
@@ -3418,11 +3424,13 @@ void HiView_Window::image_load_actions(bool enabled)
 void HiView_Window::rendering_status(int status)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_RENDERING_STATUS))
-    LOCKED_LOGGING((clog << ">>> HiView_Window::rendering_status: " << status << " - "
-                         << Image_View->rendering_status_description(status) << endl
-                         << "    Image_View pending_state_change = " << Image_View->pending_state_change() << " - "
-                         << Image_View->state_change_description(Image_View->pending_state_change()) << endl
-                         << "    Image_Loading = " << Image_Loading << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> HiView_Window::rendering_status: " << status << " - "
+              << Image_View->rendering_status_description(status) << endl
+              << "    Image_View pending_state_change = " << Image_View->pending_state_change()
+              << " - " << Image_View->state_change_description(Image_View->pending_state_change())
+              << endl
+              << "    Image_Loading = " << Image_Loading << endl));
 #endif
     //	Placeholder.
     ++status;
@@ -3441,7 +3449,8 @@ void HiView_Window::image_viewer_state_change(int state)
                          << "    Image_Loading = " << Image_Loading << endl));
 #endif
     if (Startup_Stage == STARTUP_SPLASH_SCALING && !(state & Image_Viewer::IMAGE_LOAD_STATE) &&
-        (state & (Image_Viewer::RENDERING_COMPLETED_STATE | Image_Viewer::RENDERING_CANCELED_STATE)))
+        (state &
+         (Image_Viewer::RENDERING_COMPLETED_STATE | Image_Viewer::RENDERING_CANCELED_STATE)))
     {
 #if ((DEBUG_SECTION) & (DEBUG_STATE | DEBUG_SLOTS))
         LOCKED_LOGGING((clog << "    load_initial_source ..." << endl));
@@ -3467,12 +3476,14 @@ void HiView_Window::image_viewer_state_change(int state)
         //	Status message.
         condition = state;
         if (state & Image_Viewer::COMPLETED_WITHOUT_RENDERING_STATE)
-            condition = (state & Image_Viewer::STATE_TYPE_MASK) | Image_Viewer::RENDERING_COMPLETED_STATE;
+            condition =
+                (state & Image_Viewer::STATE_TYPE_MASK) | Image_Viewer::RENDERING_COMPLETED_STATE;
         show_status_message(Image_Viewer::state_change_description(condition));
 
         //	Statistics refresh conditions.
         if ((state & Image_Viewer::COMPLETED_WITHOUT_RENDERING_STATE) ||
-            (state & Image_Viewer::STATE_QUALIFIER_MASK) == Image_Viewer::RENDERING_VISIBLE_TILES_COMPLETED_STATE ||
+            (state & Image_Viewer::STATE_QUALIFIER_MASK) ==
+                Image_Viewer::RENDERING_VISIBLE_TILES_COMPLETED_STATE ||
             /*
                 The image moved, but only background tiles are being rendered.
                 There will be no RENDERING_VISIBLE_TILES_COMPLETED_STATE.
@@ -3488,19 +3499,21 @@ void HiView_Window::image_viewer_state_change(int state)
 #endif
                 refresh_display_statistics();
             }
-            else if ((condition & (Image_Viewer::DATA_MAPPING_STATE | Image_Viewer::BAND_MAPPING_STATE |
-                                   /*
-                                       A statistics refresh is needed when image scaling is done
-                                       because the data resolution may have changed (JP2 source).
-                                   */
-                                   Image_Viewer::IMAGE_SCALE_STATE)))
+            else if ((condition &
+                      (Image_Viewer::DATA_MAPPING_STATE | Image_Viewer::BAND_MAPPING_STATE |
+                       /*
+                           A statistics refresh is needed when image scaling is done
+                           because the data resolution may have changed (JP2 source).
+                       */
+                       Image_Viewer::IMAGE_SCALE_STATE)))
             {
 #if ((DEBUG_SECTION) & (DEBUG_STATE | DEBUG_SLOTS))
                 LOCKED_LOGGING((clog << "    refresh_statistics ..." << endl));
 #endif
                 refresh_statistics();
             }
-            else if ((condition & (Image_Viewer::DISPLAY_SIZE_STATE | Image_Viewer::IMAGE_MOVE_STATE)) &&
+            else if ((condition &
+                      (Image_Viewer::DISPLAY_SIZE_STATE | Image_Viewer::IMAGE_MOVE_STATE)) &&
                      (!has_selected_region() || Statistics_Refresh_Needed))
             {
 #if ((DEBUG_SECTION) & (DEBUG_STATE | DEBUG_SLOTS))
@@ -3520,10 +3533,8 @@ void HiView_Window::activity_indicator_clicked(int)
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
     clog << ">-< HiView_Window::activity_indicator_clicked" << endl;
 #endif
-    if (Network_Reply)
-        Network_Reply->abort();
-    else
-        Image_View->cancel_rendering();
+    if (Network_Reply) Network_Reply->abort();
+    else Image_View->cancel_rendering();
 }
 
 void HiView_Window::view_status_bar(bool enabled)
@@ -3531,20 +3542,17 @@ void HiView_Window::view_status_bar(bool enabled)
     if (View_Status_Bar_Action->isChecked() != enabled)
         //	Toggle the action, if it is enabled, which is connected here.
         View_Status_Bar_Action->setChecked(enabled);
-    else if (View_Status_Bar_Action->isEnabled())
-        statusBar()->setVisible(enabled);
+    else if (View_Status_Bar_Action->isEnabled()) statusBar()->setVisible(enabled);
 }
 
-void HiView_Window::show_status_message(const QString &message)
+void HiView_Window::show_status_message(const QString& message)
 {
-    if (View_Status_Bar_Action->isChecked())
-        statusBar()->showMessage(message);
+    if (View_Status_Bar_Action->isChecked()) statusBar()->showMessage(message);
 }
 
-void HiView_Window::status_message_changed(const QString &message)
+void HiView_Window::status_message_changed(const QString& message)
 {
-    if (!View_Status_Bar_Action->isChecked() && message.isEmpty())
-        statusBar()->hide();
+    if (!View_Status_Bar_Action->isChecked() && message.isEmpty()) statusBar()->hide();
 }
 /*==============================================================================
     Metadata
@@ -3555,9 +3563,9 @@ void HiView_Window::reset_metadata()
     LOCKED_LOGGING((clog << ">>> HiView_Window::reset_metadata" << endl));
 #endif
     //	N.B.: The metadata remains owned by the Source_Image.
-    Aggregate *metadata(Image_View->image_metadata());
+    Aggregate* metadata(Image_View->image_metadata());
 #if ((DEBUG_SECTION) & (DEBUG_METADATA | DEBUG_LOAD_IMAGE))
-    LOCKED_LOGGING((clog << "    metadata @ " << (void *)metadata << endl));
+    LOCKED_LOGGING((clog << "    metadata @ " << (void*)metadata << endl));
 #endif
     Image_Metadata_Dialog->parameters(metadata);
 
@@ -3573,14 +3581,14 @@ void HiView_Window::reset_metadata()
 #if ((DEBUG_SECTION) & (DEBUG_METADATA | DEBUG_LOAD_IMAGE))
         LOCKED_LOGGING((clog << "    get PDS metadata ..." << endl));
 #endif
-        Aggregate *JP2_metadata(NULL);
+        Aggregate* JP2_metadata(NULL);
         string name;
         int index = metadata->size();
         while (--index >= 0)
         {
             name = (*metadata)[index].name();
             if (name == JP2_Image::JP2_METADATA_GROUP)
-                JP2_metadata = (Aggregate *)(&(*metadata)[index]);
+                JP2_metadata = (Aggregate*)(&(*metadata)[index]);
             else if (name == PDS_Metadata::PDS_METADATA_GROUP)
             {
                 //	PDS metadata already present.
@@ -3592,16 +3600,15 @@ void HiView_Window::reset_metadata()
         {
             QUrl URL;
             //	Look for a label URL in the metadata.
-            Parameter *parameter(JP2_metadata->find(HiView_Utilities::PDS_LABEL_URL_PARAMETER));
-            if (parameter)
-                URL.setUrl(QString::fromStdString(parameter->value()));
+            Parameter* parameter(JP2_metadata->find(HiView_Utilities::PDS_LABEL_URL_PARAMETER));
+            if (parameter) URL.setUrl(QString::fromStdString(parameter->value()));
             URL = HiView_Utilities::PDS_metadata_URL(Source_Name, URL);
 
             if (!Metadata)
             {
                 Metadata = new PDS_Metadata;
-                connect(Metadata, SIGNAL(fetched(idaeim::PVL::Aggregate *)),
-                        SLOT(PDS_metadata(idaeim::PVL::Aggregate *)), Qt::UniqueConnection);
+                connect(Metadata, SIGNAL(fetched(idaeim::PVL::Aggregate*)),
+                        SLOT(PDS_metadata(idaeim::PVL::Aggregate*)), Qt::UniqueConnection);
             }
 #if ((DEBUG_SECTION) & (DEBUG_METADATA | DEBUG_LOAD_IMAGE))
             clog << "      Metadata fetch " << URL.toString() << endl;
@@ -3614,10 +3621,11 @@ void HiView_Window::reset_metadata()
 #endif
 }
 
-void HiView_Window::PDS_metadata(Aggregate *metadata)
+void HiView_Window::PDS_metadata(Aggregate* metadata)
 {
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
-    LOCKED_LOGGING((clog << ">>> HiView_Window::PDS_metadata: metadata @ " << (void *)metadata << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> HiView_Window::PDS_metadata: metadata @ " << (void*)metadata << endl));
 #endif
     if (metadata)
     {
@@ -3630,7 +3638,8 @@ void HiView_Window::PDS_metadata(Aggregate *metadata)
         //	Add the metadata to the root metadata.
         Image_Metadata_Dialog->parameters()->add(metadata);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
-        clog << "    Image_Metadata_Dialog parameters -" << endl << *(Image_Metadata_Dialog->parameters());
+        clog << "    Image_Metadata_Dialog parameters -" << endl
+             << *(Image_Metadata_Dialog->parameters());
 #endif
         //	Refresh the Image_Metadata_Dialog view.
         Image_Metadata_Dialog->parameters(Image_Metadata_Dialog->parameters());
@@ -3638,8 +3647,9 @@ void HiView_Window::PDS_metadata(Aggregate *metadata)
         Location->parameters(metadata);
 //	Refresh the Image_Info_Panel.
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
-        clog << "    Location projection @ " << (void *)(Location->projection()) << endl
-             << "      projection = " << Location->projection()->canonical_projection_name() << endl;
+        clog << "    Location projection @ " << (void*)(Location->projection()) << endl
+             << "      projection = " << Location->projection()->canonical_projection_name()
+             << endl;
 #endif
         Image_Info->set_metadata(metadata);
         Image_Info->projection(Location->projection());
@@ -3681,7 +3691,8 @@ bool HiView_Window::save_image()
         //	Image save already in progress.
         Image_Save_Thread->show_dialog(true);
 #if ((DEBUG_SECTION) & (DEBUG_SAVE_IMAGE | DEBUG_MENUS))
-        clog << "    image save in progress" << endl << ">>> HiView_Window::save_image: false" << endl;
+        clog << "    image save in progress" << endl
+             << ">>> HiView_Window::save_image: false" << endl;
 #endif
         return saved;
     }
@@ -3712,7 +3723,8 @@ bool HiView_Window::save_image()
             {
                 if (Image_View->image_name().isEmpty())
                     Image_Saved = Image_View->image()->clone(image_size);
-                else if (!(Image_Saved = Plastic_Image_Factory::create(Image_View->image_name(), image_size)))
+                else if (!(Image_Saved =
+                               Plastic_Image_Factory::create(Image_View->image_name(), image_size)))
                 {
                     message = tr("Could not create the %1x%2 output image.\n")
                                   .arg(image_size.width())
@@ -3725,7 +3737,8 @@ bool HiView_Window::save_image()
 #if ((DEBUG_SECTION) & (DEBUG_SAVE_IMAGE | DEBUG_MENUS))
                     clog << "     real size = " << Image_Saved->size() << endl;
 #endif
-                    if (Image_Saved->width() != image_size.width() || Image_Saved->height() != image_size.height())
+                    if (Image_Saved->width() != image_size.width() ||
+                        Image_Saved->height() != image_size.height())
                         message = tr("Sorry, couldn't allocate sufficient memory\n"
                                      "for the requested %1x%2 image size.")
                                       .arg(image_size.width())
@@ -3734,8 +3747,8 @@ bool HiView_Window::save_image()
                     {
                         //	Image configuration.
                         Image_Saved->source_band_map(Image_View->image()->source_band_map());
-                        Image_Saved->source_data_maps(
-                            const_cast<const Plastic_Image::Data_Map **>(Image_View->image()->source_data_maps()));
+                        Image_Saved->source_data_maps(const_cast<const Plastic_Image::Data_Map**>(
+                            Image_View->image()->source_data_maps()));
                         Image_Saved->source_origin(Image_View->displayed_image_origin());
                         Image_Saved->source_scale(Image_Save_Dialog->image_scale());
                     }
@@ -3743,7 +3756,9 @@ bool HiView_Window::save_image()
             }
             catch (...)
             {
-                message = tr("Unable to provide a %1x%2 image.").arg(image_size.width()).arg(image_size.height());
+                message = tr("Unable to provide a %1x%2 image.")
+                              .arg(image_size.width())
+                              .arg(image_size.height());
             }
             if (message.isEmpty())
                 saved = Image_Save_Thread->save_image(Image_Saved, pathname, format);
@@ -3796,7 +3811,7 @@ void HiView_Window::save_image_done(bool completed)
 /*==============================================================================
     Event Handlers
 */
-void HiView_Window::resizeEvent(QResizeEvent *
+void HiView_Window::resizeEvent(QResizeEvent*
 #if ((DEBUG_SECTION) & DEBUG_LAYOUT)
                                     event
 #endif
@@ -3810,7 +3825,7 @@ void HiView_Window::resizeEvent(QResizeEvent *
     update_window_fit_action();
 }
 
-void HiView_Window::closeEvent(QCloseEvent *event)
+void HiView_Window::closeEvent(QCloseEvent* event)
 {
     save_configuration();
     save_layout();
@@ -3820,9 +3835,9 @@ void HiView_Window::closeEvent(QCloseEvent *event)
 /*------------------------------------------------------------------------------
     Drag-and-Drop
 */
-void HiView_Window::dragEnterEvent(QDragEnterEvent *event)
+void HiView_Window::dragEnterEvent(QDragEnterEvent* event)
 {
-    const QMimeData *mime_data = event->mimeData();
+    const QMimeData* mime_data = event->mimeData();
 #if ((DEBUG_SECTION) & DEBUG_DROP_IMAGE)
     clog << ">>> HiView_Window::dragEnterEvent: " << mime_data->text() << endl
          << "    possible actions = " << hex << event->possibleActions() << endl
@@ -3849,9 +3864,9 @@ void HiView_Window::dragEnterEvent(QDragEnterEvent *event)
 #endif
 }
 
-void HiView_Window::dropEvent(QDropEvent *event)
+void HiView_Window::dropEvent(QDropEvent* event)
 {
-    const QMimeData *mime_data = event->mimeData();
+    const QMimeData* mime_data = event->mimeData();
     QString source(mime_data->text());
 #if ((DEBUG_SECTION) & DEBUG_DROP_IMAGE)
     clog << ">>> HiView_Window::dropEvent: " << source << endl
@@ -3864,7 +3879,8 @@ void HiView_Window::dropEvent(QDropEvent *event)
     if (!Image_Loading)
     {
         if (mime_data->hasUrls() || source.startsWith("http://", Qt::CaseInsensitive) ||
-            source.startsWith("https://", Qt::CaseInsensitive) || source.startsWith("jpip://", Qt::CaseInsensitive))
+            source.startsWith("https://", Qt::CaseInsensitive) ||
+            source.startsWith("jpip://", Qt::CaseInsensitive))
         {
             if (mime_data->hasUrls())
             {
@@ -3878,8 +3894,7 @@ void HiView_Window::dropEvent(QDropEvent *event)
                 }
             }
 #if ((DEBUG_SECTION) & DEBUG_DROP_IMAGE)
-            else
-                clog << "    using text" << endl;
+            else clog << "    using text" << endl;
 #endif
             accepted = true;
             open(source);
@@ -3894,8 +3909,7 @@ void HiView_Window::dropEvent(QDropEvent *event)
             accepted = true;
         }
     }
-    if (accepted)
-        event->acceptProposedAction();
+    if (accepted) event->acceptProposedAction();
 #if ((DEBUG_SECTION) & DEBUG_DROP_IMAGE)
     clog << "<<< HiView_Window::dropEvent" << endl;
 #endif
@@ -3921,20 +3935,23 @@ enum
     RESIZE_TOP = (1 << 3),
     RESIZE_BOTTOM = (1 << 4)
 };
-} // namespace
+}  // namespace
 #endif
 
-void HiView_Window::mousePressEvent(QMouseEvent *event)
+void HiView_Window::mousePressEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
-    clog << ">>> HiView_Window::mousePressEvent:" << endl << "    mouse position = " << event->pos() << endl;
+    clog << ">>> HiView_Window::mousePressEvent:" << endl
+         << "    mouse position = " << event->pos() << endl;
 #endif
     bool accepted = false;
 
-    if (event->buttons() == Qt::LeftButton && Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE
+    if (event->buttons() == Qt::LeftButton &&
+        Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE
         /* && statistics_are_visible ()*/)
     {
-        QPoint position = (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
+        QPoint position =
+            (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
 
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
         clog << "    display position = " << position << endl;
@@ -3990,8 +4007,7 @@ void HiView_Window::mousePressEvent(QMouseEvent *event)
             accepted = true;
         }
     }
-    else
-        Selection_Start.rx() = Selection_Start.ry() = -1;
+    else Selection_Start.rx() = Selection_Start.ry() = -1;
 
     event->setAccepted(accepted);
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
@@ -4010,16 +4026,18 @@ void HiView_Window::mousePressEvent(QMouseEvent *event)
     to report the current image and display positions via the
     image_cursor_moved signal.
 */
-void HiView_Window::mouseMoveEvent(QMouseEvent *event)
+void HiView_Window::mouseMoveEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
-    clog << ">>> HiView_Window::mouseMoveEvent:" << endl << "    mouse position = " << event->pos() << endl;
+    clog << ">>> HiView_Window::mouseMoveEvent:" << endl
+         << "    mouse position = " << event->pos() << endl;
 #endif
     bool accepted = false;
 
     if (Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE)
     {
-        QPoint display_position = (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
+        QPoint display_position =
+            (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
 
         if (Image_View->image_display_region().contains(display_position))
         {
@@ -4033,7 +4051,6 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
 
             if (event->buttons() == Qt::LeftButton)
             {
-
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
                 clog << "        display position = " << display_position << endl
                      << "    image_display_region = " << Image_View->image_display_region() << endl;
@@ -4061,7 +4078,8 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
                     image_position -= round_down(Selection_Start);
                     Selected_Image_Region.moveTopLeft(image_position);
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
-                    clog << "    move offset " << Selection_Start << " to " << image_position << endl;
+                    clog << "    move offset " << Selection_Start << " to " << image_position
+                         << endl;
 #endif
                     if (Selected_Image_Region.left() < 0)
                     {
@@ -4077,7 +4095,8 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
                         clog << "    right edge overlap" << endl;
 #endif
                         --image_size.rwidth();
-                        Selection_Start.rx() += (Selected_Image_Region.right() - image_size.rwidth());
+                        Selection_Start.rx() +=
+                            (Selected_Image_Region.right() - image_size.rwidth());
                         Selected_Image_Region.moveRight(image_size.rwidth());
                     }
                     if (Selected_Image_Region.top() < 0)
@@ -4094,7 +4113,8 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
                         clog << "    bottom edge overlap" << endl;
 #endif
                         --image_size.rheight();
-                        Selection_Start.ry() += (Selected_Image_Region.bottom() - image_size.rheight());
+                        Selection_Start.ry() +=
+                            (Selected_Image_Region.bottom() - image_size.rheight());
                         Selected_Image_Region.moveBottom(image_size.rheight());
                     }
                 }
@@ -4133,8 +4153,7 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
                             Selection_Modification &= ~RESIZE_LEFT;
                             Selection_Modification |= RESIZE_RIGHT;
                         }
-                        else
-                            Selected_Image_Region.setLeft(image_position.rx());
+                        else Selected_Image_Region.setLeft(image_position.rx());
                     }
                     else if (Selection_Modification & RESIZE_RIGHT)
                     {
@@ -4145,8 +4164,7 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
                             Selection_Modification &= ~RESIZE_RIGHT;
                             Selection_Modification |= RESIZE_LEFT;
                         }
-                        else
-                            Selected_Image_Region.setRight(image_position.rx());
+                        else Selected_Image_Region.setRight(image_position.rx());
                     }
                     if (Selection_Modification & RESIZE_TOP)
                     {
@@ -4157,8 +4175,7 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
                             Selection_Modification &= ~RESIZE_TOP;
                             Selection_Modification |= RESIZE_BOTTOM;
                         }
-                        else
-                            Selected_Image_Region.setTop(image_position.ry());
+                        else Selected_Image_Region.setTop(image_position.ry());
                     }
                     else if (Selection_Modification & RESIZE_BOTTOM)
                     {
@@ -4169,8 +4186,7 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
                             Selection_Modification &= ~RESIZE_BOTTOM;
                             Selection_Modification |= RESIZE_TOP;
                         }
-                        else
-                            Selected_Image_Region.setBottom(image_position.ry());
+                        else Selected_Image_Region.setBottom(image_position.ry());
                     }
 
                     if (selection != Selection_Modification)
@@ -4203,7 +4219,7 @@ void HiView_Window::mouseMoveEvent(QMouseEvent *event)
 #endif
 }
 
-void HiView_Window::image_moved(const QPoint & /* image_position */, int /* band */
+void HiView_Window::image_moved(const QPoint& /* image_position */, int /* band */
 )
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_STATISTICS))
@@ -4216,7 +4232,8 @@ void HiView_Window::image_moved(const QPoint & /* image_position */, int /* band
 #endif
 }
 
-void HiView_Window::image_cursor_moved(const QPoint & /* display_position */, const QPoint &image_position)
+void HiView_Window::image_cursor_moved(const QPoint& /* display_position */,
+                                       const QPoint& image_position)
 {
     //	Only because there is only one HiView_Window in the application.
     static int last_selection = -1;
@@ -4231,7 +4248,8 @@ void HiView_Window::image_cursor_moved(const QPoint & /* display_position */, co
     {
         int selection = selection_modification(image_position);
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
-        clog << "    last_selection = " << last_selection << endl << "         selection = " << selection << endl;
+        clog << "    last_selection = " << last_selection << endl
+             << "         selection = " << selection << endl;
 #endif
         if (selection != last_selection)
         {
@@ -4239,8 +4257,7 @@ void HiView_Window::image_cursor_moved(const QPoint & /* display_position */, co
             last_selection = selection;
         }
     }
-    else
-        last_selection = -1;
+    else last_selection = -1;
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
     clog << "<<< HiView_Window::image_cursor_moved" << endl;
 #endif
@@ -4248,59 +4265,57 @@ void HiView_Window::image_cursor_moved(const QPoint & /* display_position */, co
 
 void HiView_Window::set_selection_cursor(int selection)
 {
-    QCursor *cursor = NULL;
+    QCursor* cursor = NULL;
     switch (selection)
     {
-    case MOVE_SELECTION:
-        cursor = Shift_Region_Cursor;
-        break;
-    case RESIZE_LEFT:
-    case RESIZE_RIGHT:
-        cursor = Shift_Region_Horizontal_Cursor;
-        break;
-    case RESIZE_TOP:
-    case RESIZE_BOTTOM:
-        cursor = Shift_Region_Vertical_Cursor;
-        break;
-    case (RESIZE_LEFT | RESIZE_TOP):
-    case (RESIZE_RIGHT | RESIZE_BOTTOM):
-        cursor = Shift_Region_FDiag_Cursor;
-        break;
-    case (RESIZE_RIGHT | RESIZE_TOP):
-    case (RESIZE_LEFT | RESIZE_BOTTOM):
-        cursor = Shift_Region_BDiag_Cursor;
-        break;
+        case MOVE_SELECTION:
+            cursor = Shift_Region_Cursor;
+            break;
+        case RESIZE_LEFT:
+        case RESIZE_RIGHT:
+            cursor = Shift_Region_Horizontal_Cursor;
+            break;
+        case RESIZE_TOP:
+        case RESIZE_BOTTOM:
+            cursor = Shift_Region_Vertical_Cursor;
+            break;
+        case (RESIZE_LEFT | RESIZE_TOP):
+        case (RESIZE_RIGHT | RESIZE_BOTTOM):
+            cursor = Shift_Region_FDiag_Cursor;
+            break;
+        case (RESIZE_RIGHT | RESIZE_TOP):
+        case (RESIZE_LEFT | RESIZE_BOTTOM):
+            cursor = Shift_Region_BDiag_Cursor;
+            break;
     }
     Image_View->default_cursor(cursor);
 }
 
-int HiView_Window::selection_modification(const QPoint &image_position)
+int HiView_Window::selection_modification(const QPoint& image_position)
 {
     int mode = 0;
-    int x = image_position.x(), y = image_position.y(), left = round_down(Selected_Image_Region.left()),
-        right = round_down(Selected_Image_Region.right()), top = round_down(Selected_Image_Region.top()),
+    int x = image_position.x(), y = image_position.y(),
+        left = round_down(Selected_Image_Region.left()),
+        right = round_down(Selected_Image_Region.right()),
+        top = round_down(Selected_Image_Region.top()),
         bottom = round_down(Selected_Image_Region.bottom());
     if (x < left || x > right || y < top || y > bottom)
         //	The Selected_Image_Region does not contain the image_position.
         return mode;
 
-    if (x == left)
-        mode |= RESIZE_LEFT;
-    else if (x == right)
-        mode |= RESIZE_RIGHT;
-    if (y == top)
-        mode |= RESIZE_TOP;
-    else if (y == bottom)
-        mode |= RESIZE_BOTTOM;
-    if (!mode)
-        mode = MOVE_SELECTION;
+    if (x == left) mode |= RESIZE_LEFT;
+    else if (x == right) mode |= RESIZE_RIGHT;
+    if (y == top) mode |= RESIZE_TOP;
+    else if (y == bottom) mode |= RESIZE_BOTTOM;
+    if (!mode) mode = MOVE_SELECTION;
     return mode;
 }
 
-void HiView_Window::mouseReleaseEvent(QMouseEvent *event)
+void HiView_Window::mouseReleaseEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
-    clog << ">>> HiView_Window::mouseReleaseEvent" << endl << "    mouse position = " << event->pos() << endl;
+    clog << ">>> HiView_Window::mouseReleaseEvent" << endl
+         << "    mouse position = " << event->pos() << endl;
 #endif
     Selection_Start.rx() = Selection_Start.ry() = -1;
     Selection_Modification = 0;
@@ -4312,24 +4327,25 @@ void HiView_Window::mouseReleaseEvent(QMouseEvent *event)
 #endif
 }
 
-void HiView_Window::mouseDoubleClickEvent(QMouseEvent *event)
+void HiView_Window::mouseDoubleClickEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
-    clog << ">>> HiView_Window::mouseDoubleClickEvent" << endl << "    mouse position = " << event->pos() << endl;
+    clog << ">>> HiView_Window::mouseDoubleClickEvent" << endl
+         << "    mouse position = " << event->pos() << endl;
 #endif
     bool accepted = false;
 
     if (event->buttons() == Qt::LeftButton)
     {
-        QPoint display_position = (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
+        QPoint display_position =
+            (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
         clog << "        image display position = " << display_position << endl
              << "          image_display_region = " << Image_View->image_display_region() << endl;
 #endif
         if (Image_View->image_display_region().contains(display_position))
         {
-            if (!Selected_Image_Region.isEmpty())
-                reset_selected_region();
+            if (!Selected_Image_Region.isEmpty()) reset_selected_region();
             accepted = true;
         }
     }
@@ -4343,16 +4359,19 @@ void HiView_Window::update_line()
 {
     if (Distance_Tool)
     {
-        // draw the line on the image, done this way so when the image is moved, the same point on the image is shown
+        // draw the line on the image, done this way so when the image is moved, the same point on
+        // the image is shown
         Line->setP1(Image_View->map_image_to_display(Image_Line.p1()));
         Line->setP2(Image_View->map_image_to_display(Image_Line.p2()));
 
         // length of line in pixels
-        double length = qSqrt(Image_Line.dx() * Image_Line.dx() + Image_Line.dy() * Image_Line.dy());
+        double length =
+            qSqrt(Image_Line.dx() * Image_Line.dx() + Image_Line.dy() * Image_Line.dy());
 
         // Image_Info->set_property_f("distance_length_px", length);
 
-        if (Location != NULL && Location->projection() != NULL && !Location->projection()->is_identity())
+        if (Location != NULL && Location->projection() != NULL &&
+            !Location->projection()->is_identity())
         {
             double projected_length = length * Location->projection()->pixel_size();
             Line->setText(QString("%1 m").arg(projected_length));
@@ -4364,10 +4383,8 @@ void HiView_Window::update_line()
         {
             Line->setText(QString("%1 px").arg(length));
         }
-        if (!Line->isVisible())
-            Line->setVisible(true);
-        else
-            Line->update();
+        if (!Line->isVisible()) Line->setVisible(true);
+        else Line->update();
 
         // Image_Info->evaluate_script();
     }
@@ -4380,12 +4397,11 @@ void HiView_Window::reset_region_overlay()
 #endif
     if (Selected_Image_Region.isEmpty())
     {
-        if (Region_Overlay)
-            Region_Overlay->setVisible(false);
-        if (Selected_Area != NULL)
-            Selected_Area->setVisible(false);
+        if (Region_Overlay) Region_Overlay->setVisible(false);
+        if (Selected_Area != NULL) Selected_Area->setVisible(false);
         Image_Info->use_avg_pixel_value(false);
-        if (Location != NULL && Location->projection() != NULL && !Location->projection()->is_identity())
+        if (Location != NULL && Location->projection() != NULL &&
+            !Location->projection()->is_identity())
         {
             QRect source_region = round_down(Image_View->displayed_image_region());
             double pixel_size = Location->projection()->pixel_size();
@@ -4397,42 +4413,45 @@ void HiView_Window::reset_region_overlay()
             // Image_Info->set_property_f("region_height_m", projected_height);
         }
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
-        clog << "    no selected region" << endl << "<<< HiView_Window::reset_region_overlay" << endl;
+        clog << "    no selected region" << endl
+             << "<<< HiView_Window::reset_region_overlay" << endl;
 #endif
         return;
     }
 
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_EVENTS)
     clog << "    Selected_Image_Region = " << Selected_Image_Region << endl
-         << "           display region = " << Image_View->map_image_to_display(Selected_Image_Region) << endl;
+         << "           display region = "
+         << Image_View->map_image_to_display(Selected_Image_Region) << endl;
     QPointF image_position(Selected_Image_Region.topLeft());
     QPoint display_position(Image_View->map_image_to_display(image_position));
     clog << "        TL image position = " << image_position << endl
          << "      TL image to display = " << display_position << endl
-         << "      TL display to image = " << Image_View->map_display_to_image(display_position) << endl;
+         << "      TL display to image = " << Image_View->map_display_to_image(display_position)
+         << endl;
 #endif
     if (Region_Overlay)
     {
         Image_Info->use_avg_pixel_value(true);
         // Map Selected Region to Display
         Region_Overlay->setGeometry(Image_View->map_image_to_display(Selected_Image_Region));
-        if (!Region_Overlay->isVisible())
-            Region_Overlay->setVisible(true);
+        if (!Region_Overlay->isVisible()) Region_Overlay->setVisible(true);
         // Get coordinates of the top left and bottom right locations of the box.
-        Coordinate topLeftCoord(Selected_Image_Region.topLeft().x(), Selected_Image_Region.topLeft().y());
-        Coordinate bottomRightCoord(Selected_Image_Region.bottomRight().x(), Selected_Image_Region.bottomRight().y());
+        Coordinate topLeftCoord(Selected_Image_Region.topLeft().x(),
+                                Selected_Image_Region.topLeft().y());
+        Coordinate bottomRightCoord(Selected_Image_Region.bottomRight().x(),
+                                    Selected_Image_Region.bottomRight().y());
         // Get QPoints for the top left location of the box.
-        QPoint topLeft = Image_View->map_image_to_display(round_down(Selected_Image_Region.topLeft()));
+        QPoint topLeft =
+            Image_View->map_image_to_display(round_down(Selected_Image_Region.topLeft()));
         // Get pixel values, and attempt to select a color that will contrast well enough to read
         Plastic_Image::Triplet pixel_value = Image_View->display_pixel(topLeft);
         QPalette color_palette;
         int avg = (static_cast<int>(pixel_value.Datum[0]) + static_cast<int>(pixel_value.Datum[1]) +
                    static_cast<int>(pixel_value.Datum[2])) /
                   3;
-        if (avg < 170)
-            color_palette.setColor(QPalette::WindowText, QColor(255, 255, 255));
-        else
-            color_palette.setColor(QPalette::WindowText, QColor(0, 0, 0));
+        if (avg < 170) color_palette.setColor(QPalette::WindowText, QColor(255, 255, 255));
+        else color_palette.setColor(QPalette::WindowText, QColor(0, 0, 0));
 
         // check to see if the QLabel has been allocated
         if (Selected_Area == NULL)
@@ -4442,8 +4461,10 @@ void HiView_Window::reset_region_overlay()
         }
         // set the palette color selected earlier so the qlabels will be a high contrast color.
         Selected_Area->setPalette(color_palette);
-        // check if a projector exists, if so see if is_identity is false (therefore do not know the pixel size)
-        if (Location != NULL && Location->projection() != NULL && !Location->projection()->is_identity())
+        // check if a projector exists, if so see if is_identity is false (therefore do not know the
+        // pixel size)
+        if (Location != NULL && Location->projection() != NULL &&
+            !Location->projection()->is_identity())
         {
             double pixel_size = Location->projection()->pixel_size();
             double projected_width = (bottomRightCoord.X - topLeftCoord.X) * pixel_size;
@@ -4460,8 +4481,9 @@ void HiView_Window::reset_region_overlay()
         // if it cant map project, set to x,y values
         else
         {
-            Selected_Area_Text =
-                QString("%1 x %2 px").arg(bottomRightCoord.X - topLeftCoord.X).arg(bottomRightCoord.Y - topLeftCoord.Y);
+            Selected_Area_Text = QString("%1 x %2 px")
+                                     .arg(bottomRightCoord.X - topLeftCoord.X)
+                                     .arg(bottomRightCoord.Y - topLeftCoord.Y);
         }
         // Set text in label
         Selected_Area->setText(Selected_Area_Text);
@@ -4470,8 +4492,9 @@ void HiView_Window::reset_region_overlay()
             Selected_Area->setGeometry(topLeft.x(), topLeft.y(), Selected_Area->sizeHint().width(),
                                        Selected_Area->sizeHint().height());
         else
-            Selected_Area->setGeometry(topLeft.x(), topLeft.y() - Selected_Area->sizeHint().height(),
-                                       Selected_Area->sizeHint().width(), Selected_Area->sizeHint().height());
+            Selected_Area->setGeometry(
+                topLeft.x(), topLeft.y() - Selected_Area->sizeHint().height(),
+                Selected_Area->sizeHint().width(), Selected_Area->sizeHint().height());
 
         Selected_Area->setVisible(true);
     }
@@ -4495,11 +4518,10 @@ void HiView_Window::reset_selected_region()
     Selection_Start.rx() = Selection_Start.ry() = -1;
     Selection_Modification = 0;
     reset_region_overlay();
-    if (region_was_selected && Statistics)
-        refresh_statistics();
+    if (region_was_selected && Statistics) refresh_statistics();
 }
 
-void HiView_Window::line_color(const QColor &color)
+void HiView_Window::line_color(const QColor& color)
 {
     Line_Color = color;
     Line->setColor(color);
@@ -4509,11 +4531,11 @@ void HiView_Window::line_color(const QColor &color)
 /*------------------------------------------------------------------------------
     Tools menu
 */
-void HiView_Window::tool_context_menu_requested(QDockWidget *tool, QContextMenuEvent *event)
+void HiView_Window::tool_context_menu_requested(QDockWidget* tool, QContextMenuEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
     clog << ">>> HiView_Window::tool_context_menu_requested:" << endl
-         << "    " << (void *)tool << ' ' << tool->windowTitle() << endl
+         << "    " << (void*)tool << ' ' << tool->windowTitle() << endl
          << "    " << event->globalPos() << endl;
 #endif
     Selected_Tool = tool;
@@ -4524,21 +4546,19 @@ void HiView_Window::tool_context_menu_requested(QDockWidget *tool, QContextMenuE
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
         clog << "    dock_area = " << dock_area << ", allowed_areas = " << allowed_areas << endl;
 #endif
-        QList<QAction *> actions(Tool_Position_Menu->actions());
+        QList<QAction*> actions(Tool_Position_Menu->actions());
         int index;
 #if ((DEBUG_SECTION) & DEBUG_TOOLS_POSITION)
         clog << "    actions -" << endl;
         index = actions.count();
-        while (index--)
-            clog << "    " << index << ": " << actions.at(index)->text() << endl;
+        while (index--) clog << "    " << index << ": " << actions.at(index)->text() << endl;
 #endif
         if (Selected_Tool->isFloating())
         {
             actions.at(TOOL_POSITION_FLOATING)->setText(tr("Docked"));
             dock_area = Qt::NoDockWidgetArea;
         }
-        else
-            actions.at(TOOL_POSITION_FLOATING)->setText(tr("Floating"));
+        else actions.at(TOOL_POSITION_FLOATING)->setText(tr("Floating"));
 
         if (dock_area == Qt::LeftDockWidgetArea || !(allowed_areas & Qt::LeftDockWidgetArea))
             actions.at(TOOL_POSITION_LEFT)->setEnabled(false);
@@ -4553,8 +4573,7 @@ void HiView_Window::tool_context_menu_requested(QDockWidget *tool, QContextMenuE
         Tool_Position_Menu->exec(event->globalPos());
 
         index = actions.count();
-        while (index--)
-            actions.at(index)->setEnabled(true);
+        while (index--) actions.at(index)->setEnabled(true);
 
         Selected_Tool = NULL;
     }
@@ -4566,11 +4585,12 @@ void HiView_Window::tool_context_menu_requested(QDockWidget *tool, QContextMenuE
 /*------------------------------------------------------------------------------
     Tooltips event filter
 */
-bool HiView_Window::eventFilter(QObject *object, QEvent *event)
+bool HiView_Window::eventFilter(QObject* object, QEvent* event)
 {
-    if (event->type() == QEvent::ToolTip && View_Tooltips_Action && !View_Tooltips_Action->isChecked())
-        return true; //	Block event.
+    if (event->type() == QEvent::ToolTip && View_Tooltips_Action &&
+        !View_Tooltips_Action->isChecked())
+        return true;  //	Block event.
     return QMainWindow::eventFilter(object, event);
 }
 
-} // namespace UA::HiRISE
+}  // namespace UA::HiRISE

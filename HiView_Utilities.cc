@@ -31,8 +31,6 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QMutex>
 #include <QStringList>
 #include <QUrl>
-#include <QUrl>
-
 #include <string>
 
 #if defined(DEBUG_SECTION)
@@ -59,42 +57,43 @@ using std::endl;
 
 #endif
 
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     HiView_Utilities
 */
-const char *const HiView_Utilities::ID =
-    "UA::HiRISE::HiView_Utilities ($Revision: 1.21 $ $Date: 2014/05/27 17:13:51 $)";
+const char* const HiView_Utilities::ID =
+    "UA::HiRISE::HiView_Utilities ($Revision: 1.21 $ $Date: 2014/05/27 "
+    "17:13:51 $)";
 
-const char *const HiView_Utilities::PDS_LABEL_URL_PARAMETER = "uinf/url /URL";
+const char* const HiView_Utilities::PDS_LABEL_URL_PARAMETER = "uinf/url /URL";
 
 #ifndef PDS_LABEL_FILENAME_EXTENSION
 #define PDS_LABEL_FILENAME_EXTENSION "LBL"
 #endif
-const char *const HiView_Utilities::PDS_LABEL_FILENAME_EXT = PDS_LABEL_FILENAME_EXTENSION;
+const char* const HiView_Utilities::PDS_LABEL_FILENAME_EXT =
+    PDS_LABEL_FILENAME_EXTENSION;
 
-bool HiView_Utilities::is_URL(const QString &URL)
+bool HiView_Utilities::is_URL(const QString& URL)
 {
-    bool OK = false;
-    QUrl Url(URL);
+    QUrl const Url(URL);
     if (Url.isValid())
     {
-        QString protocol(Url.scheme().toUpper());
-        if (!protocol.isEmpty() && (protocol == "HTTP" || protocol == "HTTPS" || protocol == "JPIP") &&
+        QString const protocol(Url.scheme().toUpper());
+        if (!protocol.isEmpty() &&
+            (protocol == "HTTP" || protocol == "HTTPS" || protocol == "JPIP") &&
             !Url.host().isEmpty() && !Url.path().isEmpty())
-            OK = true;
+            return true;
     }
-    return OK;
+    return false;
 }
 
-bool HiView_Utilities::is_JPIP_URL(const QString &URL)
+bool HiView_Utilities::is_JPIP_URL(const QString& URL)
 {
-    return is_URL(URL) && QUrl(URL).scheme().compare("JPIP", Qt::CaseInsensitive) == 0;
+    return is_URL(URL) &&
+           QUrl(URL).scheme().compare("JPIP", Qt::CaseInsensitive) == 0;
 }
 
 #ifndef DEFAULT_BAND_NUMBERING_INDEXED
@@ -102,13 +101,17 @@ bool HiView_Utilities::is_JPIP_URL(const QString &URL)
 #endif
 bool HiView_Utilities::Band_Numbering_Indexed = DEFAULT_BAND_NUMBERING_INDEXED;
 
-QString HiView_Utilities::Image_Reader_Formats_File_Filters, HiView_Utilities::Image_Writer_Formats_File_Filters;
-QStringList *HiView_Utilities::Image_Reader_Formats = NULL, *HiView_Utilities::Image_Writer_Formats = NULL;
+QString HiView_Utilities::Image_Reader_Formats_File_Filters,
+    HiView_Utilities::Image_Writer_Formats_File_Filters;
+QStringList *HiView_Utilities::Image_Reader_Formats = NULL,
+            *HiView_Utilities::Image_Writer_Formats = NULL;
 
-QUrl HiView_Utilities::PDS_metadata_URL(const QString &Source_Name, const QUrl &model_URL)
+QUrl HiView_Utilities::PDS_metadata_URL(const QString& Source_Name,
+                                        const QUrl& model_URL)
 {
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
-    LOCKED_LOGGING((clog << ">>> HiView_Utilities::PDS_metadata_URL: " << model_URL.toString() << endl));
+    LOCKED_LOGGING((clog << ">>> HiView_Utilities::PDS_metadata_URL: "
+                         << model_URL.toString() << endl));
 #endif
     QUrl URL(Source_Name);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
@@ -117,14 +120,12 @@ QUrl HiView_Utilities::PDS_metadata_URL(const QString &Source_Name, const QUrl &
     if (model_URL.isEmpty() || model_URL == URL)
     {
         QString pathname(QDir::fromNativeSeparators(URL.path()));
-        int index = pathname.lastIndexOf('.');
-        if (index < 0)
-            //	No existing extension; add on.
-            pathname.append('.');
+        auto index = pathname.lastIndexOf('.');
+        //	No existing extension; add on.
+        if (index < 0) pathname.append('.');
         ++index;
-        if (index < pathname.length())
-            //	Remove existing extension.
-            pathname.truncate(index);
+        //	Remove existing extension.
+        if (index < pathname.length()) pathname.truncate(index);
         pathname.append(HiView_Utilities::PDS_LABEL_FILENAME_EXT);
         URL.setPath(pathname);
     }
@@ -135,35 +136,38 @@ QUrl HiView_Utilities::PDS_metadata_URL(const QString &Source_Name, const QUrl &
         {
             //	Model file pathname.
             name = QDir::fromNativeSeparators(model_URL.path());
-            if (name.endsWith('/'))
-                name.truncate(name.length() - 1);
+            if (name.endsWith('/')) name.truncate(name.length() - 1);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
             LOCKED_LOGGING((clog << "     model pathname: " << name << endl));
 #endif
             if (name.startsWith('/'))
-                //	Replace the source pathname with the model's absolute pathname.
+                //	Replace the source pathname with the model's absolute
+                // pathname.
                 URL.setPath(name);
             else
             {
-                //	Modify the source pathname with the model's relative pathname.
+                //	Modify the source pathname with the model's relative
+                // pathname.
                 QString pathname(QDir::fromNativeSeparators(URL.path()));
                 if (pathname.endsWith('/'))
                     pathname.truncate(pathname.length() - 1);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
-                LOCKED_LOGGING((clog << "    source pathname: " << name << endl));
+                LOCKED_LOGGING(
+                    (clog << "    source pathname: " << name << endl));
 #endif
-                //	Remove the filename segment, leaving the segment separator.
+                //	Remove the filename segment, leaving the segment
+                // separator.
                 pathname.truncate(pathname.lastIndexOf('/') + 1);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
-                LOCKED_LOGGING((clog << "     source dirname: " << name << endl));
+                LOCKED_LOGGING(
+                    (clog << "     source dirname: " << name << endl));
 #endif
                 pathname.append(name);
                 URL.setPath(pathname);
             }
         }
-        else
-            //	Use the non-file model URL as-is.
-            URL = model_URL;
+        //	Use the non-file model URL as-is.
+        else URL = model_URL;
     }
     if (URL.scheme().compare("jpip", Qt::CaseInsensitive) == 0)
     {
@@ -171,28 +175,29 @@ QUrl HiView_Utilities::PDS_metadata_URL(const QString &Source_Name, const QUrl &
         URL.setPort(-1);
     }
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
-    LOCKED_LOGGING((clog << "<<< HiView_Utilities::PDS_metadata_URL: " << URL.toString() << endl));
+    LOCKED_LOGGING((clog << "<<< HiView_Utilities::PDS_metadata_URL: "
+                         << URL.toString() << endl));
 #endif
     return URL;
 }
 
 namespace
 {
-void image_formats(const QList<QByteArray> &formats, QStringList *list, QString &filters)
+void image_formats(const QList<QByteArray>& formats, QStringList* list,
+                   QString& filters)
 {
 #if ((DEBUG_SECTION) & DEBUG_IMAGE_FORMATS)
     clog << ">>> HiView_Utilities image_formats" << endl;
 #endif
     QString name;
-    int index = 0, entry = 0;
+    auto index = 0, entry = 0;
     while (index < formats.size())
     {
         name = formats.at(index++);
         //	Check for a case insensitive duplicate.
         entry = list->size();
         while (--entry >= 0)
-            if (name.compare(list->at(entry), Qt::CaseInsensitive) == 0)
-                break;
+            if (name.compare(list->at(entry), Qt::CaseInsensitive) == 0) break;
         if (entry < 0)
             //	New entry; lowercase.
             list->append(name.toLower());
@@ -205,41 +210,46 @@ void image_formats(const QList<QByteArray> &formats, QStringList *list, QString 
     clog << "<<< HiView_Utilities image_formats" << endl;
 #endif
 }
-} // namespace
+}  // namespace
 
-QString HiView_Utilities::file_filters_from(QStringList &list)
+QString HiView_Utilities::file_filters_from(QStringList& list)
 {
 #if ((DEBUG_SECTION) & DEBUG_IMAGE_FORMATS)
     clog << ">>> HiView_Utilities::file_filters_from" << endl;
 #endif
     QString filters;
-    int index;
-    /*
+    /*    int index;
+
         Special case: format name alias removal.
         N.B.: List entries are presumed to be lowercase.
-    */
+
     if ((index = list.indexOf("jpg")) >= 0)
     {
-        if ((list.indexOf("jpeg")) >= 0)
-            list.removeAt(index);
-        else
-            list.replace(index, QString("jpeg"));
+        if ((list.indexOf("jpeg")) >= 0) list.removeAt(index);
+        else list.replace(index, QString("jpeg"));
     }
     if ((index = list.indexOf("tif")) >= 0)
     {
-        if ((list.indexOf("tiff")) >= 0)
-            list.removeAt(index);
-        else
-            list.replace(index, QString("tiff"));
-    }
+        if ((list.indexOf("tiff")) >= 0) list.removeAt(index);
+        else list.replace(index, QString("tiff"));
+    }*/
+    auto normalizeExt = [&list](const QString& shortExt, const QString& longExt)
+    {
+        auto index = list.indexOf(shortExt);
+        if (index < 0) return;
+        if (list.contains(longExt)) list.removeAt(index);
+        else list.replace(index, longExt);
+    };
+
+    normalizeExt("jpg", "jpeg");
+    normalizeExt("tif", "tiff");
 
 #if ((DEBUG_SECTION) & DEBUG_IMAGE_FORMATS)
     clog << "    list -" << endl;
 #endif
-    for (index = 0; index < list.size(); index++)
+    for (auto index = 0; index < list.size(); index++)
     {
-        if (!filters.isEmpty())
-            filters += ";; ";
+        if (!filters.isEmpty()) filters += ";; ";
         filters += file_filter_for(list.at(index));
 #if ((DEBUG_SECTION) & DEBUG_IMAGE_FORMATS)
         clog << "    " << index << ": " << list.at(index) << endl;
@@ -251,22 +261,18 @@ QString HiView_Utilities::file_filters_from(QStringList &list)
     return filters;
 }
 
-QString HiView_Utilities::file_filter_for(const QString &format)
+QString HiView_Utilities::file_filter_for(const QString& format)
 {
     QString filter;
     if (!format.isEmpty())
     {
         QString upper(format.toUpper());
-        if (upper == "JPG")
-            upper = "JPEG";
-        if (upper == "TIF")
-            upper = "TIFF";
+        if (upper == "JPG") upper = "JPEG";
+        if (upper == "TIF") upper = "TIFF";
         QString lower(upper.toLower());
         filter = upper + " (*." + lower + " *." + upper;
-        if (upper == "JPEG")
-            filter += " *.jpg *.JPG";
-        if (upper == "TIFF")
-            filter += " *.tif *.TIF";
+        if (upper == "JPEG") filter += " *.jpg *.JPG";
+        if (upper == "TIFF") filter += " *.tif *.TIF";
         filter += ')';
     }
     return filter;
@@ -274,8 +280,7 @@ QString HiView_Utilities::file_filter_for(const QString &format)
 
 QString HiView_Utilities::image_reader_formats_file_filters()
 {
-    if (!Image_Reader_Formats)
-        image_reader_formats();
+    if (!Image_Reader_Formats) image_reader_formats();
     return Image_Reader_Formats_File_Filters;
 }
 
@@ -286,22 +291,23 @@ QStringList HiView_Utilities::image_reader_formats()
         Image_Reader_Formats = new QStringList;
         //	JP2 is to be included regardless of available plugins.
         Image_Reader_Formats->append("jp2");
-        image_formats(QImageReader::supportedImageFormats(), Image_Reader_Formats, Image_Reader_Formats_File_Filters);
+        image_formats(QImageReader::supportedImageFormats(),
+                      Image_Reader_Formats, Image_Reader_Formats_File_Filters);
     }
     return *Image_Reader_Formats;
 }
 
 QString HiView_Utilities::image_writer_formats_file_filters()
 {
-    if (!Image_Writer_Formats)
-        image_writer_formats();
+    if (!Image_Writer_Formats) image_writer_formats();
     return Image_Writer_Formats_File_Filters;
 }
 
 QStringList HiView_Utilities::image_writer_formats()
 {
     if (!Image_Writer_Formats)
-        image_formats(QImageWriter::supportedImageFormats(), Image_Writer_Formats = new QStringList,
+        image_formats(QImageWriter::supportedImageFormats(),
+                      Image_Writer_Formats = new QStringList,
                       Image_Writer_Formats_File_Filters);
     return *Image_Writer_Formats;
 }
@@ -322,45 +328,40 @@ double round_to(double value, int decimal_places)
     {
         double places = 1;
         if (decimal_places > 0)
-            while (decimal_places--)
-                places *= 10;
+            while (decimal_places--) places *= 10;
         else
-            while (decimal_places++)
-                places /= 10;
+            while (decimal_places++) places /= 10;
         value *= places;
         value += 0.5;
-        value = (int)value / places;
+        value = static_cast<int>(value) / places;
     }
     return value;
 }
 
 QString magnitude_of(unsigned long long value)
 {
-    static const char *const MAGNITUDE = " KMGTPEZ";
+    static const char* const MAGNITUDE = " KMGTPEZ";
     double amount = value;
-    const char *mag;
-    for (mag = MAGNITUDE; *(mag + 1) && amount >= 1024.0; ++mag, amount /= 1024.0)
-        ;
+    const char* mag;
+    for (mag = MAGNITUDE; *(mag + 1) && amount >= 1024.0;
+         ++mag, amount /= 1024.0);
 
     QString representation(QString::number(amount, 'g', 2));
-    if (*mag != ' ')
-        representation += *mag;
+    if (*mag != ' ') representation += *mag;
     return representation;
 }
 
 int decimal_digits(unsigned long long value)
 {
     int digits = 1;
-    while ((value /= 10))
-        ++digits;
+    while ((value /= 10)) ++digits;
     return digits;
 }
 
 int hex_digits(unsigned long long value)
 {
     int digits = 1;
-    while ((value >>= 4))
-        ++digits;
+    while ((value >>= 4)) ++digits;
     return digits;
 }
 
@@ -368,23 +369,22 @@ int hex_digits(unsigned long long value)
 #define DEFAULT_PATHNAME_WRAP_LENGTH 300
 #endif
 
-QString wrapped_pathname(const QString &pathname, int wrap_length, const QFont &font)
+QString wrapped_pathname(const QString& pathname, int wrap_length,
+                         const QFont& font)
 {
     QString path(pathname);
-    if (wrap_length < 50)
-        wrap_length = DEFAULT_PATHNAME_WRAP_LENGTH;
-    QFontMetrics font_metrics(font);
+    if (wrap_length < 50) wrap_length = DEFAULT_PATHNAME_WRAP_LENGTH;
+    QFontMetrics const font_metrics(font);
     int length = font_metrics.boundingRect(path).width();
     if (length > wrap_length)
     {
-        QChar separator(QDir::separator());
-        QStringList segments(pathname.split(separator));
+        QChar const separator(QDir::separator());
+        QStringList const segments(pathname.split(separator));
         QString section;
         path.clear();
         for (int index = 0; index < segments.count(); ++index)
         {
-            if (index)
-                section += separator;
+            if (index) section += separator;
             section += segments.at(index);
             length = font_metrics.boundingRect(section).width();
             if (length > wrap_length)
@@ -396,21 +396,22 @@ QString wrapped_pathname(const QString &pathname, int wrap_length, const QFont &
         }
         if (path.at(path.length() - 1) == '\n')
             path.remove(path.length() - 1, 1);
-        if (!section.isEmpty())
-            path += section;
+        if (!section.isEmpty()) path += section;
     }
     return path;
 }
 
-std::string uppercase(const std::string &a_string)
+std::string uppercase(const std::string& a_string)
 {
     std::string new_string(a_string);
-    for (std::string::iterator character = new_string.begin(), end = new_string.end(); character < end; ++character)
-        *character = (char)toupper(*character);
+    for (std::string::iterator character = new_string.begin(),
+                               end = new_string.end();
+         character < end; ++character)
+        *character = static_cast<char>(toupper(*character));
     return new_string;
 }
 
-std::string remove(const std::string &a_string, const char character)
+std::string remove(const std::string& a_string, const char character)
 {
     std::string new_string(a_string);
     size_t index = 0;
@@ -419,22 +420,26 @@ std::string remove(const std::string &a_string, const char character)
     return new_string;
 }
 
-std::string replace(const std::string &a_string, const char old_character, const char new_character)
+std::string replace(const std::string& a_string, const char old_character,
+                    const char new_character)
 {
     std::string new_string(a_string);
-    for (std::string::iterator character = new_string.begin(), end = new_string.end(); character < end; ++character)
-        if (*character == old_character)
-            *character = new_character;
+    for (std::string::iterator character = new_string.begin(),
+                               end = new_string.end();
+         character < end; ++character)
+        if (*character == old_character) *character = new_character;
     return new_string;
 }
 
-bool compare(const char *this_string, const char *that_string, bool case_sensitive)
+bool compare(const char* this_string, const char* that_string,
+             bool case_sensitive)
 {
     if (this_string && that_string)
     {
         const char *this_ = this_string, *that_ = that_string;
         while (*this_ && *that_)
-            if ((case_sensitive ? (*this_++ != *that_++) : (toupper(*this_++) != toupper(*that_++))))
+            if ((case_sensitive ? (*this_++ != *that_++)
+                                : (toupper(*this_++) != toupper(*that_++))))
                 return false;
         if (*this_ == *that_)
             //	EOS of both strings.
@@ -443,11 +448,9 @@ bool compare(const char *this_string, const char *that_string, bool case_sensiti
         return false;
     }
     else if (this_string || that_string)
-        //	Only one string is NULL.
-        return false;
+        return false;  //	Only one string is NULL.
     //	Both strings are NULL.
     return true;
 }
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE

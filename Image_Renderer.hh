@@ -21,14 +21,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Image_Renderer_hh
-#define HiView_Image_Renderer_hh
-
-#include "Image_Tile.hh"
-#include "Plastic_Image.hh"
-
-//	PIRL++
-#include "Reference_Counted_Pointer.hh"
+#pragma once
 
 #include <QList>
 #include <QMutex>
@@ -36,9 +29,11 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QPoint>
 #include <QSize>
 
-namespace UA
-{
-namespace HiRISE
+#include "Image_Tile.hh"
+#include "Plastic_Image.hh"
+#include "Reference_Counted_Pointer.hh"
+
+namespace UA::HiRISE
 {
 //	Forward reference.
 class JP2_Image;
@@ -108,18 +103,18 @@ class Image_Renderer : public QObject
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Types:
     */
     typedef PIRL::Reference_Counted_Pointer<Plastic_Image> Shared_Image;
-    typedef QList<Image_Tile *> Tile_Queue;
+    typedef QList<Image_Tile*> Tile_Queue;
 
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     /*	>>> CAUTION <<< The Image_Tile values are relied on to be the
         the first two bits of the status code.
@@ -129,7 +124,7 @@ class Image_Renderer : public QObject
         <b>N.B.</b>: The RENDERING_CANCELED value is used as a bit flag
         that may qualify the other values.
     */
-    enum
+    enum : quint8
     {
         NOT_RENDERING = 0,
         RENDERING_LOW_PRIORITY = Image_Tile::LOW_PRIORITY,
@@ -148,7 +143,7 @@ class Image_Renderer : public QObject
     /*------------------------------------------------------------------------------
         Defaults
     */
-  protected:
+ protected:
     //!	Default area, in pixels, of a JP2 source image loaded from a named source.
     static unsigned long Default_Min_Source_Image_Area, Default_Max_Source_Image_Area;
 
@@ -158,8 +153,8 @@ class Image_Renderer : public QObject
     /*==============================================================================
         Constructors
     */
-  public:
-    explicit Image_Renderer(QObject *parent = NULL);
+ public:
+    explicit Image_Renderer(QObject* parent = NULL);
 
     virtual ~Image_Renderer();
 
@@ -181,7 +176,7 @@ class Image_Renderer : public QObject
             if a {@link image(const QImage&) source image} has already
             been registered.
     */
-    bool image(const QString &source_name);
+    bool image(const QString& source_name);
 
     /**	Load new source and reference images into this Image_Renderer.
 
@@ -198,7 +193,7 @@ class Image_Renderer : public QObject
             if a {@link image(const QString&) source name} has already
             been registered.
     */
-    bool image(const Shared_Image &source_image);
+    bool image(const Shared_Image& source_image);
 
     /**	Get the source image.
 
@@ -242,7 +237,7 @@ class Image_Renderer : public QObject
         @return	A pointer to a Plastic_Image that is the current reference
             image. This will never be NULL.
     */
-    Plastic_Image *reference_image() const;
+    Plastic_Image* reference_image() const;
 
     /**	Set the maximum image area to use when loading a JP2 source image.
 
@@ -267,25 +262,18 @@ class Image_Renderer : public QObject
     */
     inline void max_source_image_area(unsigned long area)
     {
-        if (area < Default_Min_Source_Image_Area)
-            area = Default_Min_Source_Image_Area;
+        if (area < Default_Min_Source_Image_Area) area = Default_Min_Source_Image_Area;
         Max_Source_Image_Area = area;
     }
 
-    inline unsigned long max_source_image_area() const
-    {
-        return Max_Source_Image_Area;
-    }
+    inline unsigned long max_source_image_area() const { return Max_Source_Image_Area; }
 
     inline static unsigned long default_max_source_image_area()
-    {
-        return Default_Max_Source_Image_Area;
-    }
+    { return Default_Max_Source_Image_Area; }
 
     inline static void default_max_source_image_area(unsigned long area)
     {
-        if (area < Default_Min_Source_Image_Area)
-            area = Default_Min_Source_Image_Area;
+        if (area < Default_Min_Source_Image_Area) area = Default_Min_Source_Image_Area;
         Default_Max_Source_Image_Area = area;
     }
 
@@ -303,12 +291,13 @@ class Image_Renderer : public QObject
             shared.
         @return	A Plastic_Image pointer to the image clone.
     */
-    Plastic_Image *image_clone(const QSize &size = QSize(0, 0), Plastic_Image::Mapping_Type shared_mappings = 0);
+    Plastic_Image* image_clone(const QSize& size = QSize(0, 0),
+                               Plastic_Image::Mapping_Type shared_mappings = 0);
 
     /*------------------------------------------------------------------------------
         Helpers
     */
-  protected:
+ protected:
     /**	Load any posted new source image.
 
         <b>N.B.</b>: The Queue_Lock is held by this method.
@@ -375,7 +364,7 @@ class Image_Renderer : public QObject
             the source for any reason.
         @see	load_image()
     */
-    Plastic_Image *load_image(const QString &source_name);
+    Plastic_Image* load_image(const QString& source_name);
 
     /**	Load a JP2 image from a named source.
 
@@ -393,7 +382,7 @@ class Image_Renderer : public QObject
             could not be loaded from the source.
         @see	load_image()
     */
-    JP2_Image *load_JP2_image(const QString &source_name);
+    JP2_Image* load_JP2_image(const QString& source_name);
 
     /**	Clone an image.
 
@@ -417,13 +406,14 @@ class Image_Renderer : public QObject
             was created, either because the source image is NULL or an
             exception occured during cloning, NULL will be returned.
     */
-    Plastic_Image *clone_image(Plastic_Image *image, const QSize &size = QSize(0, 0),
-                               Plastic_Image::Mapping_Type shared_mappings = Plastic_Image::NO_MAPPINGS);
+    Plastic_Image* clone_image(
+        Plastic_Image* image, const QSize& size = QSize(0, 0),
+        Plastic_Image::Mapping_Type shared_mappings = Plastic_Image::NO_MAPPINGS);
 
     /*==============================================================================
         Queue
     */
-  public:
+ public:
     /**	Queue an image for rendering.
 
         An image with a non-null tile coordinate is associated with a "high
@@ -464,8 +454,8 @@ class Image_Renderer : public QObject
             canceled; otherwise {@link clear()
         @see	add_tile(Image_Tile*)
     */
-    void queue(Plastic_Image *image, const QPoint &tile_coordinate = QPoint(), const QRect &tile_region = QRect(),
-               bool cancelable = true);
+    void queue(Plastic_Image* image, const QPoint& tile_coordinate = QPoint(),
+               const QRect& tile_region = QRect(), bool cancelable = true);
 
     /**	Queue an image for rendering.
 
@@ -481,10 +471,8 @@ class Image_Renderer : public QObject
             canceled; otherwise {@link clear()
         @see	queue(Plastic_Image*, const QPoint&, const QRect&, bool)
     */
-    inline void queue(Plastic_Image *image, const QPoint &tile_coordinate, bool cancelable)
-    {
-        queue(image, tile_coordinate, QRect(), cancelable);
-    }
+    void queue(Plastic_Image* image, const QPoint& tile_coordinate, bool cancelable)
+    { queue(image, tile_coordinate, QRect(), cancelable); }
 
     /**	Get the tile image rendering status.
 
@@ -510,7 +498,7 @@ class Image_Renderer : public QObject
         @return	true if the image is queued for rendering, or if the image
             is NULL if any image is queued for rendering; false otherwise.
     */
-    bool is_queued(Plastic_Image *image = NULL) const;
+    bool is_queued(Plastic_Image* image = NULL) const;
 
     /**	Test if an image is currently being rendered.
 
@@ -524,7 +512,7 @@ class Image_Renderer : public QObject
             false if there is no Active_Tile or, if a non-NULL image was
             specified, the Active_Tile is not the specified image.
     */
-    bool is_rendering(Plastic_Image *image = NULL) const;
+    bool is_rendering(Plastic_Image* image = NULL) const;
 
     /**	Test if the image is queued for deletion.
 
@@ -532,7 +520,7 @@ class Image_Renderer : public QObject
             Delete_Queue.
         @return	true if the image is queued for deletion; false otherwise.
     */
-    bool will_delete(Plastic_Image *image) const;
+    bool will_delete(Plastic_Image* image) const;
 
     /**	Enable or disable immediate mode.
 
@@ -587,7 +575,7 @@ class Image_Renderer : public QObject
         @see	cancel(int)
         @see	abort(bool)
     */
-    bool cancel(Plastic_Image *image, int cancel_options = WAIT_UNTIL_DONE);
+    bool cancel(Plastic_Image* image, int cancel_options = WAIT_UNTIL_DONE);
 
     /**	{@link stop_rendering(bool) Stop rendering} and {@link clear(int)
         clear} the rendering queue.
@@ -627,7 +615,7 @@ class Image_Renderer : public QObject
             image is either queued for deletion at the next opportunity or
             marked for deletion when its rendering is completed.
     */
-    bool delete_image(Plastic_Image *image);
+    bool delete_image(Plastic_Image* image);
 
     /**	Clean the queue of tiles pending deletion.
 
@@ -646,7 +634,7 @@ class Image_Renderer : public QObject
     /*------------------------------------------------------------------------------
         Queue management
     */
-  protected:
+ protected:
     /*
         N.B.: Most of the queue management methods assume that the Queue_Lock
         as been acquired so the Render or Delete Queue can be safely
@@ -667,7 +655,7 @@ class Image_Renderer : public QObject
         @return	The index in the queue where the matching Image_Tile was
             found, or -1 if no match was found.
     */
-    static int find_tile(Plastic_Image *image, const Tile_Queue &queue);
+    static int find_tile(Plastic_Image* image, const Tile_Queue& queue);
 
     /**	Add an Image_Tile to the Render_Queue.
 
@@ -702,7 +690,7 @@ class Image_Renderer : public QObject
 
         @param	image_tile	The Image tile to be added to the Render_Queue.
     */
-    void add_tile(Image_Tile *image_tile);
+    void add_tile(Image_Tile* image_tile);
 
     /**	Clear the Render_Queue.
 
@@ -815,7 +803,7 @@ class Image_Renderer : public QObject
         @param image_tile	A pointer to the Image_Tile to be deleted.
         @see	delete_tiles()
     */
-    void delete_tile(Image_Tile *image_tile);
+    void delete_tile(Image_Tile* image_tile);
 
     /**	Delete all entries in the Delete_Queue.
 
@@ -841,7 +829,7 @@ class Image_Renderer : public QObject
     /*==============================================================================
         Rendering
     */
-  public:
+ public:
     /**	Start the rendering loop.
 
         The rendering loop is set to be runnable and not suspended. Then the
@@ -944,7 +932,7 @@ class Image_Renderer : public QObject
     virtual bool finish(int cancel_options = WAIT_UNTIL_DONE);
 
     //------------------------------------------------------------------------------
-  protected:
+ protected:
     /**	Load any pending new source image and render all queued image tiles.
 
         A loop is entered that checks the Render_Queue for images to be rendered.
@@ -1010,7 +998,7 @@ class Image_Renderer : public QObject
             in tile-relative coordinates, that is visible in the display
             viewport. May be empty.
     */
-    void send_rendered(const QPoint &tile_coordinate, const QRect &tile_region);
+    void send_rendered(const QPoint& tile_coordinate, const QRect& tile_region);
 
     /**	Send the {@link status_notice(const QString&) status notice signal}.
 
@@ -1023,12 +1011,12 @@ class Image_Renderer : public QObject
         @param	message	A QString forwarded from the rendering progress status
             notice message.
     */
-    void send_status_notice(const QString &message);
+    void send_status_notice(const QString& message);
 
     /*==============================================================================
         Utilities
     */
-  public:
+ public:
     /**	Fit a size to an area.
 
         The scaling factor for the given size that will maximally fill, but
@@ -1040,7 +1028,7 @@ class Image_Renderer : public QObject
             will produce a new size that will be as large as possible within
             the specified area.
     */
-    static double scale_to_area(const QSize &size, unsigned long area);
+    static double scale_to_area(const QSize& size, unsigned long area);
 
     /**	Get a brief description of a status condition value.
 
@@ -1081,7 +1069,7 @@ class Image_Renderer : public QObject
     /*==============================================================================
         Qt signals
     */
-  signals:
+ signals:
 
     /**	Signal the completion of {@link load_image() image loading}.
 
@@ -1123,7 +1111,7 @@ class Image_Renderer : public QObject
             in tile-relative coordinates, that is visible in the display
             viewport. May be empty.
     */
-    void rendered(const QPoint &tile_coordinate = QPoint(), const QRect &tile_region = QRect());
+    void rendered(const QPoint& tile_coordinate = QPoint(), const QRect& tile_region = QRect());
 
     /**	Provide a tile image rendering progress status notice message.
 
@@ -1135,7 +1123,7 @@ class Image_Renderer : public QObject
         @param	message	A QString forwarded from the rendering progress status
             notice message.
     */
-    void status_notice(const QString &message);
+    void status_notice(const QString& message);
 
     /**	Signal the status of the renderer.
 
@@ -1202,12 +1190,12 @@ class Image_Renderer : public QObject
 
         @param	message	A QString describing the error condition.
     */
-    void error(const QString &message);
+    void error(const QString& message);
 
     /*==============================================================================
         Qt slots
     */
-  public slots:
+ public slots:
 
     /*	Cancel rendering and {@link clear(int) clear} the queue.
 
@@ -1231,7 +1219,7 @@ class Image_Renderer : public QObject
     /*==============================================================================
         Data
     */
-  protected:
+ protected:
     //	Ready_Lock access controlled -----------------------------------------------
     mutable QMutex Ready_Lock;
 
@@ -1242,7 +1230,7 @@ class Image_Renderer : public QObject
     //!	Flag the rendering loop to finish.
     bool Finish;
 
-  private:
+ private:
     //	Mode_Lock access controlled ------------------------------------------------
     mutable QMutex Mode_Lock;
     //!	Provide immediate mode rendered signal.
@@ -1260,7 +1248,7 @@ class Image_Renderer : public QObject
     /**	The reference image (zero size) from which clones are copied
         and with which band and data mapping is shared.
     */
-    Plastic_Image *Reference_Image;
+    Plastic_Image* Reference_Image;
 
     //!	Source name (pathname or URL) of the source image to load.
     QString Source_Name;
@@ -1281,7 +1269,7 @@ class Image_Renderer : public QObject
 
         The Active_Tile is guarded by the Queue_Lock.
     */
-    Image_Tile *Active_Tile;
+    Image_Tile* Active_Tile;
 
     //!	The current rendering operation has been canceled.
     bool Cancel;
@@ -1300,9 +1288,7 @@ class Image_Renderer : public QObject
     static QMutex Rendering_Lock;
 
     friend class Image_Renderer_Rendering_Monitor;
-    Image_Renderer_Rendering_Monitor *Image_Rendering_Monitor;
+    Image_Renderer_Rendering_Monitor* Image_Rendering_Monitor;
 };
 
-} // namespace HiRISE
-} // namespace UA
-#endif
+}  // namespace UA::HiRISE
