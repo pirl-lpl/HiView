@@ -95,6 +95,66 @@ char* Command_Name;
 //!	Exit status values.
 const int SUCCESS = 0, BAD_SYNTAX = 1;
 
+const char* TEXT_USAGE = R"(
+Viewer for images obtained from local file or remote server sources.
+)";
+
+const char* TEXT_SOURCE = R"(
+The image source name may be the pathname to a local image file
+or a URL to a remote image file. The image source data may be in
+various common formats - such as JPEG, PNG, etc. - as well as a
+JP2 encapsulated JPEG2000 codestream. If a URL is specified for a
+JP2 file the protocol is expected to be "jpip".
+
+Default: An internal application image is displayed, or the
+last viewed image is displayed if session restoration is enabled.
+)";
+
+const char* TEXT_STYLE = R"(
+Sets the application GUI style. Platform dependent; use the -styles (plural)
+option to get a list of available styles.
+
+Default: The default style for the platform being used.
+)";
+
+const char* TEXT_SCALE = R"(
+The initial scaling factor(s) will be applied when the specified
+image source is displayed. If no image source name is specified
+any scaling factors are ignored. If only one scaling factor is
+specified it will apply to both horizontal and vertical scaling.
+
+The scaling factors are decimal values relative to 1.0 for full
+resolution display; 0.5 will display the image at half size, 2.5
+will display the image at two and half times normal size, etc.
+
+Default: 1.0.
+)";
+
+const char* TEXT_RESTORE = R"(
+Do (not) restore the GUI layout geometry that was saved from the
+last time HiView was used. This option overrides the corresponding
+General Preferences settings.
+
+If No_Restore is specified neither the GUI layout geometry nor the
+last source viewed are restored; i.e. the preferences settings are
+ignored in this case. If Restore is specified the Restore Geometry
+preferences setting is ignored but the Restore Last Source setting
+is used.
+
+Default: The GUI layout geometry is restored if available and as
+the General Preferences settings specify.
+)";
+
+const char* TEXT_HELP = R"(
+Print this help description and exit.
+)";
+
+const char* TEXT_VERSION = R"(
+List the application version identification and exit.
+
+Default: No version identification.
+)";
+
 /*==============================================================================
     Usage
 */
@@ -109,105 +169,25 @@ const int SUCCESS = 0, BAD_SYNTAX = 1;
 void usage(int exit_status = BAD_SYNTAX, bool list_descriptions = false)
 {
     cout << "Usage: " << Command_Name << " [options] [[-Image] <source name>]" << endl;
-    if (list_descriptions)
-        cout << endl
-             << "Viewer for images obtained from local file or remote server sources." << endl
-             << endl;
+    if (list_descriptions) cout << TEXT_USAGE << endl;
 
-    cout << "[-Image] <source name>" << endl;
-    if (list_descriptions)
-        cout << "The image source name may be the pathname to a local image file" << endl
-             << "or a URL to a remote image file. The image source data may be in" << endl
-             << "various common formats - such as JPEG, PNG, etc. - as well as a" << endl
-             << "JP2 encapsulated JPEG2000 codestream. If a URL is specified for a" << endl
-             << "JP2 file the protocol is expected to be \"jpip\"." << endl
-             << endl
-             << "Default: An internal application image is displayed, or the" << endl
-             << "last viewed image is displayed if session restoration is enabled." << endl
-             << endl;
+    cout << "   [-Image] <source name>" << endl;
+    if (list_descriptions) cout << TEXT_SOURCE << endl;
 
-    cout << "-SCale <horizontal>[,<vertical>]" << endl;
-    if (list_descriptions)
-        cout << "    The initial scaling factor(s) will be applied when the "
-                "specified"
-             << endl
-             << "    image source is displayed. If no image source name is "
-                "specified"
-             << endl
-             << "    any scaling factors are ignored. If only one scaling "
-                "factor is"
-             << endl
-             << "    specified it will apply to both horizontal and vertical "
-                "scaling."
-             << endl
-             << "    The scaling factors are decimal values relative to 1.0 "
-                "for full"
-             << endl
-             << "    resolution display; 0.5 will display the image at half "
-                "size, "
-                "2.5"
-             << endl
-             << "    will display the image at two and half times normal size, "
-                "etc."
-             << endl
-             << endl
-             << "    Default: 1.0" << endl
-             << endl;
+    cout << "   -SCale <horizontal>[,<vertical>]" << endl;
+    if (list_descriptions) cout << TEXT_SCALE << endl;
 
-    cout << "-[No_]Restore" << endl;
-    if (list_descriptions)
-        cout << "    Do (not) restore the GUI layout geometry that was saved "
-                "from "
-                "the"
-             << endl
-             << "    last time HiView was used. This option overrides the "
-                "corresponding"
-             << endl
-             << "    General Preferences settings." << endl
-             << endl
-             << "    If No_Restore is specified neither the GUI layout geometry "
-                "nor the"
-             << endl
-             << "    last source viewed are restored; i.e. the preferences "
-                "settings are"
-             << endl
-             << "    ignored in this case. If Restore is specified the Restore "
-                "Geometry"
-             << endl
-             << "    preferences setting is ignored but the Restore Last Source "
-                "setting"
-             << endl
-             << "    is used." << endl
-             << endl
-             << "    Default: The GUI layout geometry is restored if available "
-                "and "
-                "as"
-             << endl
-             << "    the General Preferences settings specify." << endl
-             << endl;
+    cout << "   -[No_]Restore" << endl;
+    if (list_descriptions) cout << TEXT_RESTORE << endl;
 
-    cout << "-STYLE <style> | -STYLES" << endl;
-    if (list_descriptions)
-        cout << "    Sets the application GUI style. Possible values are "
-                "\"platinum\","
-             << endl
-             << R"(    "motif" and "windows". Some platforms may support additional)" << endl
-             << "    styles; use the -styles option to get a list of available "
-                "styles."
-             << endl
-             << endl
-             << "    Default: The default style for the platform being used." << endl
-             << endl;
+    cout << "   -STYLE <style> | -STYLES" << endl;
+    if (list_descriptions) cout << TEXT_STYLE << endl;
 
-    cout << "-Version" << endl;
-    if (list_descriptions)
-        cout << "    List the application version identification and exit." << endl
-             << endl
-             << "    Default: No version identification." << endl
-             << endl;
+    cout << "   -Version" << endl;
+    if (list_descriptions) cout << TEXT_VERSION << endl;
 
-    cout << "-Help" << endl;
-    if (list_descriptions) cout << "    Print this help description and exit." << endl << endl;
+    cout << "   -Help" << endl;
+    if (list_descriptions) cout << TEXT_HELP << endl;
 
     exit(exit_status);
 }
