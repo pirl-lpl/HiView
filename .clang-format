@@ -1,6 +1,9 @@
-Standard: C++17
 BasedOnStyle: Google   # or LLVM, Microsoft, etc.
+Standard: c++17
 IndentWidth: 4
 UseTab: Never
 AccessModifierOffset: -3
 BreakBeforeBraces: Allman
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortBlocksOnASingleLine: Always
+ColumnLimit: 100
