@@ -16,6 +16,19 @@ cmake_minimum_required(VERSION 3.17)
 #
 project(HiView)
 
+set(PROJECT_VERSION "3.0.0-beta0")
+
+cmake_host_system_information(RESULT OS_NAME QUERY OS_NAME)
+cmake_host_system_information(RESULT OS_RELEASE QUERY OS_RELEASE)
+cmake_host_system_information(RESULT OS_VERSION QUERY OS_VERSION)
+
+# Generate date and time stamp
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
+string(TIMESTAMP BUILD_TIME "%H:%M:%S" UTC)
+
+# Combine for a full identifier string
+set(BUILD_INFO "${OS_NAME} ${OS_VERSION} - ${BUILD_DATE} ${BUILD_TIME}")
+
 # prevents a warning message
 cmake_policy(SET CMP0100 NEW)
 
@@ -154,6 +167,14 @@ qt_add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+APP_NAME="${PROJECT_NAME}"
+APP_VERSION="${PROJECT_VERSION}"
+APP_INFO="${BUILD_INFO}"
+APP_ORGNAME="UAHiRISE.org")
+
+#target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
 if  (DEFINED ENV{DEBUG_SECTION})
     message(STATUS "Setting DEBUG to $ENV{DEBUG_SECTION}")
     target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG_SECTION=$ENV{DEBUG_SECTION})
@@ -168,7 +189,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
 if (MSVC)
     # TODO disable these for release build
     target_compile_definitions(${PROJECT_NAME} PRIVATE _DISABLE_VECTOR_ANNOTATION _DISABLE_STL_ANNOTATION)
-    target_compile_options(${PROJECT_NAME} PRIVATE /fsanitize=address /Zi)
+    target_compile_options(${PROJECT_NAME} PRIVATE /fsanitize=address /Zi /Zc:preprocessor)
 
     target_link_options(${PROJECT_NAME} PRIVATE /FORCE)
 endif()
