@@ -19,6 +19,9 @@ CompileFlags:
     - -IC:/Qt/6.8.2/msvc2022_64/include/QtOpenGL
     - -IC:/Qt/6.8.2/msvc2022_64/include/QtPrintSupport
     - -IC:/Qt/6.8.2/msvc2022_64/include/QtSvg
+    - -IC:/Users/deser/Qwt-6.3.0/include/qwt.h
+    - -IC:/Users/deser/Qwt-6.3.0/include/qwt_series_data.h
+    - -IC:/Users/deser/include
 
     # Qt defines required for correct header parsing
     - -DQT_CORE_LIB
@@ -66,16 +69,23 @@ Diagnostics:
       - readability-*
       - performance-*
       - bugprone-*
+      - misc-*
+      - clang-analyzer-*
     Remove:
+      - bugprone-easily-swappable-parameters
       - bugprone-inc-dec-in-conditions      # allow ++/-- in conditions
       - modernize-use-trailing-return-type  # Stylistic, often unwanted
+      - modernize-use-nodiscard             # will use it sporadically
       - readability-identifier-length       # Allow short arg names
+      - readability-braces-around-statements # ShortStatementLines? 1
       - readability-implicit-bool-conversion 
+      - readability-inconsistent-ifelse-braces
+      - readability-isolate-declaration     # Allow multiple per line
       - readability-magic-numbers           # Too noisy for most projects
       - readability-named-parameter         # Allow unnamed
+      - readability-use-std-min-max         # may have perf impact
       - performance-avoid-endl              # allow endl
-    CheckOptions:
-      readability-braces-around-statements.ShortStatementLines: "1"
+    FastCheckFilter: None  
 
 InlayHints:
   Enabled: Yes
