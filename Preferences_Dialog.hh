@@ -939,7 +939,8 @@ class Preferences_Dialog : public QDialog
     Q_SIGNAL void tile_size_changed(int size);
     Q_SIGNAL void rendering_increment_lines_changed(int lines);
 
-    // Q_SIGNAL void HTTP_to_JPIP_hostname_changed (const QString& proxy);
+    Q_SIGNAL void HTTP_to_JPIP_hostname_changed(const QString& proxy);
+    Q_SIGNAL void JPIP_to_HTTP_hostname_changed(const QString& proxy);
     Q_SIGNAL void JPIP_server_port_changed(int port);
     Q_SIGNAL void JPIP_proxy_changed(const QString& proxy);
     Q_SIGNAL void JPIP_cache_directory_changed(const QString& cache_directory);

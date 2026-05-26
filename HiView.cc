@@ -203,7 +203,7 @@ int main(int arg_count, char** arg_list)
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
     clog << Command_Name << ": " << APP_NAME << endl << APP_VERSION << ' ' << APP_INFO << endl;
 #endif
-
+    // TODO this should not be necessary
     /*	Initialize application resources and Qt run-time environment. */
     Q_INIT_RESOURCE(HiView);  //	Can't use APP_NAME in this macro.
 

@@ -418,16 +418,16 @@ HiView_Window::HiView_Window(const QString& source, const QSizeF& scaling,
     vertical_layout->addLayout(horizontal_layout);
     connect(Preferences, &Preferences_Dialog::longitude_direction_changed, Image_Info,
             &Image_Info_Panel::longitude_direction);
-    connect(Preferences, SIGNAL(longitude_units_changed(int)), Image_Info,
-            SLOT(longitude_units(int)));
-    connect(Preferences, SIGNAL(latitude_units_changed(int)), Image_Info,
-            SLOT(latitude_units(int)));
-    connect(Preferences, SIGNAL(script_changed(const QString&)), Image_Info,
-            SLOT(script_changed(const QString&)));
-    connect(Preferences, SIGNAL(show_script_changed(bool)), Image_Info,
-            SLOT(show_script_changed(bool)));
-    connect(Image_Info, SIGNAL(variables_updated(QStringList&)), Preferences,
-            SIGNAL(variables_updated(QStringList&)));
+    connect(Preferences, &Preferences_Dialog::longitude_units_changed, Image_Info,
+            &Image_Info_Panel::longitude_units);
+    connect(Preferences, &Preferences_Dialog::latitude_units_changed, Image_Info,
+            &Image_Info_Panel::latitude_units);
+    connect(Preferences, &Preferences_Dialog::script_changed, Image_Info,
+            &Image_Info_Panel::script_changed);
+    connect(Preferences, &Preferences_Dialog::show_script_changed, Image_Info,
+            &Image_Info_Panel::show_script_changed);
+    connect(Image_Info, &Image_Info_Panel::variables_updated, Preferences,
+            &Preferences_Dialog::variables_updated);
     //	Image metadata dialog.
     Image_Metadata_Dialog = new Metadata_Dialog(NULL, this, Qt::Window);
     Image_Metadata_Dialog->root_name("Metadata");
@@ -591,7 +591,7 @@ HiView_Window::HiView_Window(const QString& source, const QSizeF& scaling,
         connect(application, SIGNAL(file_open_request(const QString&)), SLOT(open(const QString&)));
     }
 
-#ifdef __APPLE__
+#ifdef __Q_OS_MACOS__
     // if (View_SpeechRecog_Action->isChecked ())
     //{
     adapter = new Mac_Voice_Adapter(Image_View, Statistics, Data_Mapper);
@@ -618,7 +618,7 @@ HiView_Window::~HiView_Window()
 #endif
 }
 
-#ifdef __APPLE__
+#ifdef __Q_OS_MACOS__
 void HiView_Window::recognizer_toggled(bool enable)
 {
     if (enable)
@@ -1075,7 +1075,7 @@ void HiView_Window::create_menus()
     View_Tooltips_Action->setChecked(true);
     View_Menu->addAction(View_Tooltips_Action);
 
-#ifdef __APPLE__
+#ifdef __Q_OS_MACOS_
     View_SpeechRecog_Action = new QAction(tr("Speech Recognizer"), this);
     View_SpeechRecog_Action->setCheckable(true);
     View_SpeechRecog_Action->setChecked(false);
@@ -3239,8 +3239,7 @@ void HiView_Window::image_loaded(bool successful)
                 Initial_Source = application->requestedPathname();
             if (Initial_Source.isEmpty() &&
                 // TODO is this a bug or is it intended to happen only when restoring layout?
-                /*Restore_Layout && */
-                Preferences->restore_last_source() && Source_Selections->count())
+                Restore_Layout && Preferences->restore_last_source() && Source_Selections->count())
                 //	Reload the last source used.
                 Initial_Source = Source_Selections->itemText(0);
         }

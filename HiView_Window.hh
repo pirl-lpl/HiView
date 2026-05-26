@@ -285,7 +285,7 @@ class HiView_Window : public QMainWindow
     Q_SLOT void open_file();
     Q_SLOT void open_URL();
 
-    bool save_image();
+    Q_SLOT bool save_image();
 
  private:
     Q_SLOT void source_selections(const QStringList& source_list);
@@ -313,9 +313,9 @@ class HiView_Window : public QMainWindow
             metadata that was fetched. This will be NULL if no metadata was
             obtained.
     */
-    void PDS_metadata(idaeim::PVL::Aggregate* metadata);
+    Q_SLOT void PDS_metadata(idaeim::PVL::Aggregate* metadata);
 
-    void save_image_done(bool completed);
+    Q_SLOT void save_image_done(bool completed);
 
     /**	Receives the {@link Image_Viewer::rendering_status(int) rendering
         status} signal from the Image_Viewer.
@@ -324,13 +324,13 @@ class HiView_Window : public QMainWindow
         @see	Image_Viewer::rendering_status(int)
         @see	image_viewer_state_change(int)
     */
-    void rendering_status(int status);
-    void activity_indicator_clicked(int status);
-    void image_loaded(bool successful);
+    Q_SLOT void rendering_status(int status);
+    Q_SLOT void activity_indicator_clicked(int status);
+    Q_SLOT void image_loaded(bool successful);
 
-    void image_moved(const QPoint& image_position, int band);
-    void image_cursor_moved(const QPoint& display_position, const QPoint& image_position);
-    void displayed_image_region_resized(const QSize& region_size);
+    Q_SLOT void image_moved(const QPoint& image_position, int band);
+    Q_SLOT void image_cursor_moved(const QPoint& display_position, const QPoint& image_position);
+    Q_SLOT void displayed_image_region_resized(const QSize& region_size);
 
     /**	Handles the {@link Image_Viewer::state_change(int) state change}
         signal from the Image_Viewer.
@@ -345,42 +345,42 @@ class HiView_Window : public QMainWindow
         @param	state	The {@link Image_Viewer::state_change(int) state
             change} signal from the Image_Viewer.
     */
-    void image_viewer_state_change(int state);
+    Q_SLOT void image_viewer_state_change(int state);
 
-    void view_image_info(bool enable);
+    Q_SLOT void view_image_info(bool enable);
 
-    void view_image_metadata(bool enable);
+    Q_SLOT void view_image_metadata(bool enable);
 
-    void view_navigator(bool enabled);
-    void navigator_visibility_changed(bool visible);
+    Q_SLOT void view_navigator(bool enabled);
+    Q_SLOT void navigator_visibility_changed(bool visible);
 
-    void view_statistics(bool enable);
-    void statistics_visibility_changed(bool visible);
-    void statistics_section_changed(int panel_index);
+    Q_SLOT void view_statistics(bool enable);
+    Q_SLOT void statistics_visibility_changed(bool visible);
+    Q_SLOT void statistics_section_changed(int panel_index);
 
-    void view_data_mapper(bool enable);
-    void data_mapper_visibility_changed(bool visible);
+    Q_SLOT void view_data_mapper(bool enable);
+    Q_SLOT void data_mapper_visibility_changed(bool visible);
 
-    void tool_location_changed();
+    Q_SLOT void tool_location_changed();
 
-    void auto_resize(bool enable);
-    void fit_window_to_image();
+    Q_SLOT void auto_resize(bool enable);
+    Q_SLOT void fit_window_to_image();
 
-    void view_status_bar(bool enabled);
-    void show_status_message(const QString& message);
-    void status_message_changed(const QString& message);
+    Q_SLOT void view_status_bar(bool enabled);
+    Q_SLOT void show_status_message(const QString& message);
+    Q_SLOT void status_message_changed(const QString& message);
 
-    void help();
-    void help_documentation(const QString& location);
-    void about();
+    Q_SLOT void help();
+    Q_SLOT void help_documentation(const QString& location);
+    Q_SLOT void about();
 
-    void tool_context_menu_requested(QDockWidget* tool, QContextMenuEvent* event);
-    void tool_position();
+    Q_SLOT void tool_context_menu_requested(QDockWidget* tool, QContextMenuEvent* event);
+    Q_SLOT void tool_position();
 
-    void toggle_distance_tool(bool enable);
-    void line_color(const QColor& color);
+    Q_SLOT void toggle_distance_tool(bool enable);
+    Q_SLOT void line_color(const QColor& color);
 #ifdef Q_OS_MACOS
-    void recognizer_toggled(bool enable);
+    Q_SLOT void recognizer_toggled(bool enable);
 #endif
 
     /*==============================================================================

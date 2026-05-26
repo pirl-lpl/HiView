@@ -42,7 +42,7 @@ using UA::HiRISE::JP2_Exception;
 using std::exception;
 #include <cassert>
 
-#if defined(DEBUG_SECTION)
+#ifdef DEBUG_SECTION
 /*******************************************************************************
     DEBUG_SECTION controls
 
@@ -101,9 +101,7 @@ using std::flush;
 
 #endif  //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
@@ -376,23 +374,20 @@ Image_Renderer::~Image_Renderer()
     */
     if (!Finish) finish();
 
-    if (Reference_Image)
-    {
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_IMAGE_ACCOUNTING))
-        LOCKED_LOGGING((clog << "    delete the Reference_Image -" << endl
-                             << "    " << *Reference_Image << endl));
+    LOCKED_LOGGING((clog << "    delete the Reference_Image -" << endl
+                         << "    " << *Reference_Image << endl));
 #endif
-        delete Reference_Image;
+    delete Reference_Image;
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
-        if (!Image_Accounting.removeAll(Reference_Image))
-        {
-            LOCKED_LOGGING((clog << "!!! Reference_Image not accounted for" << endl
-                                 << "    in " << pathname << endl));
-        }
-#endif
+    if (!Image_Accounting.removeAll(Reference_Image))
+    {
+        LOCKED_LOGGING((clog << "!!! Reference_Image not accounted for" << endl
+                             << "    in " << pathname << endl));
     }
+#endif
 
-    if (Image_Rendering_Monitor) delete Image_Rendering_Monitor;
+    delete Image_Rendering_Monitor;
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_IMAGE_ACCOUNTING))
     print_render_queue();
     print_delete_queue();
@@ -408,13 +403,13 @@ Image_Renderer::~Image_Renderer()
 */
 const Image_Renderer::Shared_Image Image_Renderer::source_image() const
 {
-    QMutexLocker queue_lock(&Queue_Lock);
+    QMutexLocker const queue_lock(&Queue_Lock);
     return Source_Image;
 }
 
 Plastic_Image* Image_Renderer::reference_image() const
 {
-    QMutexLocker queue_lock(&Queue_Lock);
+    QMutexLocker const queue_lock(&Queue_Lock);
     return Reference_Image;
 }
 
@@ -425,7 +420,7 @@ void Image_Renderer::immediate_mode(bool enable)
                          << (void*)QThread::currentThreadId() << ": " << boolalpha << enable
                          << endl));
 #endif
-    QMutexLocker mode_lock(&Mode_Lock);
+    QMutexLocker const mode_lock(&Mode_Lock);
     Immediate_Mode = enable;
 }
 
@@ -435,8 +430,8 @@ bool Image_Renderer::immediate_mode() const
     void* thread_ID = (void*)QThread::currentThreadId();
     LOCKED_LOGGING((clog << ">>> Image_Renderer::immediate_mode " << thread_ID << endl));
 #endif
-    QMutexLocker mode_lock(&Mode_Lock);
-    bool immediate_mode = Immediate_Mode;
+    QMutexLocker const mode_lock(&Mode_Lock);
+    bool const immediate_mode = Immediate_Mode;
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
     LOCKED_LOGGING((clog << "<<< Image_Renderer::immediate_mode " << thread_ID << ": " << boolalpha
                          << immediate_mode << endl));
@@ -452,7 +447,7 @@ void Image_Renderer::queue(Plastic_Image* image, const QPoint& tile_coordinate,
 {
     if (!image) return;
 
-    Image_Tile* image_tile = new Image_Tile(image, tile_coordinate, tile_region, cancelable);
+    auto* image_tile = new Image_Tile(image, tile_coordinate, tile_region, cancelable);
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
     void* thread_ID = (void*)QThread::currentThreadId();
     QString pathname(object_pathname(this));
@@ -462,7 +457,7 @@ void Image_Renderer::queue(Plastic_Image* image, const QPoint& tile_coordinate,
                          << "    lock Queue_Lock" << endl
                          << "    in " << pathname << endl));
 #endif
-    QMutexLocker qLocker(&Queue_Lock);
+    QMutexLocker const qLocker(&Queue_Lock);
 
     int index = find_tile(image, Render_Queue);
     if (index < 0)
@@ -538,7 +533,7 @@ void Image_Renderer::queue(Plastic_Image* image, const QPoint& tile_coordinate,
 
 bool Image_Renderer::is_queued(Plastic_Image* image) const
 {
-    QMutexLocker queue_lock(&Queue_Lock);
+    QMutexLocker const queue_lock(&Queue_Lock);
     bool queued;
     if (image) queued = find_tile(image, Render_Queue) >= 0;
     else queued = Render_Queue.count() != 0;
@@ -547,7 +542,7 @@ bool Image_Renderer::is_queued(Plastic_Image* image) const
 
 int Image_Renderer::rendering_status() const
 {
-    QMutexLocker queue_lock(&Queue_Lock);
+    QMutexLocker const queue_lock(&Queue_Lock);
     int priority_status = 0;
     if (Active_Tile) priority_status = Active_Tile->status();
     else if (!Render_Queue.isEmpty()) priority_status = Render_Queue.first()->status();
@@ -556,7 +551,7 @@ int Image_Renderer::rendering_status() const
 
 bool Image_Renderer::is_rendering(Plastic_Image* image) const
 {
-    QMutexLocker queue_lock(&Queue_Lock);
+    QMutexLocker const queue_lock(&Queue_Lock);
     bool rendering;
     if (image) rendering = Active_Tile && Active_Tile->Image == image;
     else rendering = Active_Tile != NULL;
@@ -565,7 +560,7 @@ bool Image_Renderer::is_rendering(Plastic_Image* image) const
 
 bool Image_Renderer::will_delete(Plastic_Image* image) const
 {
-    QMutexLocker queue_lock(&Queue_Lock);
+    QMutexLocker const queue_lock(&Queue_Lock);
     return find_tile(image, Delete_Queue) >= 0;
 }
 
@@ -584,7 +579,7 @@ bool Image_Renderer::cancel(Plastic_Image* image, int cancel_options)
     UNLOCK_LOG;
 #endif
 
-    QMutexLocker qLocker(&Queue_Lock);
+    QMutexLocker const qLocker(&Queue_Lock);
 
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
     QString pathname(object_pathname(this));
@@ -606,7 +601,7 @@ bool Image_Renderer::cancel(Plastic_Image* image, int cancel_options)
         canceled = abort(cancel_options);
     }
 
-    int index = Render_Queue.size();
+    unsigned int index = Render_Queue.size();
     while (index--)
     {
         if (Render_Queue[index]->Image == image)
@@ -650,7 +645,7 @@ bool Image_Renderer::cancel(int cancel_options)
          << "    lock Queue_Lock" << endl;
     UNLOCK_LOG;
 #endif
-    QMutexLocker qLocker(&Queue_Lock);
+    QMutexLocker const qLocker(&Queue_Lock);
 
     bool done = clear(cancel_options);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_QUEUE))
@@ -677,13 +672,13 @@ bool Image_Renderer::reset(int cancel_options)
                          << "    lock Queue_Lock" << endl));
 #endif
 
-    QMutexLocker qLocker(&Queue_Lock);
+    QMutexLocker const qLocker(&Queue_Lock);
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
     LOCKED_LOGGING((clog << "    Image_Renderer::reset " << thread_ID << ": stop rendering" << endl
                          << "    in " << pathname << endl));
 #endif
     stop_rendering();
-    bool done = clear(cancel_options);
+    bool const done = clear(cancel_options);
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
     LOCKED_LOGGING((clog << "    Image_Renderer::reset " << thread_ID << ": unlock Queue_Lock"
                          << endl
@@ -698,9 +693,9 @@ bool Image_Renderer::reset(int cancel_options)
     return done;
 }
 
-int Image_Renderer::find_tile(Plastic_Image* image, const Tile_Queue& queue)
+unsigned int Image_Renderer::find_tile(Plastic_Image* image, const Tile_Queue& queue)
 {
-    int index = queue.size();
+    unsigned int index = queue.size();
     while (index)
         if (queue[--index]->Image == image) return index;
     return -1;
@@ -721,7 +716,7 @@ void Image_Renderer::add_tile(Image_Tile* image_tile)
     UNLOCK_LOG;
 #endif
     //	Safety check for the image in the Delete_Queue.
-    int index = find_tile(image_tile->Image, Delete_Queue);
+    unsigned int const index = find_tile(image_tile->Image, Delete_Queue);
     if (index >= 0)
     {
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
@@ -768,11 +763,12 @@ void Image_Renderer::add_tile(Image_Tile* image_tile)
             section of the queue is to be ordered from high to low visible
             tile region area.
         */
-        unsigned long long tile_area = image_tile->area();
+        unsigned long long const tile_area = image_tile->area();
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
         LOCKED_LOGGING((clog << "    tile_area = " << tile_area << endl));
 #endif
-        int tiles = Render_Queue.size(), index = -1;
+        unsigned int const tiles = Render_Queue.size();
+        unsigned int index = -1;
         while (++index < tiles && Render_Queue.at(index)->is_high_priority() &&
                Render_Queue.at(index)->area() > tile_area)
         {
@@ -825,11 +821,10 @@ bool Image_Renderer::clear(int cancel_options)
     print_queue(Render_Queue);
     UNLOCK_LOG;
 #endif
-    bool
-        //	Cancel rendering of the active tile.
-        done = abort(cancel_options);
+    //	Cancel rendering of the active tile.
+    bool const done = abort(cancel_options);
 
-    int index = Render_Queue.size();
+    unsigned int index = Render_Queue.size();
     while (index--)
     {
         if (Render_Queue[index]->Cancelable || (cancel_options & FORCE_CANCEL))
@@ -967,9 +962,9 @@ bool Image_Renderer::delete_image(Plastic_Image* image)
                          << "    " << *image << endl
                          << "    lock Queue_Lock" << endl));
 #endif
-    QMutexLocker qLocker(&Queue_Lock);
+    QMutexLocker const qLocker(&Queue_Lock);
     bool deleted = false;
-    int index = find_tile(image, Render_Queue);
+    unsigned int const index = find_tile(image, Render_Queue);
     if (index >= 0)
     {
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
@@ -1026,7 +1021,7 @@ void Image_Renderer::delete_tile(Image_Tile* image_tile)
 #endif
 
     //	Safety check for the image in the Render_Queue.
-    int index = find_tile(image_tile->Image, Render_Queue);
+    unsigned int index = find_tile(image_tile->Image, Render_Queue);
     if (index >= 0 && image_tile->Delete_Image_When_Done)
     {
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
@@ -1100,7 +1095,7 @@ void Image_Renderer::delete_tiles()
     LOCKED_LOGGING((clog << ">>> Image_Renderer::delete_tiles " << thread_ID << endl
                          << "    in " << pathname << endl));
 #endif
-    bool locked = false;  // Queue_Lock.tryLock();
+    bool const locked = false;  // Queue_Lock.tryLock();
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
     LOCK_LOG;
     clog << "    Image_Renderer::delete_tiles " << thread_ID << ": Queue_Lock was "
@@ -1110,7 +1105,7 @@ void Image_Renderer::delete_tiles()
     print_queue(Delete_Queue);
     UNLOCK_LOG;
 #endif
-    int index = Delete_Queue.size();
+    unsigned int index = Delete_Queue.size();
     while (--index >= 0)
     {
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
@@ -1164,7 +1159,7 @@ void Image_Renderer::run_rendering()
         afterwards so the caller's expectation of needing to unlock it
         can be met.
     */
-    bool locked = Queue_Lock.tryLock();
+    bool const locked = Queue_Lock.tryLock();
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
     LOCKED_LOGGING((clog << "    Image_Renderer::run_rendering " << thread_ID << ": Queue_Lock was "
                          << (locked ? "not " : "") << "locked" << endl
@@ -1562,7 +1557,7 @@ void Image_Renderer::start_rendering()
 
 bool Image_Renderer::runnable() const
 {
-    QMutexLocker ready_lock(&Ready_Lock);
+    QMutexLocker const ready_lock(&Ready_Lock);
     return Runnable;
 }
 
@@ -1575,12 +1570,13 @@ bool Image_Renderer::suspend_rendering(bool wait)
                          << ": wait = " << boolalpha << wait << endl
                          << "    in " << pathname << endl));
 #endif
-    bool ready_locked = Ready_Lock.tryLock(), done = Suspended;
+    bool const ready_locked = Ready_Lock.tryLock();
+    bool done = Suspended;
     Suspended = true;
 
     if (wait && !done)
     {
-        bool queue_locked = Queue_Lock.tryLock();
+        bool const queue_locked = Queue_Lock.tryLock();
 
 //	Wait for any rendering to complete.
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
@@ -1630,7 +1626,7 @@ bool Image_Renderer::stop_rendering(bool wait)
 #endif
     Ready_Lock.lock();
     //	Suspend the rendering loop.
-    bool done = suspend_rendering(wait);
+    bool const done = suspend_rendering(wait);
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
     LOCKED_LOGGING((clog << "    Image_Renderer::stop_rendering " << thread_ID << endl
                          << "    in " << pathname << endl
@@ -2205,7 +2201,7 @@ Plastic_Image* Image_Renderer::clone_image(Plastic_Image* source_image, const QS
     clog << "    in " << pathname << endl;
     UNLOCK_LOG;
 #endif
-    Plastic_Image* cloned_image = NULL;
+    Plastic_Image* cloned_image = nullptr;
     if (source_image)
     {
         QString error_message;
@@ -2352,5 +2348,4 @@ QString Image_Renderer::cancel_options_descriptions(int cancel_options)
     return descriptions;
 }
 
-}  // namespace HiRISE
-}  // namespace UA
+}  // namespace UA::HiRISE

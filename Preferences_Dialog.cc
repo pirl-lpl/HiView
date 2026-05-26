@@ -275,15 +275,15 @@ Preferences_Dialog::Preferences_Dialog(QWidget* parent)
             SIGNAL(selection_sensitivity_changed(int)));
     connect(Graphs, SIGNAL(canvas_color_changed(QRgb)), SIGNAL(canvas_color_changed(QRgb)));
 
-    connect(Scripts, SIGNAL(script_changed(const QString&)),
-            SIGNAL(script_changed(const QString&)));
-    connect(Scripts, SIGNAL(show_script_changed(bool)), SIGNAL(show_script_changed(bool)));
-    connect(this, SIGNAL(variables_updated(QStringList&)), Scripts,
-            SLOT(variables_updated(QStringList&)));
+    connect(Scripts, &Scripts_Section::script_changed, this, &Preferences_Dialog::script_changed);
+    connect(Scripts, &Scripts_Section::show_script_changed, this,
+            &Preferences_Dialog::show_script_changed);
+    connect(this, &Preferences_Dialog::variables_updated, Scripts,
+            &Scripts_Section::variables_updated);
 
     auto* action = new QAction(tr("Close Window"), this);
     action->setShortcut(tr("Ctrl+W"));
-    connect(action, SIGNAL(triggered()), SLOT(close()));
+    connect(action, &QAction::triggered, parent, &QDialog::close);
     addAction(action);
 
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
@@ -896,7 +896,7 @@ bool General_Section::documentation_location_is_valid(const QString& location)
         QString source(location);
         source += QDir::separator();
         source += Default_Documentation_Filename;
-        if (Preferences_Dialog::Docs_Helper->is_accessible(source) ||
+        if (UA::HiRISE::Help_Docs::is_accessible(source) ||
             QMessageBox::question(
                 (isVisible() ? this : NULL), Title,
                 tr("The ") + Default_Documentation_Filename +
@@ -1150,7 +1150,7 @@ Sources_Section::Sources_Section(QWidget* parent) : QWidget(parent)
 
     //	Start with an empty list to cause widget loading of non-empty list.
     Source_List = new QStringList;
-    QStringList list(settings.value(SOURCE_LIST_KEY).value<QStringList>());
+    auto list(settings.value(SOURCE_LIST_KEY).value<QStringList>());
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_SOURCES))
     clog << "    " << SOURCE_LIST_KEY << " =" << endl;
     for (int index = 0; index < list.size(); index++)
@@ -1418,7 +1418,7 @@ void Sources_Section::source_list_selection_changed()
 #if ((DEBUG_SECTION) & DEBUG_SOURCES)
     clog << ">>> Sources_Section::source_list_selection_changed" << endl;
 #endif
-    int count = Source_List_Widget->selectedItems().count();
+    int const count = Source_List_Widget->selectedItems().count();
 #if ((DEBUG_SECTION) & DEBUG_SOURCES)
     clog << "    items selected = " << count << endl
          << "       current row = " << Source_List_Widget->currentRow() << endl;
@@ -1459,12 +1459,12 @@ void Sources_Section::source_list_remove_items()
 #if ((DEBUG_SECTION) & DEBUG_SOURCES)
     clog << ">>> Sources_Section::source_list_remove_items" << endl;
 #endif
-    QList<QListWidgetItem*> selected_items(Source_List_Widget->selectedItems());
+    QList<QListWidgetItem*> const selected_items(Source_List_Widget->selectedItems());
     int count = selected_items.count();
     if (count)
     {
-        int entries = Source_List_Widget->count();
-        QListWidgetItem* top_item = NULL;
+        int const entries = Source_List_Widget->count();
+        QListWidgetItem const* top_item = nullptr;
         if (count != entries)
         {
 //	Find the item at the top of the viewport.
@@ -1544,11 +1544,12 @@ void Sources_Section::source_list_remove_items()
 
 void Sources_Section::source_list_reset()
 {
-    int capacity = Capacity_spinBox->value(), entries = Source_List->count();
+    int const capacity = Capacity_spinBox->value();
+    int entries = Source_List->count();
     if (entries > capacity)
     {
         if (QMessageBox::question(
-                (isVisible() ? this : NULL), Title,
+                (isVisible() ? this : nullptr), Title,
                 tr("The source list capacity of ") + QString::number(capacity) +
                     tr(" is less than the ") + QString::number(entries) +
                     tr(" entries in the sources list.\n\n") + tr("Increase the capacity?\n") +
@@ -1574,13 +1575,13 @@ void Sources_Section::defaults() { source_list_capacity(Default_Source_List_Capa
 
 void Sources_Section::reset_modifier_buttons()
 {
-    bool capacity_changed = (Capacity != Capacity_spinBox->value()),
-         list_changed = (*Source_List != *Source_List_Widget);
+    bool const capacity_changed = (Capacity != Capacity_spinBox->value()),
+               list_changed = (*Source_List != *Source_List_Widget);
     Capacity_Reset_Button->setVisible(capacity_changed);
     Source_List_Reset_Button->setVisible(list_changed);
     Apply_Button->setEnabled(list_changed || capacity_changed);
 
-    int count = Source_List_Widget->selectedItems().count();
+    int const count = Source_List_Widget->selectedItems().count();
     Edit_Button->setEnabled(count == 1);
     Remove_Button->setEnabled(count != 0);
 
@@ -1905,7 +1906,7 @@ Rendering_Section::Rendering_Section(QWidget* parent) : QWidget(parent), m_updat
 #endif
     Default_Background_Color_Text = color_text(Default_Background_Color);
     Background_Color = Default_Background_Color;  // VALGRIND
-    QString color = Background_Color_Text =
+    QString const color = Background_Color_Text =
         settings.value(BACKGROUND_COLOR_KEY, Default_Background_Color_Text).toString();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDERING))
     clog << "    " << BACKGROUND_COLOR_KEY << " = " << Background_Color_Text << endl;
@@ -2791,7 +2792,7 @@ void Rendering_Section::contrast_stretch_upper(double percent, int band)
     clog << ">>> Rendering_Section::contrast_stretch_upper: " << percent << " percent, band "
          << band << endl;
 #endif
-    bool enabled = Contrast_Stretch_Upper_doubleSpinBox[band]->blockSignals(true);
+    bool const enabled = Contrast_Stretch_Upper_doubleSpinBox[band]->blockSignals(true);
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
     clog << "    set value" << endl;
 #endif
@@ -2811,7 +2812,7 @@ void Rendering_Section::contrast_stretch_lower(double percent, int band)
     clog << ">>> Rendering_Section::contrast_stretch_lower: " << percent << " percent, band "
          << band << endl;
 #endif
-    bool enabled = Contrast_Stretch_Lower_doubleSpinBox[band]->blockSignals(true);
+    bool const enabled = Contrast_Stretch_Lower_doubleSpinBox[band]->blockSignals(true);
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
     clog << "    set value" << endl;
 #endif
@@ -2830,7 +2831,7 @@ void Rendering_Section::contrast_stretch_change()
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
     clog << ">>> Rendering_Section::contrast_stretch_change" << endl;
 #endif
-    QObject* source = sender();
+    QObject const* source = sender();
     int band;
     if (source)
     {
@@ -2879,7 +2880,7 @@ void Rendering_Section::contrast_stretch_change()
 
 void Rendering_Section::contrast_stretch_reset()
 {
-    QObject* source = sender();
+    QObject const* source = sender();
     for (int band = 0; band < 3; ++band)
     {
         if (!source || source == Contrast_Stretch_Upper_Reset_Button[band])
@@ -2992,7 +2993,7 @@ bool Rendering_Section::background_color_is_valid(const QString& color_spec)
 
     //	Prevent gratuitous warning message from QColor about invalid color name.
     qInstallMessageHandler(no_warning_messages);
-    QColor color(text);
+    QColor const color(text);
     qInstallMessageHandler(0);
 
     if (color.isValid())
@@ -3026,7 +3027,7 @@ bool Rendering_Section::line_color_is_valid(const QString& color_spec)
 
     //	Prevent gratuitous warning message from QColor about invalid color name.
     qInstallMessageHandler(no_warning_messages);
-    QColor color(text);
+    QColor const color(text);
     qInstallMessageHandler(0);
 
     if (color.isValid())
@@ -3078,17 +3079,17 @@ void Rendering_Section::line_color_changed()
 
 void Rendering_Section::select_background_color()
 {
-    QColor color(QColorDialog::getColor(color_value(Background_Color_lineEdit->text()),
-                                        (isVisible() ? this : NULL),
-                                        Title + " - " + tr("Background Color")));
+    QColor const color(QColorDialog::getColor(color_value(Background_Color_lineEdit->text()),
+                                              (isVisible() ? this : nullptr),
+                                              Title + " - " + tr("Background Color")));
     if (color.isValid()) background_color_is_valid(color_text(color.rgb()));
 }
 
 void Rendering_Section::select_line_color()
 {
-    QColor color(QColorDialog::getColor(color_value(Line_Color_lineEdit->text()),
-                                        (isVisible() ? this : NULL),
-                                        Title + " - " + tr("Line Color")));
+    QColor const color(QColorDialog::getColor(color_value(Line_Color_lineEdit->text()),
+                                              (isVisible() ? this : nullptr),
+                                              Title + " - " + tr("Line Color")));
     if (color.isValid()) line_color_is_valid(color_text(color.rgb()));
 }
 
@@ -3179,7 +3180,7 @@ void Rendering_Section::changing()
 #if ((DEBUG_SECTION) & DEBUG_RENDERING)
     clog << ">>> Rendering_Section::changing" << endl;
 #endif
-    QObject* source = sender();
+    QObject const* source = sender();
     bool change, changed = false;
 
     Initial_Scale_Reset_Button->setVisible(
@@ -3482,7 +3483,7 @@ bool possible_abbreviated_home_path(QString& name)
     {
         if (name[0] == '~' && name[1] == QDir::separator())
         {
-            QString home_path = QDir::homePath();
+            QString const home_path = QDir::homePath();
             if (home_path != QDir::rootPath())
             {
                 name.replace(0, 1, home_path);
@@ -3550,14 +3551,14 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
     else if (!settings.contains(JPIP_SERVER_PORT_KEY))
         settings.setValue(JPIP_SERVER_PORT_KEY, Default_JPIP_Server_Port);
 
-    QString proxy = Proxy = settings.value(JPIP_PROXY_KEY, Default_JPIP_Proxy).toString();
+    QString const proxy = Proxy = settings.value(JPIP_PROXY_KEY, Default_JPIP_Proxy).toString();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    " << JPIP_PROXY_KEY << " = \"" << Proxy << '"' << endl;
 #endif
     if (!settings.contains(JPIP_PROXY_KEY)) settings.setValue(JPIP_PROXY_KEY, Default_JPIP_Proxy);
 
     possible_abbreviated_home_path(Default_JPIP_Cache_Directory);
-    QString cache_directory = Cache_Directory =
+    QString const cache_directory = Cache_Directory =
         settings.value(JPIP_CACHE_DIRECTORY_KEY, Default_JPIP_Cache_Directory).toString();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    " << JPIP_CACHE_DIRECTORY_KEY << " = \"" << Cache_Directory << '"' << endl;
@@ -3572,7 +3573,7 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
 #endif
     if (!OK)
     {
-        QMessageBox::warning((isVisible() ? this : NULL), Title,
+        QMessageBox::warning((isVisible() ? this : nullptr), Title,
                              tr("The ") + JPIP_REQUEST_TIMEOUT_KEY + " \"" +
                                  settings.value(JPIP_REQUEST_TIMEOUT_KEY).toString() +
                                  tr("\" value is invalid - a number is required.\n\n") +
@@ -3885,25 +3886,25 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
 
     //	Initialize the GUI widget values.
     HTTP_to_JPIP_Hostname_Pending = Default_HTTP_to_JPIP_Hostname;
-    if (!(OK = HTTP_to_JPIP_hostname_verify(hostnameH2J)) &&
+    if (!(OK = HTTP_to_JPIP_hostname_verify(hostnameH2J)) &&  // NOLINT
         hostnameH2J != Default_HTTP_to_JPIP_Hostname)
         OK = HTTP_to_JPIP_hostname_verify(Default_HTTP_to_JPIP_Hostname);
     if (!OK && !Default_HTTP_to_JPIP_Hostname.isEmpty()) HTTP_to_JPIP_hostname_verify("");
 
     JPIP_to_HTTP_Hostname_Pending = Default_JPIP_to_HTTP_Hostname;
-    if (!(OK = JPIP_to_HTTP_hostname_verify(hostnameJ2H)) &&
+    if (!(OK = JPIP_to_HTTP_hostname_verify(hostnameJ2H)) &&  // NOLINT
         hostnameJ2H != Default_JPIP_to_HTTP_Hostname)
         OK = JPIP_to_HTTP_hostname_verify(Default_JPIP_to_HTTP_Hostname);
     if (!OK && !Default_JPIP_to_HTTP_Hostname.isEmpty()) JPIP_to_HTTP_hostname_verify("");
     JPIP_server_port(port);
 
     Proxy_Pending = Default_JPIP_Proxy;
-    if (!(OK = JPIP_proxy_is_valid(proxy)) && proxy != Default_JPIP_Proxy)
+    if (!(OK = JPIP_proxy_is_valid(proxy)) && proxy != Default_JPIP_Proxy)  // NOLINT
         OK = JPIP_proxy_is_valid(Default_JPIP_Proxy);
     if (!OK) JPIP_proxy_is_valid(Default_JPIP_Proxy = "");
 
     Cache_Directory_Pending = Default_JPIP_Cache_Directory;
-    if (!(OK = JPIP_cache_directory_is_valid(cache_directory)) &&
+    if (!(OK = JPIP_cache_directory_is_valid(cache_directory)) &&  // NOLINT
         cache_directory != Default_JPIP_Cache_Directory)
         OK = JPIP_cache_directory_is_valid(Default_JPIP_Cache_Directory);
     if (!OK) JPIP_cache_directory_is_valid(Default_JPIP_Cache_Directory = "");
@@ -3976,7 +3977,7 @@ bool JPIP_Section::JPIP_to_HTTP_hostname_verify(const QString& hostname)
 
 void JPIP_Section::HTTP_to_JPIP_hostname_changed()
 {
-    QString hostname = HTTP_to_JPIP_Hostname_lineEdit->text();
+    QString const hostname = HTTP_to_JPIP_Hostname_lineEdit->text();
     //	Avoid redundant editingFinished signals.
 
     if (hostname != HTTP_to_JPIP_Hostname_Pending && !Defaults_Button->hasFocus())
@@ -3987,7 +3988,7 @@ void JPIP_Section::HTTP_to_JPIP_hostname_changed()
 
 void JPIP_Section::JPIP_to_HTTP_hostname_changed()
 {
-    QString hostname = JPIP_to_HTTP_Hostname_lineEdit->text();
+    QString const hostname = JPIP_to_HTTP_Hostname_lineEdit->text();
     //	Avoid redundant editingFinished signals.
 
     if (hostname != JPIP_to_HTTP_Hostname_Pending && !Defaults_Button->hasFocus())
@@ -4024,7 +4025,7 @@ bool JPIP_Section::JPIP_proxy_is_valid(const QString& proxy)
     if (proxy.isEmpty()) Proxy_Pending = proxy;
     else
     {
-        QUrl URL(QUrl::fromUserInput(proxy));
+        QUrl const URL(QUrl::fromUserInput(proxy));
         if (URL.isValid() &&
             (URL.scheme().toLower() == "https" || URL.scheme().toLower() == "http") &&
             !URL.host().isEmpty())
@@ -4081,30 +4082,30 @@ bool JPIP_Section::JPIP_cache_directory_is_valid(const QString& cache_directory)
 
     if (!pathname.isEmpty())
     {
-        QFileInfo file(pathname);
+        QFileInfo const file(pathname);
         pathname = file.absoluteFilePath();
         accepted = false;
         if (!file.exists())
         {
             if (QMessageBox::question(
-                    (isVisible() ? this : NULL), Title,
+                    (isVisible() ? this : nullptr), Title,
                     tr("The JPIP cache directory \"") + pathname + tr("\" does not exist.\n\n") +
                         tr("Create the directory?\n"),
                     QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
             {
-                QDir directory;
+                QDir const directory;  // .
                 if (directory.mkpath(pathname)) accepted = true;
                 else
-                    QMessageBox::warning((isVisible() ? this : NULL), Title,
+                    QMessageBox::warning((isVisible() ? this : nullptr), Title,
                                          tr("The JPIP cache directory at \"") + pathname +
                                              tr("\" could not be created."));
             }
         }
         else if (!file.isDir())
-            QMessageBox::warning((isVisible() ? this : NULL), Title,
+            QMessageBox::warning((isVisible() ? this : nullptr), Title,
                                  QString("\"") + pathname + tr("\" is not a directory."));
         else if (!file.isReadable() || !file.isWritable())
-            QMessageBox::warning((isVisible() ? this : NULL), Title,
+            QMessageBox::warning((isVisible() ? this : nullptr), Title,
                                  tr("The JPIP cache directory \"") + pathname +
                                      tr("\" is not accessible for reading or writing."));
         else accepted = true;
@@ -4145,7 +4146,7 @@ void JPIP_Section::select_JPIP_cache_directory()
 
     if (File_Selection_Dialog->exec())
     {
-        QString pathname(File_Selection_Dialog->selectedFiles().value(0));
+        QString const pathname(File_Selection_Dialog->selectedFiles().value(0));
         if (!pathname.isEmpty()) JPIP_cache_directory_is_valid(pathname);
     }
 }
@@ -4379,7 +4380,7 @@ Graphs_Section::Graphs_Section(QWidget* parent) : QWidget(parent)
     clog << "    Default_Canvas_Color = " << hex << Default_Canvas_Color << dec << endl;
 #endif
     Default_Canvas_Color_Text = color_text(Default_Canvas_Color);
-    QString color = Canvas_Color_Text =
+    QString const color = Canvas_Color_Text =
         settings.value(CANVAS_COLOR_KEY, Default_Canvas_Color_Text).toString();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GRAPHS))
     clog << "    " << CANVAS_COLOR_KEY << " = " << Canvas_Color_Text << endl;
@@ -4397,7 +4398,7 @@ Graphs_Section::Graphs_Section(QWidget* parent) : QWidget(parent)
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_GRAPHS))
     clog << "    layout controls -" << endl;
 #endif
-    QGridLayout* grid_layout = new QGridLayout(this);
+    auto* grid_layout = new QGridLayout(this);
     grid_layout->setHorizontalSpacing(HORIZONTAL_SPACING);
 
     QLabel* label;
@@ -4508,7 +4509,7 @@ Graphs_Section::Graphs_Section(QWidget* parent) : QWidget(parent)
     //	Initialize the GUI widget values.
     selection_sensitivity(sensitivity);
     Canvas_Color_Text_Pending = Default_Canvas_Color_Text;
-    if (!(OK = canvas_color_is_valid(color)) && color != Default_Canvas_Color_Text)
+    if (!(OK = canvas_color_is_valid(color)) && color != Default_Canvas_Color_Text)  // NOLINT
         OK = canvas_color_is_valid(Default_Canvas_Color_Text);
     if (!OK) canvas_color_is_valid(Default_Canvas_Color_Text = "transparent");
     Canvas_Color = color_value(Canvas_Color_Text);
@@ -4566,7 +4567,7 @@ bool Graphs_Section::canvas_color_is_valid(const QString& color_spec)
 
     //	Prevent gratuitous warning message from QColor about invalid color name.
     qInstallMessageHandler(no_warning_messages);
-    QColor color(text);
+    QColor const color(text);
     qInstallMessageHandler(0);
 
     if (color.isValid())
@@ -4609,9 +4610,9 @@ void Graphs_Section::canvas_color_changed()
 
 void Graphs_Section::select_canvas_color()
 {
-    QColor color(QColorDialog::getColor(color_value(Canvas_Color_lineEdit->text()),
-                                        (isVisible() ? this : NULL),
-                                        Title + " - " + tr("Canvas Color")));
+    QColor const color(QColorDialog::getColor(color_value(Canvas_Color_lineEdit->text()),
+                                              (isVisible() ? this : NULL),
+                                              Title + " - " + tr("Canvas Color")));
     if (color.isValid()) canvas_color_is_valid(color_text(color.rgb()));
 }
 
@@ -4680,7 +4681,7 @@ void Graphs_Section::apply()
         //	>>> SIGNAL <<<
         emit selection_sensitivity_changed(Selection_Sensitivity);
     }
-    QString text = Canvas_Color_lineEdit->text();
+    QString const text = Canvas_Color_lineEdit->text();
     if (Canvas_Color_Text != text && canvas_color_is_valid(text))
     {
         Canvas_Color_Text = text;
@@ -4746,10 +4747,10 @@ Scripts_Section::Scripts_Section(QWidget* parent)
     else settings.setValue(SHOW_SCRIPT_KEY, Show_Script = DEFAULT_SHOW_SCRIPT);
 
     // Layout Variables
-    QGridLayout* grid_layout = new QGridLayout(this);
+    auto* grid_layout = new QGridLayout(this);
     int row = 0;
 
-    QLabel* label = new QLabel(tr("Enter Script:"));
+    auto* label = new QLabel(tr("Enter Script:"));
     label->setAlignment(Qt::AlignVCenter);
     grid_layout->addWidget(label, row, 0);
 
@@ -4783,13 +4784,13 @@ Scripts_Section::Scripts_Section(QWidget* parent)
     ++row;
 
     // Default and Apply Buttons
-    QDialogButtonBox* buttons = new QDialogButtonBox(Qt::Horizontal, this);
+    auto* buttons = new QDialogButtonBox(Qt::Horizontal, this);
     Defaults_Button = buttons->addButton(tr("Defaults"), QDialogButtonBox::ResetRole);
     Defaults_Button->setIcon(*Defaults_Button_Icon);
     connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
 
     /*	DEFAULTS QACTION*/
-    QAction* action = new QAction(tr("Defaults"), this);
+    auto* action = new QAction(tr("Defaults"), this);
     action->setShortcut(tr("Ctrl+Shift+D"));
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(action);
@@ -4819,7 +4820,7 @@ void Scripts_Section::apply()
 {
     QSettings settings;
 
-    QString script = Script_TextEdit->toPlainText();
+    QString const script = Script_TextEdit->toPlainText();
     if (script != Script)
     {
         Script = script;

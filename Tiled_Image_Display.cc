@@ -32,11 +32,6 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include "Image_Renderer_Thread.hh"
 #endif
 
-#include "HiView_Utilities.hh"
-#include "Image_Tile.hh"
-#include "Plastic_Image.hh"
-#include "Plastic_QImage.hh"
-
 #include <QApplication>
 #include <QDebug>
 #include <QErrorMessage>
@@ -45,17 +40,20 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QPainter>
 #include <QPoint>
 #include <QPointF>
-
 #include <algorithm>
+
+#include "HiView_Utilities.hh"
+#include "Image_Tile.hh"
+#include "Plastic_Image.hh"
+#include "Plastic_QImage.hh"
 using std::max;
 using std::min;
 #include <sstream>
 using std::ostringstream;
 #include <stdexcept>
+using std::endl;
 using std::exception;
 using std::invalid_argument;
-#include <iomanip>
-using std::endl;
 
 #if defined(DEBUG_SECTION)
 /*******************************************************************************
@@ -103,16 +101,15 @@ using std::endl;
 #define TILE_MARKINGS_PAINT_COLOR Qt::blue
 #define TILE_MARKINGS_BACKGROUND_COLOR Qt::cyan
 
-#define DEBUG_DEFAULT                                                                                                  \
-    (DEBUG_ALL & ~DEBUG_PIXEL_DATUM & ~DEBUG_MOUSE_MOVE_EVENTS & ~DEBUG_MAP_POINTS & ~DEBUG_PIXEL_DATA &               \
-     ~DEBUG_PROMPT & ~DEBUG_SIGNALS & ~DEBUG_ACCESSORS)
+#define DEBUG_DEFAULT                                                                \
+    (DEBUG_ALL & ~DEBUG_PIXEL_DATUM & ~DEBUG_MOUSE_MOVE_EVENTS & ~DEBUG_MAP_POINTS & \
+     ~DEBUG_PIXEL_DATA & ~DEBUG_PROMPT & ~DEBUG_SIGNALS & ~DEBUG_ACCESSORS)
 
 #if (DEBUG_SECTION + 0) == 0
 #undef DEBUG_SECTION
 #define DEBUG_SECTION DEBUG_OFF
 #else
 #include <QCoreApplication>
-
 #include <bitset>
 #include <iostream>
 #include <limits>
@@ -125,14 +122,14 @@ using std::setfill;
 using std::setw;
 #endif
 
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
 namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const Tiled_Image_Display::ID =
+const char* const Tiled_Image_Display::ID =
     "UA::HiRISE::Tiled_Image_Display ($Revision: 1.160 $ $Date: 2014/05/23 00:49:35 $)";
 
 #ifndef MINIMUM_IMAGE_TILE_DIMENSION
@@ -161,7 +158,8 @@ const int Tiled_Image_Display::MINIMUM_TILE_DIMENSION = MINIMUM_IMAGE_TILE_DIMEN
 #define DEFAULT_IMAGE_TILE_WIDTH 512
 #define DEFAULT_IMAGE_TILE_HEIGHT 512
 #endif
-QSize Tiled_Image_Display::Default_Tile_Display_Size(DEFAULT_IMAGE_TILE_WIDTH, DEFAULT_IMAGE_TILE_HEIGHT);
+QSize Tiled_Image_Display::Default_Tile_Display_Size(DEFAULT_IMAGE_TILE_WIDTH,
+                                                     DEFAULT_IMAGE_TILE_HEIGHT);
 
 #ifndef IMAGE_VIEWER_MIN_SCALE
 #define IMAGE_VIEWER_MIN_SCALE 0.01
@@ -183,33 +181,40 @@ bool Tiled_Image_Display::Default_Source_Image_Rendering = DEFAULT_SOURCE_IMAGE_
 #ifndef DOXYGEN_PROCESSING
 namespace
 {
-enum
+enum : qint8
 {
     BACKGROUND_TILES_RESET = -1,
     NO_TILES_RESET = 0,
     VISIBLE_TILES_RESET = 1
 };
-} // namespace
+}  // namespace
 #endif
 
 /*==============================================================================
     Class data members
 */
-QErrorMessage *Tiled_Image_Display::Error_Message = NULL;
+QErrorMessage* Tiled_Image_Display::Error_Message = NULL;
 
 /*==============================================================================
     Constructors
 */
-Tiled_Image_Display::Tiled_Image_Display(QWidget *parent)
-    : QWidget(parent), Source_Image(NULL), Source_Image_Rendering(Default_Source_Image_Rendering),
-      Reference_Image(NULL), Image_Loading(false), Pending_State_Change(NO_STATE_CHANGE),
-      Pending_State_Change_Enabled(false), // VALGRIND
-      Tile_Grid_Images(new QList<QList<Plastic_Image *> *>), Tile_Image_Pool_Max(0), Tile_Grid_Size(0, 0),
-      Tile_Display_Size(Default_Tile_Display_Size), Tile_Image_Size(Tile_Display_Size)
+Tiled_Image_Display::Tiled_Image_Display(QWidget* parent)
+    : QWidget(parent),
+      Source_Image(nullptr),
+      Source_Image_Rendering(Default_Source_Image_Rendering),
+      Reference_Image(nullptr),
+      Image_Loading(false),
+      Pending_State_Change(NO_STATE_CHANGE),
+      Pending_State_Change_Enabled(false),  // VALGRIND
+      Tile_Grid_Images(new QList<QList<Plastic_Image*>*>),
+      Tile_Image_Pool_Max(0),
+      Tile_Grid_Size(0, 0),
+      Tile_Display_Size(Default_Tile_Display_Size),
+      Tile_Image_Size(Tile_Display_Size)
 {
     setObjectName("Tiled_Image_Display");
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    clog << ">>> Tiled_Image_Display @ " << (void *)this << ": " << object_pathname(this) << endl;
+    clog << ">>> Tiled_Image_Display @ " << (void*)this << ": " << object_pathname(this) << endl;
 #endif
     setAttribute(Qt::WA_OpaquePaintEvent, true);
     setAttribute(Qt::WA_NoSystemBackground, true);
@@ -236,13 +241,15 @@ Tiled_Image_Display::Tiled_Image_Display(QWidget *parent)
     //	Connect to the image loaded signal.
     connect(Renderer, SIGNAL(image_loaded(bool)), SLOT(loaded(bool)));
     //	Connect to the rendered tile signal.
-    connect(Renderer, SIGNAL(rendered(const QPoint &, const QRect &)), SLOT(rendered(const QPoint &, const QRect &)));
+    connect(Renderer, SIGNAL(rendered(const QPoint&, const QRect&)),
+            SLOT(rendered(const QPoint&, const QRect&)));
     //	Filtered Renderer status signal.
     connect(Renderer, SIGNAL(status(int)), SLOT(renderer_status(int)));
     //	Propogate the Renderer status notice signal.
-    connect(Renderer, SIGNAL(status_notice(const QString &)), SIGNAL(rendering_status_notice(const QString &)));
+    connect(Renderer, SIGNAL(status_notice(const QString&)),
+            SIGNAL(rendering_status_notice(const QString&)));
     //	Connect to the rendering error signal.
-    connect(Renderer, SIGNAL(error(const QString &)), SLOT(rendering_error(const QString &)));
+    connect(Renderer, SIGNAL(error(const QString&)), SLOT(rendering_error(const QString&)));
 
     //	Enable mouseMoveEvent tracking.
     setMouseTracking(true);
@@ -257,7 +264,7 @@ Tiled_Image_Display::Tiled_Image_Display(QWidget *parent)
 Tiled_Image_Display::~Tiled_Image_Display()
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCKED_LOGGING((clog << ">>> ~Tiled_Image_Display: @ " << (void *)this << endl));
+    LOCKED_LOGGING((clog << ">>> ~Tiled_Image_Display: @ " << (void*)this << endl));
 #endif
     //	Stop all rendering.
     Renderer->finish(Image_Renderer::FORCE_CANCEL | Image_Renderer::WAIT_UNTIL_DONE);
@@ -265,12 +272,12 @@ Tiled_Image_Display::~Tiled_Image_Display()
     clear_tiles();
 
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCKED_LOGGING((clog << "    delete Tile_Grid_Images @ " << (void *)Tile_Grid_Images << endl));
+    LOCKED_LOGGING((clog << "    delete Tile_Grid_Images @ " << (void*)Tile_Grid_Images << endl));
 #endif
     delete Tile_Grid_Images;
 
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCKED_LOGGING((clog << "    delete Renderer @ " << (void *)Renderer << endl));
+    LOCKED_LOGGING((clog << "    delete Renderer @ " << (void*)Renderer << endl));
 #endif
     delete Renderer;
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
@@ -281,7 +288,7 @@ Tiled_Image_Display::~Tiled_Image_Display()
 /*==============================================================================
     Image
 */
-bool Tiled_Image_Display::image(const QString &source_name, const QSizeF &scaling)
+bool Tiled_Image_Display::image(const QString& source_name, const QSizeF& scaling)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     QString pathname(object_pathname(this));
@@ -302,16 +309,15 @@ bool Tiled_Image_Display::image(const QString &source_name, const QSizeF &scalin
         Renderer->reset(Image_Renderer::DO_NOT_WAIT | Image_Renderer::FORCE_CANCEL);
 
         //	Register the source with the Renderer for loading.
-        if ((registered = Renderer->image(source_name)))
+        if ((registered = Renderer->image(source_name)))  // NOLINT
         {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
             LOCKED_LOGGING((clog << "    Tiled_Image_Display::image: state_change_start" << endl));
 #endif
-            Pending_State_Change = NO_STATE_CHANGE; //	Reset all state changes;
+            Pending_State_Change = NO_STATE_CHANGE;  //	Reset all state changes;
             state_change_start(IMAGE_LOAD_STATE);
         }
-        else
-            Image_Loading = false;
+        else Image_Loading = false;
     }
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     LOCKED_LOGGING((clog << "    " << pathname << endl
@@ -320,22 +326,20 @@ bool Tiled_Image_Display::image(const QString &source_name, const QSizeF &scalin
     return registered;
 }
 
-bool Tiled_Image_Display::image(const QString &source_name, const QSize &display_size)
+bool Tiled_Image_Display::image(const QString& source_name, const QSize& display_size)
 {
     //	Flag as display size values.
     return image(source_name, QSizeF(display_size) *= -1);
 }
 
-bool Tiled_Image_Display::image(const Shared_Image &source_image, const QSizeF &scaling)
+bool Tiled_Image_Display::image(const Shared_Image& source_image, const QSizeF& scaling)
 {
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     QString pathname(object_pathname(this));
     LOCK_LOG;
     clog << ">>> Tiled_Image_Display::image: Shared_Image ";
-    if (source_image)
-        clog << *source_image << endl;
-    else
-        clog << "NULL" << endl;
+    if (source_image) clog << *source_image << endl;
+    else clog << "NULL" << endl;
     clog << "    scaling = " << scaling << endl << "    in " << pathname << endl;
     UNLOCK_LOG;
 #endif
@@ -357,18 +361,16 @@ bool Tiled_Image_Display::image(const Shared_Image &source_image, const QSizeF &
 #endif
         registered = Renderer->image(Shared_Image(new Plastic_QImage()));
     }
-    else
-        registered = Renderer->image(source_image);
+    else registered = Renderer->image(source_image);
     if (registered)
     {
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
         LOCKED_LOGGING((clog << "    Tiled_Image_Display::image: state_change_start" << endl));
 #endif
-        Pending_State_Change = NO_STATE_CHANGE; //	Reset all state changes;
+        Pending_State_Change = NO_STATE_CHANGE;  //	Reset all state changes;
         state_change_start(IMAGE_LOAD_STATE);
     }
-    else
-        Image_Loading = false;
+    else Image_Loading = false;
 
 #if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
     LOCKED_LOGGING((clog << "    in " << pathname << endl
@@ -377,7 +379,7 @@ bool Tiled_Image_Display::image(const Shared_Image &source_image, const QSizeF &
     return registered;
 }
 
-bool Tiled_Image_Display::image(const Shared_Image &source_image, const QSize &display_size)
+bool Tiled_Image_Display::image(const Shared_Image& source_image, const QSize& display_size)
 {
     //	Flag as display size values.
     return image(source_image, QSizeF(display_size) *= -1);
@@ -395,8 +397,7 @@ void Tiled_Image_Display::loaded(bool successful)
     if (successful)
     {
         Pending_State_Change &= ~IMAGE_LOAD_STATE;
-        if (Image_Loading)
-            Pending_State_Change_Enabled = false;
+        if (Image_Loading) Pending_State_Change_Enabled = false;
 
 //	Stop any rendering in progress (should have been done at load request).
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_LOAD_IMAGE))
@@ -414,10 +415,8 @@ void Tiled_Image_Display::loaded(bool successful)
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
         LOCK_LOG;
         clog << "    switching Source_Image from -" << endl;
-        if (Source_Image)
-            clog << "    " << *Source_Image << endl;
-        else
-            clog << "    NULL" << endl;
+        if (Source_Image) clog << "    " << *Source_Image << endl;
+        else clog << "    NULL" << endl;
         UNLOCK_LOG;
 #endif
 
@@ -425,15 +424,11 @@ void Tiled_Image_Display::loaded(bool successful)
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
         LOCK_LOG;
         clog << "    switched Source_Image to -" << endl;
-        if (Source_Image)
-            clog << "    " << *Source_Image << endl;
-        else
-            clog << "!!! NULL" << endl;
+        if (Source_Image) clog << "    " << *Source_Image << endl;
+        else clog << "!!! NULL" << endl;
         clog << "    switching Reference_Image from -" << endl;
-        if (Reference_Image)
-            clog << "    " << *Reference_Image << endl;
-        else
-            clog << "    NULL" << endl;
+        if (Reference_Image) clog << "    " << *Reference_Image << endl;
+        else clog << "    NULL" << endl;
         UNLOCK_LOG;
 #endif
 
@@ -445,10 +440,8 @@ void Tiled_Image_Display::loaded(bool successful)
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
         LOCK_LOG;
         clog << "    switched Reference_Image to -" << endl;
-        if (Reference_Image)
-            clog << "    " << *Reference_Image << endl;
-        else
-            clog << "!!! NULL" << endl;
+        if (Reference_Image) clog << "    " << *Reference_Image << endl;
+        else clog << "!!! NULL" << endl;
         UNLOCK_LOG;
 #endif
 
@@ -480,19 +473,17 @@ void Tiled_Image_Display::loaded(bool successful)
                     //	Use the display size hint.
                     display_size = sizeHint();
             }
-            Initial_Scaling.rheight() = Initial_Scaling.rwidth() = scale_to_size(image_size(), display_size);
+            Initial_Scaling.rheight() = Initial_Scaling.rwidth() =
+                scale_to_size(image_size(), display_size);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_LOAD_IMAGE))
-            LOCKED_LOGGING((clog << "    tentative scaling = " << Initial_Scaling.rheight() << endl));
+            LOCKED_LOGGING(
+                (clog << "    tentative scaling = " << Initial_Scaling.rheight() << endl));
 #endif
         }
-        if (Initial_Scaling.rwidth() < Min_Scale)
-            Initial_Scaling.rwidth() = Min_Scale;
-        else if (Initial_Scaling.rwidth() > Max_Scale)
-            Initial_Scaling.rwidth() = Max_Scale;
-        if (Initial_Scaling.rheight() < Min_Scale)
-            Initial_Scaling.rheight() = Min_Scale;
-        else if (Initial_Scaling.rheight() > Max_Scale)
-            Initial_Scaling.rheight() = Max_Scale;
+        if (Initial_Scaling.rwidth() < Min_Scale) Initial_Scaling.rwidth() = Min_Scale;
+        else if (Initial_Scaling.rwidth() > Max_Scale) Initial_Scaling.rwidth() = Max_Scale;
+        if (Initial_Scaling.rheight() < Min_Scale) Initial_Scaling.rheight() = Min_Scale;
+        else if (Initial_Scaling.rheight() > Max_Scale) Initial_Scaling.rheight() = Max_Scale;
 
         //	Set the initial scaling in the Reference_Image.
         if (Reference_Image->source_scaling(Initial_Scaling) && Image_Loading)
@@ -566,11 +557,11 @@ void Tiled_Image_Display::loaded(bool successful)
         LOCKED_LOGGING((clog << "    reset the Tiled_Image_Display data members" << endl));
 #endif
         //	Set the tile size.
-        Tile_Display_Size = image_size(); //	Single tile display.
-        if (!dynamic_cast<Plastic_QImage *>(Reference_Image) &&
+        Tile_Display_Size = image_size();  //	Single tile display.
+        if (!dynamic_cast<Plastic_QImage*>(Reference_Image) &&
             (Tile_Display_Size.rwidth() > Default_Tile_Display_Size.rwidth() ||
              Tile_Display_Size.rheight() > Default_Tile_Display_Size.rheight()))
-            Tile_Display_Size = Default_Tile_Display_Size; //	Multi-tile display.
+            Tile_Display_Size = Default_Tile_Display_Size;  //	Multi-tile display.
         reset_tile_image_size();
 
         //	Reset the origin, in image space, of the entire tile grid region.
@@ -591,12 +582,12 @@ void Tiled_Image_Display::loaded(bool successful)
             resize_tile_grid();
 
             //	Initialize the tile images.
-            if (!reset_tiles())
-                state = NO_STATE_CHANGE;
+            if (!reset_tiles()) state = NO_STATE_CHANGE;
 
             if (Source_Image_Rendering)
                 //	Queue the Source_Image for uncancelable background rendering.
-                Renderer->queue(Source_Image, Image_Renderer::LOW_PRIORITY_RENDERING, !Image_Renderer::CANCELABLE);
+                Renderer->queue(Source_Image, Image_Renderer::LOW_PRIORITY_RENDERING,
+                                !Image_Renderer::CANCELABLE);
 
             Image_Loading = true;
         }
@@ -606,16 +597,17 @@ void Tiled_Image_Display::loaded(bool successful)
 
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_LOAD_IMAGE))
         QPointF tile_grid_origin(displayed_tile_grid_origin());
-        LOCKED_LOGGING((clog << "    Tiled_Image_Display::loaded" << endl
-                             << "    in " << pathname << endl
-                             << "             Tile_Display_Size = " << Tile_Display_Size << endl
-                             << "               Tile_Image_Size = " << Tile_Image_Size << endl
-                             << "    displayed_tile_grid_origin = " << tile_grid_origin << endl
-                             << "           Tile_Display_Offset = " << Tile_Display_Offset << endl
-                             << "                Tile_Grid_Size = " << Tile_Grid_Size << endl
-                             << "            Tiled_Image_Region = " << Tiled_Image_Region << endl
-                             << "        Displayed_Image_Region = " << Displayed_Image_Region << endl
-                             << "      Lower_Right_Origin_Limit = " << Lower_Right_Origin_Limit << endl));
+        LOCKED_LOGGING(
+            (clog << "    Tiled_Image_Display::loaded" << endl
+                  << "    in " << pathname << endl
+                  << "             Tile_Display_Size = " << Tile_Display_Size << endl
+                  << "               Tile_Image_Size = " << Tile_Image_Size << endl
+                  << "    displayed_tile_grid_origin = " << tile_grid_origin << endl
+                  << "           Tile_Display_Offset = " << Tile_Display_Offset << endl
+                  << "                Tile_Grid_Size = " << Tile_Grid_Size << endl
+                  << "            Tiled_Image_Region = " << Tiled_Image_Region << endl
+                  << "        Displayed_Image_Region = " << Displayed_Image_Region << endl
+                  << "      Lower_Right_Origin_Limit = " << Lower_Right_Origin_Limit << endl));
 #endif
 #if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
         LOCK_LOG;
@@ -649,13 +641,15 @@ void Tiled_Image_Display::loaded(bool successful)
 
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & (DEBUG_STATE | DEBUG_LOAD_IMAGE | DEBUG_SLOTS | DEBUG_SIGNALS))
-        int value = IMAGE_LOAD_STATE | (successful ? RENDERING_COMPLETED_STATE : RENDERING_CANCELED_STATE);
+        int value =
+            IMAGE_LOAD_STATE | (successful ? RENDERING_COMPLETED_STATE : RENDERING_CANCELED_STATE);
         LOCKED_LOGGING((clog << "^^^ Tiled_Image_Display::loaded: "
                                 "emit state_change: "
                              << value << " - " << state_change_description(value) << endl
                              << "    in " << object_pathname(this) << endl));
 #endif
-        emit state_change(IMAGE_LOAD_STATE | (successful ? RENDERING_COMPLETED_STATE : RENDERING_CANCELED_STATE));
+        emit state_change(IMAGE_LOAD_STATE |
+                          (successful ? RENDERING_COMPLETED_STATE : RENDERING_CANCELED_STATE));
         Pending_State_Change &= ~IMAGE_LOAD_STATE;
 
 //	Restart rendering.
@@ -685,29 +679,29 @@ void Tiled_Image_Display::loaded(bool successful)
         }
     }
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
-    LOCKED_LOGGING((clog << "    in " << pathname << endl << "<<< Tiled_Image_Display::loaded" << endl));
+    LOCKED_LOGGING((clog << "    in " << pathname << endl
+                         << "<<< Tiled_Image_Display::loaded" << endl));
 #endif
 }
 
 void Tiled_Image_Display::rendering_increment_lines(int rendering_increment)
 {
-    if (rendering_increment < 0)
-        rendering_increment = 0;
+    if (rendering_increment < 0) rendering_increment = 0;
 
     if ((unsigned int)rendering_increment != Plastic_Image::default_rendering_increment_lines())
     {
         Plastic_Image::default_rendering_increment_lines((unsigned int)rendering_increment);
 
-        QList<Plastic_Image *> *tiles;
-        Plastic_Image *image;
+        QList<Plastic_Image*>* tiles;
+        Plastic_Image* image;
         int tile_cols, tile_rows = Tile_Grid_Size.rheight();
         while (tile_rows--)
         {
-            if ((tiles = Tile_Grid_Images->at(tile_rows)))
+            if ((tiles = Tile_Grid_Images->at(tile_rows)))  // NOLINT
             {
                 tile_cols = Tile_Grid_Size.rwidth();
                 while (tile_cols--)
-                    if ((image = tiles->at(tile_cols)))
+                    if ((image = tiles->at(tile_cols)))  // NOLINT
                         image->rendering_increment_lines((unsigned int)rendering_increment);
             }
         }
@@ -717,7 +711,8 @@ void Tiled_Image_Display::rendering_increment_lines(int rendering_increment)
 void Tiled_Image_Display::background_color(QRgb color)
 {
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
-    clog << ">>> Tiled_Image_Display::background_color: 0x" << hex << setfill('0') << setw(8) << color << endl;
+    clog << ">>> Tiled_Image_Display::background_color: 0x" << hex << setfill('0') << setw(8)
+         << color << endl;
 #endif
     if (!color)
     {
@@ -727,8 +722,8 @@ void Tiled_Image_Display::background_color(QRgb color)
 #endif
     }
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
-    clog << "    current color = 0x" << setw(8) << Plastic_Image::default_background_color() << setfill(' ') << dec
-         << endl;
+    clog << "    current color = 0x" << setw(8) << Plastic_Image::default_background_color()
+         << setfill(' ') << dec << endl;
 #endif
     if (color != Plastic_Image::default_background_color())
     {
@@ -738,7 +733,8 @@ void Tiled_Image_Display::background_color(QRgb color)
         if (!tile_rows || !tile_cols)
         {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_BANDS | DEBUG_MAP_DATA))
-            LOCKED_LOGGING((clog << "    no tiles" << endl << "<<< Tiled_Image_Display::background_color" << endl));
+            LOCKED_LOGGING((clog << "    no tiles" << endl
+                                 << "<<< Tiled_Image_Display::background_color" << endl));
 #endif
             return;
         }
@@ -747,19 +743,19 @@ void Tiled_Image_Display::background_color(QRgb color)
         Pending_State_Change_Enabled = false;
         Renderer->stop_rendering(true);
 
-        QList<Plastic_Image *> *tiles;
-        Plastic_Image *image;
+        QList<Plastic_Image*>* tiles;
+        Plastic_Image* image;
         QPainter painter;
         QRect paint_region;
         QSize displayed_size;
         while (tile_rows--)
         {
-            if ((tiles = Tile_Grid_Images->at(tile_rows)))
+            if ((tiles = Tile_Grid_Images->at(tile_rows)))  // NOLINT
             {
                 tile_cols = Tile_Grid_Size.rwidth();
                 while (tile_cols--)
                 {
-                    if ((image = tiles->at(tile_cols)))
+                    if ((image = tiles->at(tile_cols)))  // NOLINT
                     {
                         image->background_color(color);
 
@@ -771,16 +767,18 @@ void Tiled_Image_Display::background_color(QRgb color)
                             if (displayed_size.rwidth() < Tile_Display_Size.rwidth())
                             {
                                 //	Right area.
-                                paint_region.setRect(displayed_size.rwidth(), 0,
-                                                     Tile_Display_Size.rwidth() - displayed_size.rwidth(),
-                                                     displayed_size.rheight());
+                                paint_region.setRect(
+                                    displayed_size.rwidth(), 0,
+                                    Tile_Display_Size.rwidth() - displayed_size.rwidth(),
+                                    displayed_size.rheight());
                                 painter.fillRect(paint_region, color);
                             }
                             if (displayed_size.rheight() < Tile_Display_Size.rheight())
                             {
                                 //	Bottom area.
-                                paint_region.setRect(0, displayed_size.rheight(), Tile_Display_Size.rwidth(),
-                                                     Tile_Display_Size.rheight() - displayed_size.rheight());
+                                paint_region.setRect(
+                                    0, displayed_size.rheight(), Tile_Display_Size.rwidth(),
+                                    Tile_Display_Size.rheight() - displayed_size.rheight());
                                 painter.fillRect(paint_region, color);
                             }
                             painter.end();
@@ -805,35 +803,27 @@ void Tiled_Image_Display::background_color(QRgb color)
 }
 
 void Tiled_Image_Display::max_source_image_area(unsigned long area)
-{
-    Renderer->max_source_image_area(area);
-}
+{ Renderer->max_source_image_area(area); }
 
 unsigned long Tiled_Image_Display::max_source_image_area() const
-{
-    return Renderer->max_source_image_area();
-}
+{ return Renderer->max_source_image_area(); }
 
 unsigned long Tiled_Image_Display::default_max_source_image_area()
-{
-    return Image_Renderer::default_max_source_image_area();
-}
+{ return Image_Renderer::default_max_source_image_area(); }
 
 void Tiled_Image_Display::default_max_source_image_area(unsigned long area)
-{
-    Image_Renderer::default_max_source_image_area(area);
-}
+{ Image_Renderer::default_max_source_image_area(area); }
 
 /*------------------------------------------------------------------------------
     Metadata
 */
-void Tiled_Image_Display::metadata_changed(Plastic_Image &image)
+void Tiled_Image_Display::metadata_changed(Plastic_Image& image)
 {
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & (DEBUG_METADATA | DEBUG_SIGNALS))
     LOCKED_LOGGING((clog << "^^^ Tiled_Image_Display::metadata_changed: "
                             "emit image_metadata_changed (metadata @ "
-                         << (void *)image.metadata() << ')' << endl));
+                         << (void*)image.metadata() << ')' << endl));
 #endif
     emit image_metadata_changed(image.metadata());
 }
@@ -841,10 +831,12 @@ void Tiled_Image_Display::metadata_changed(Plastic_Image &image)
 /*------------------------------------------------------------------------------
     Histograms
 */
-bool Tiled_Image_Display::source_data_histograms(QVector<Histogram *> histograms, const QRect &image_region) const
+bool Tiled_Image_Display::source_data_histograms(QVector<Histogram*> histograms,
+                                                 const QRect& image_region) const
 {
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-    clog << ">>> Tiled_Image_Display::source_data_histograms:" << endl << "    image_region = " << image_region << endl;
+    clog << ">>> Tiled_Image_Display::source_data_histograms:" << endl
+         << "    image_region = " << image_region << endl;
 #endif
     bool completed = false;
 
@@ -865,19 +857,17 @@ bool Tiled_Image_Display::source_data_histograms(QVector<Histogram *> histograms
     for (int index = 0, entries = qMin(histograms.size(), 3); index < entries; index++)
     {
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-        if (index)
-            clog << ", ";
+        if (index) clog << ", ";
 #endif
         if (histograms[index])
         {
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-            clog << (void *)histograms[index];
+            clog << (void*)histograms[index];
 #endif
             histograms[index]->fill(0);
         }
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-        else
-            clog << "NULL";
+        else clog << "NULL";
 #endif
     }
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
@@ -896,8 +886,8 @@ bool Tiled_Image_Display::source_data_histograms(QVector<Histogram *> histograms
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
     clog << "    image_region area = " << area << endl;
 #endif
-    QList<Plastic_Image *> *tiles;
-    Plastic_Image *tile_image;
+    QList<Plastic_Image*>* tiles;
+    Plastic_Image* tile_image;
     int tile_row = Tile_Grid_Size.height(), tile_col, tile_cols = Tile_Grid_Size.width();
     while (tile_row--)
     {
@@ -906,12 +896,13 @@ bool Tiled_Image_Display::source_data_histograms(QVector<Histogram *> histograms
             tile_col = tile_cols;
             while (tile_col--)
             {
-                if ((tile_image = tiles->at(tile_col)) && image_region.intersects(tile_image->image_region()))
+                if ((tile_image = tiles->at(tile_col)) &&
+                    image_region.intersects(tile_image->image_region()))
                 {
                     counted = tile_image->source_histograms(histograms, image_region);
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-                    clog << "    tile " << tile_col << ',' << tile_row << " - " << tile_image->image_region() << ": "
-                         << counted << " counted" << endl;
+                    clog << "    tile " << tile_col << ',' << tile_row << " - "
+                         << tile_image->image_region() << ": " << counted << " counted" << endl;
 #endif
                     if (counted == 0)
                     {
@@ -920,8 +911,7 @@ bool Tiled_Image_Display::source_data_histograms(QVector<Histogram *> histograms
 #endif
                         goto Done;
                     }
-                    if ((count += counted) >= area)
-                        goto Completed;
+                    if ((count += counted) >= area) goto Completed;
                 }
             }
         }
@@ -937,10 +927,12 @@ Done:
     return completed;
 }
 
-bool Tiled_Image_Display::display_data_histograms(QVector<Histogram *> histograms, const QRect &display_region) const
+bool Tiled_Image_Display::display_data_histograms(QVector<Histogram*> histograms,
+                                                  const QRect& display_region) const
 {
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-    clog << ">>> Tiled_Image_Display::display_data_histograms: " << display_region << endl << "    histograms @ ";
+    clog << ">>> Tiled_Image_Display::display_data_histograms: " << display_region << endl
+         << "    histograms @ ";
 #endif
     if (!tiled_image_region().contains(map_display_to_image(display_region)))
     {
@@ -956,19 +948,17 @@ bool Tiled_Image_Display::display_data_histograms(QVector<Histogram *> histogram
     for (int index = 0, entries = qMin(histograms.size(), 3); index < entries; index++)
     {
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-        if (index)
-            clog << ", ";
+        if (index) clog << ", ";
 #endif
         if (histograms[index])
         {
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-            clog << (void *)histograms[index];
+            clog << (void*)histograms[index];
 #endif
             histograms[index]->fill(0);
         }
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
-        else
-            clog << "NULL";
+        else clog << "NULL";
 #endif
     }
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
@@ -985,8 +975,9 @@ bool Tiled_Image_Display::display_data_histograms(QVector<Histogram *> histogram
     }
 
     QPoint tile_grid(map_display_to_tile(display_region.topLeft())),
-        tile_grid_limit(map_display_to_tile(
-            QPoint(display_region.left() + display_region.width(), display_region.top() + display_region.height())));
+        tile_grid_limit(
+            map_display_to_tile(QPoint(display_region.left() + display_region.width(),
+                                       display_region.top() + display_region.height())));
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
     clog << "    selected tile grid = " << tile_grid << " to " << tile_grid_limit << endl;
 #endif
@@ -1002,8 +993,8 @@ bool Tiled_Image_Display::display_data_histograms(QVector<Histogram *> histogram
     QRect tile_region(tile_display_region(tile_grid));
     int tile_col_start = tile_grid.rx(), x_origin = tile_region.x();
     unsigned long long total = display_region.width() * display_region.height(), count = 0;
-    QList<Plastic_Image *> *tiles;
-    Plastic_Image *tile_image;
+    QList<Plastic_Image*>* tiles;
+    Plastic_Image* tile_image;
 
     while (true)
     {
@@ -1018,17 +1009,15 @@ bool Tiled_Image_Display::display_data_histograms(QVector<Histogram *> histogram
 #endif
                 if ((tile_image = tiles->at(tile_grid.rx())))
                 {
-                    count += tile_image->display_histograms(histograms, tile_region & display_region);
-                    if (count >= total)
-                        goto Done;
+                    count +=
+                        tile_image->display_histograms(histograms, tile_region & display_region);
+                    if (count >= total) goto Done;
                 }
-                if (++tile_grid.rx() > tile_grid_limit.rx())
-                    break;
+                if (++tile_grid.rx() > tile_grid_limit.rx()) break;
                 tile_region.translate(Tile_Display_Size.width(), 0);
             }
         }
-        if (++tile_grid.ry() > tile_grid_limit.ry())
-            break;
+        if (++tile_grid.ry() > tile_grid_limit.ry()) break;
         tile_region.moveTo(x_origin, tile_region.y() + Tile_Display_Size.height());
     }
 Done:
@@ -1045,8 +1034,8 @@ Plastic_Image::Pixel_Datum Tiled_Image_Display::image_pixel_datum(unsigned int x
                                                                   unsigned int band) const
 {
 #if ((DEBUG_SECTION) & DEBUG_PIXEL_DATUM)
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::image_pixel_datum: " << x << "x, " << y << "y, " << band << 'b'
-                         << endl
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::image_pixel_datum: " << x << "x, " << y
+                         << "y, " << band << 'b' << endl
                          << "    Tile_Grid_Size = " << Tile_Grid_Size << endl));
 #endif
     QPoint point(map_image_to_tile(QPoint(x, y), band));
@@ -1056,10 +1045,10 @@ Plastic_Image::Pixel_Datum Tiled_Image_Display::image_pixel_datum(unsigned int x
     if (point.rx() >= 0 && point.rx() < Tile_Grid_Size.width() && point.ry() >= 0 &&
         point.ry() < Tile_Grid_Size.height())
     {
-        QList<Plastic_Image *> *tiles = Tile_Grid_Images->at(point.ry());
+        QList<Plastic_Image*>* tiles = Tile_Grid_Images->at(point.ry());
         if (tiles)
         {
-            Plastic_Image *tile_image = tiles->at(point.rx());
+            Plastic_Image* tile_image = tiles->at(point.rx());
             if (tile_image && !tile_image->needs_update())
             {
 #if ((DEBUG_SECTION) & DEBUG_PIXEL_DATUM)
@@ -1076,30 +1065,33 @@ Plastic_Image::Pixel_Datum Tiled_Image_Display::image_pixel_datum(unsigned int x
         }
     }
 #if ((DEBUG_SECTION) & DEBUG_PIXEL_DATUM)
-    LOCKED_LOGGING(
-        (clog << "<<< Tiled_Image_Display::image_pixel_datum: " << Plastic_Image::UNDEFINED_PIXEL_VALUE << endl));
+    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::image_pixel_datum: "
+                         << Plastic_Image::UNDEFINED_PIXEL_VALUE << endl));
 #endif
     return Plastic_Image::UNDEFINED_PIXEL_VALUE;
 }
 
-Plastic_Image::Triplet Tiled_Image_Display::image_pixel(const QPoint &coordinate) const
+Plastic_Image::Triplet Tiled_Image_Display::image_pixel(const QPoint& coordinate) const
 {
-    unsigned int x = static_cast<unsigned int>(coordinate.x()), y = static_cast<unsigned int>(coordinate.y());
-    return Plastic_Image::Triplet(image_pixel_datum(x, y, 0), image_pixel_datum(x, y, 1), image_pixel_datum(x, y, 2));
+    unsigned int x = static_cast<unsigned int>(coordinate.x()),
+                 y = static_cast<unsigned int>(coordinate.y());
+    return Plastic_Image::Triplet(image_pixel_datum(x, y, 0), image_pixel_datum(x, y, 1),
+                                  image_pixel_datum(x, y, 2));
 }
 
-QRgb Tiled_Image_Display::display_value(const QPoint &coordinate) const
+QRgb Tiled_Image_Display::display_value(const QPoint& coordinate) const
 {
-    if (coordinate.x() >= 0 && coordinate.y() >= 0 && coordinate.x() < width() && coordinate.y() < height())
+    if (coordinate.x() >= 0 && coordinate.y() >= 0 && coordinate.x() < width() &&
+        coordinate.y() < height())
     {
         QPoint point(map_display_to_tile(coordinate));
         if (point.rx() >= 0 && point.rx() < Tile_Grid_Size.width() && point.ry() >= 0 &&
             point.ry() < Tile_Grid_Size.height())
         {
-            QList<Plastic_Image *> *tiles = Tile_Grid_Images->at(point.ry());
+            QList<Plastic_Image*>* tiles = Tile_Grid_Images->at(point.ry());
             if (tiles)
             {
-                Plastic_Image *tile_image = tiles->at(point.rx());
+                Plastic_Image* tile_image = tiles->at(point.rx());
                 if (tile_image && !tile_image->needs_update())
                     return tile_image->pixel(map_display_to_tile_offset(coordinate));
             }
@@ -1113,28 +1105,28 @@ QRgb Tiled_Image_Display::display_value(const QPoint &coordinate) const
     return 0;
 }
 
-Plastic_Image::Triplet Tiled_Image_Display::display_pixel(const QPoint &coordinate) const
+Plastic_Image::Triplet Tiled_Image_Display::display_pixel(const QPoint& coordinate) const
 {
     QRgb value = display_value(coordinate);
 #if ((DEBUG_SECTION) & DEBUG_PIXEL_DATUM)
-    LOCKED_LOGGING(
-        (clog << ">-< Tiled_Image_Display::display_pixel: " << coordinate << " = " << hex << value << dec << endl));
+    LOCKED_LOGGING((clog << ">-< Tiled_Image_Display::display_pixel: " << coordinate << " = " << hex
+                         << value << dec << endl));
 #endif
-    if (value)
-        return Plastic_Image::Triplet(value);
+    if (value) return Plastic_Image::Triplet(value);
     return Plastic_Image::Triplet();
 }
 
 QPointF Tiled_Image_Display::displayed_image_origin(int band) const
 {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN))
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::displayed_image_origin: band " << band << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> Tiled_Image_Display::displayed_image_origin: band " << band << endl));
 #endif
     if (band <= 0)
     {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN))
-        LOCKED_LOGGING(
-            (clog << "<<< Tiled_Image_Display::displayed_image_origin: " << Displayed_Image_Region.topLeft() << endl));
+        LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::displayed_image_origin: "
+                             << Displayed_Image_Region.topLeft() << endl));
 #endif
         return Displayed_Image_Region.topLeft();
     }
@@ -1160,14 +1152,10 @@ QPoint Tiled_Image_Display::calculate_lower_right_origin_limit() const
     //	Maximum positive origin offset.
     QPointF offset(displayed_tile_grid_origin(1) - displayed_tile_grid_origin(0)),
         offsets(displayed_tile_grid_origin(2) - displayed_tile_grid_origin(0));
-    if (offset.rx() < offsets.rx())
-        offset.rx() = offsets.rx();
-    if (offset.ry() < offsets.ry())
-        offset.ry() = offsets.ry();
-    if (offset.rx() < 0)
-        offset.rx() = 0;
-    if (offset.ry() < 0)
-        offset.ry() = 0;
+    if (offset.rx() < offsets.rx()) offset.rx() = offsets.rx();
+    if (offset.ry() < offsets.ry()) offset.ry() = offsets.ry();
+    if (offset.rx() < 0) offset.rx() = 0;
+    if (offset.ry() < 0) offset.ry() = 0;
     limit += offset;
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN))
     LOCKED_LOGGING((clog << "     max image offset = " << offset << endl
@@ -1178,31 +1166,27 @@ QPoint Tiled_Image_Display::calculate_lower_right_origin_limit() const
     double scale_width, scaling_width, scale_height, scaling_height;
     image_scaling(&scale_width, &scale_height, 0);
     image_scaling(&scaling_width, &scaling_height, 1);
-    if (scale_width < scaling_width)
-        scale_width = scaling_width;
-    if (scale_height < scaling_height)
-        scale_height = scaling_height;
+    if (scale_width < scaling_width) scale_width = scaling_width;
+    if (scale_height < scaling_height) scale_height = scaling_height;
     image_scaling(&scaling_width, &scaling_height, 2);
-    if (scale_width < scaling_width)
-        scale_width = scaling_width;
-    if (scale_height < scaling_height)
-        scale_height = scaling_height;
+    if (scale_width < scaling_width) scale_width = scaling_width;
+    if (scale_height < scaling_height) scale_height = scaling_height;
 
     //	Offset back by viewport size in scaled image space.
     limit.rx() -= width() / scale_width;
     limit.ry() -= height() / scale_height;
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN))
-    LOCKED_LOGGING((clog << "    max image scaling = " << scale_width << "w, " << scale_height << 'h' << endl
+    LOCKED_LOGGING((clog << "    max image scaling = " << scale_width << "w, " << scale_height
+                         << 'h' << endl
                          << "        viewport size = " << size() << endl
-                         << "          scaled size = " << (width() / scale_width) << "w, " << (height() / scale_height)
-                         << 'h' << endl));
+                         << "          scaled size = " << (width() / scale_width) << "w, "
+                         << (height() / scale_height) << 'h' << endl));
 #endif
-    if (limit.rx() < 0)
-        limit.rx() = 0;
-    if (limit.ry() < 0)
-        limit.ry() = 0;
+    if (limit.rx() < 0) limit.rx() = 0;
+    if (limit.ry() < 0) limit.ry() = 0;
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN))
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::calculate_lower_right_origin_limit: " << limit << endl));
+    LOCKED_LOGGING(
+        (clog << "<<< Tiled_Image_Display::calculate_lower_right_origin_limit: " << limit << endl));
 #endif
     return round_down(limit);
 }
@@ -1210,13 +1194,15 @@ QPoint Tiled_Image_Display::calculate_lower_right_origin_limit() const
 QRectF Tiled_Image_Display::displayed_image_region(int band) const
 {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_REGION))
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::displayed_image_region: band " << band << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> Tiled_Image_Display::displayed_image_region: band " << band << endl));
 #endif
     if (band <= 0)
     {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_REGION))
         LOCKED_LOGGING((clog << "    using cached Displayed_Image_Region" << endl
-                             << "<<< Tiled_Image_Display::displayed_image_region: " << Displayed_Image_Region << endl));
+                             << "<<< Tiled_Image_Display::displayed_image_region: "
+                             << Displayed_Image_Region << endl));
 #endif
         return Displayed_Image_Region;
     }
@@ -1230,20 +1216,20 @@ QRectF Tiled_Image_Display::displayed_image_region(int band) const
 QSize Tiled_Image_Display::displayed_image_region_size(int band) const
 {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_REGION))
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::displayed_image_region_size: band " << band << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> Tiled_Image_Display::displayed_image_region_size: band " << band << endl));
 #endif
     QRectF region;
-    if (band <= 0)
-        region = Displayed_Image_Region;
-    else
-        region = calculate_displayed_image_region(band);
+    if (band <= 0) region = Displayed_Image_Region;
+    else region = calculate_displayed_image_region(band);
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_REGION))
     LOCKED_LOGGING((clog << "    displayed image region = " << region << endl));
 #endif
     QSize region_size(round_down(region.right()) - round_up(region.left()),
                       round_down(region.bottom()) - round_up(region.top()));
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_REGION))
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::displayed_image_region_size: " << region_size << endl));
+    LOCKED_LOGGING(
+        (clog << "<<< Tiled_Image_Display::displayed_image_region_size: " << region_size << endl));
 #endif
     return region_size;
 }
@@ -1268,12 +1254,14 @@ bool Tiled_Image_Display::reset_displayed_image_region()
 
         Displayed_Image_Region = region;
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN | DEBUG_REGION))
-        LOCKED_LOGGING((clog << "    new Displayed_Image_Region = " << Displayed_Image_Region << endl
+        LOCKED_LOGGING((clog << "    new Displayed_Image_Region = " << Displayed_Image_Region
+                             << endl
                              << "    displayed image region size = " << region_size << endl));
 #endif
     }
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN | DEBUG_REGION))
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::reset_displayed_image_region: " << boolalpha << changed << endl));
+    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::reset_displayed_image_region: " << boolalpha
+                         << changed << endl));
 #endif
     return changed;
 }
@@ -1281,7 +1269,8 @@ bool Tiled_Image_Display::reset_displayed_image_region()
 QRectF Tiled_Image_Display::calculate_displayed_image_region(int band) const
 {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN | DEBUG_REGION))
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::calculate_displayed_image_region: band " << band << endl));
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::calculate_displayed_image_region: band "
+                         << band << endl));
 #endif
     //	Clip the lower right corner to the image boundary.
     QPointF lower_right(map_display_to_image(QPoint(width(), height()), band));
@@ -1290,14 +1279,13 @@ QRectF Tiled_Image_Display::calculate_displayed_image_region(int band) const
     LOCKED_LOGGING((clog << "                   image size = " << size_of_image << endl
                          << "    LR image display position = " << lower_right << endl));
 #endif
-    if (lower_right.rx() >= size_of_image.rwidth())
-        lower_right.rx() = size_of_image.rwidth();
-    if (lower_right.ry() >= size_of_image.rheight())
-        lower_right.ry() = size_of_image.rheight();
+    if (lower_right.rx() >= size_of_image.rwidth()) lower_right.rx() = size_of_image.rwidth();
+    if (lower_right.ry() >= size_of_image.rheight()) lower_right.ry() = size_of_image.rheight();
     QRectF region(map_display_to_image(QPoint(), band), lower_right);
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN | DEBUG_REGION))
     LOCKED_LOGGING((clog << "          LR clipped position = " << lower_right << endl
-                         << "<<< Tiled_Image_Display::calculate_displayed_image_region: " << region << endl));
+                         << "<<< Tiled_Image_Display::calculate_displayed_image_region: " << region
+                         << endl));
 #endif
     return region;
 }
@@ -1305,13 +1293,15 @@ QRectF Tiled_Image_Display::calculate_displayed_image_region(int band) const
 QRect Tiled_Image_Display::image_display_region(int band) const
 {
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::image_display_region: band " << band << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> Tiled_Image_Display::image_display_region: band " << band << endl));
 #endif
     QRectF image_region(displayed_image_region(band));
     QRect display_region(map_image_to_display(image_region.topLeft()),
                          map_image_to_display(image_region.bottomRight() - QPointF(1, 1)));
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::image_display_region: " << display_region << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> Tiled_Image_Display::image_display_region: " << display_region << endl));
 #endif
     return display_region;
 }
@@ -1319,11 +1309,11 @@ QRect Tiled_Image_Display::image_display_region(int band) const
 /*------------------------------------------------------------------------------
     Coordinate mappers
 */
-QPointF Tiled_Image_Display::map_display_to_image(const QPoint &coordinate, int band) const
+QPointF Tiled_Image_Display::map_display_to_image(const QPoint& coordinate, int band) const
 {
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING(
-        (clog << ">>> Tiled_Image_Display::map_display_to_image: " << coordinate << ", " << band << 'b' << endl));
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::map_display_to_image: " << coordinate << ", "
+                         << band << 'b' << endl));
 #endif
     //	Add the display offset in the viewport origin tile.
     QPointF point(coordinate + Tile_Display_Offset);
@@ -1333,15 +1323,15 @@ QPointF Tiled_Image_Display::map_display_to_image(const QPoint &coordinate, int 
 #endif
 
     //	Scale the display point to image space.
-    if (band < 0)
-        band = 0;
+    if (band < 0) band = 0;
     double scale_width, scale_height;
     image_scaling(&scale_width, &scale_height, band);
     point.rx() /= scale_width;
     point.ry() /= scale_height;
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
     QPointF tile_grid_origin(displayed_tile_grid_origin(band));
-    LOCKED_LOGGING((clog << "                       scaling = " << scale_width << "w, " << scale_height << 'h' << endl
+    LOCKED_LOGGING((clog << "                       scaling = " << scale_width << "w, "
+                         << scale_height << 'h' << endl
                          << "       image coordinate offset = " << point << endl
                          << "    displayed_tile_grid_origin = " << tile_grid_origin << endl));
 #endif
@@ -1354,14 +1344,13 @@ QPointF Tiled_Image_Display::map_display_to_image(const QPoint &coordinate, int 
     return point;
 }
 
-QPoint Tiled_Image_Display::map_image_to_display(const QPointF &coordinate, int band) const
+QPoint Tiled_Image_Display::map_image_to_display(const QPointF& coordinate, int band) const
 {
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING(
-        (clog << ">>> Tiled_Image_Display::map_image_to_display: " << coordinate << ", " << band << 'b' << endl));
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::map_image_to_display: " << coordinate << ", "
+                         << band << 'b' << endl));
 #endif
-    if (band < 0)
-        band = 0;
+    if (band < 0) band = 0;
     //	Offset of the image point from the origin of the active tile grid.
     QPointF point(coordinate - displayed_tile_grid_origin(band));
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
@@ -1376,7 +1365,8 @@ QPoint Tiled_Image_Display::map_image_to_display(const QPointF &coordinate, int 
     point.rx() *= scale_width;
     point.ry() *= scale_height;
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING((clog << "                       scaling = " << scale_width << "w, " << scale_height << 'h' << endl
+    LOCKED_LOGGING((clog << "                       scaling = " << scale_width << "w, "
+                         << scale_height << 'h' << endl
                          << "     display coordinate offset = " << point << endl
                          << "           Tile_Display_Offset = " << Tile_Display_Offset << endl));
 #endif
@@ -1384,17 +1374,17 @@ QPoint Tiled_Image_Display::map_image_to_display(const QPointF &coordinate, int 
     //	Subtract the display offset in the viewport origin tile.
     point -= Tile_Display_Offset;
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::map_image_to_display: " << round_down(point) << " (" << point
-                         << ')' << endl));
+    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::map_image_to_display: " << round_down(point)
+                         << " (" << point << ')' << endl));
 #endif
     return round_down(point);
 }
 
-QPointF Tiled_Image_Display::map_tile_to_image(const QPoint &coordinate, int band) const
+QPointF Tiled_Image_Display::map_tile_to_image(const QPoint& coordinate, int band) const
 {
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING(
-        (clog << ">>> Tiled_Image_Display::map_tile_to_image: " << coordinate << ", " << band << 'b' << endl));
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::map_tile_to_image: " << coordinate << ", "
+                         << band << 'b' << endl));
 #endif
     QPointF point(displayed_tile_grid_origin(band));
     QSizeF extent(tile_image_size(band));
@@ -1411,11 +1401,11 @@ QPointF Tiled_Image_Display::map_tile_to_image(const QPoint &coordinate, int ban
     return point;
 }
 
-QPoint Tiled_Image_Display::map_image_to_tile(const QPointF &coordinate, int band) const
+QPoint Tiled_Image_Display::map_image_to_tile(const QPointF& coordinate, int band) const
 {
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING(
-        (clog << ">>> Tiled_Image_Display::map_image_to_tile: " << coordinate << ", " << band << 'b' << endl));
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::map_image_to_tile: " << coordinate << ", "
+                         << band << 'b' << endl));
 #endif
     QRectF region(tiled_image_region(band));
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
@@ -1440,23 +1430,24 @@ QPoint Tiled_Image_Display::map_image_to_tile(const QPointF &coordinate, int ban
             point.ry() /= tile_size.rheight();
         }
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-        LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::map_image_to_tile: " << round_down(point) << " (" << point
-                             << ')' << endl));
+        LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::map_image_to_tile: " << round_down(point)
+                             << " (" << point << ')' << endl));
 #endif
         return round_down(point);
     }
 //	Out of bounds.
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::map_image_to_tile: " << QPoint(-1, -1) << endl));
+    LOCKED_LOGGING(
+        (clog << "<<< Tiled_Image_Display::map_image_to_tile: " << QPoint(-1, -1) << endl));
 #endif
     return QPoint(-1, -1);
 }
 
-QPoint Tiled_Image_Display::map_image_to_tile_offset(const QPointF &coordinate, int band) const
+QPoint Tiled_Image_Display::map_image_to_tile_offset(const QPointF& coordinate, int band) const
 {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN))
-    LOCKED_LOGGING(
-        (clog << ">>> Tiled_Image_Display::map_image_to_tile_offset: " << coordinate << ", " << band << 'b' << endl));
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::map_image_to_tile_offset: " << coordinate
+                         << ", " << band << 'b' << endl));
 #endif
     /*
         >>> CAUTION <<< The tiled_image_region will return the cached
@@ -1487,36 +1478,35 @@ QPoint Tiled_Image_Display::map_image_to_tile_offset(const QPointF &coordinate, 
 #endif
 
         //	Convert to offset in display space.
-        if (band < 0)
-            band = 0;
+        if (band < 0) band = 0;
         double scale_width, scale_height;
         image_scaling(&scale_width, &scale_height, band);
         point.rx() *= scale_width;
         point.ry() *= scale_height;
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN))
-        LOCKED_LOGGING((clog << "                         scaling = " << scale_width << "w, " << scale_height << 'h'
-                             << endl
-                             << "<<< Tiled_Image_Display::map_image_to_tile_offset: " << round_down(point) << " ("
-                             << point << ')' << endl));
+        LOCKED_LOGGING((clog << "                         scaling = " << scale_width << "w, "
+                             << scale_height << 'h' << endl
+                             << "<<< Tiled_Image_Display::map_image_to_tile_offset: "
+                             << round_down(point) << " (" << point << ')' << endl));
 #endif
         return round_down(point);
     }
 //	Out of bounds.
 #if ((DEBUG_SECTION) & (DEBUG_MAP_POINTS | DEBUG_ORIGIN))
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::map_image_to_tile_offset: " << QPoint(-1, -1) << endl));
+    LOCKED_LOGGING(
+        (clog << "<<< Tiled_Image_Display::map_image_to_tile_offset: " << QPoint(-1, -1) << endl));
 #endif
     return QPoint(-1, -1);
 }
 
-QPoint Tiled_Image_Display::map_display_to_tile(const QPoint &coordinate) const
+QPoint Tiled_Image_Display::map_display_to_tile(const QPoint& coordinate) const
 {
-    if (Tile_Display_Size.width() == 0 || Tile_Display_Size.height() == 0)
-        return QPoint(0, 0);
+    if (Tile_Display_Size.width() == 0 || Tile_Display_Size.height() == 0) return QPoint(0, 0);
 
     //	Display viewport coordinate.
     QPoint point(coordinate);
     //	Adjust to display tile grid origin.
-    point += Tile_Display_Offset; //	Display viewport offset.
+    point += Tile_Display_Offset;  //	Display viewport offset.
     //	Convert to tile grid offset.
     point.rx() /= Tile_Display_Size.width();
     point.ry() /= Tile_Display_Size.height();
@@ -1530,45 +1520,41 @@ QPoint Tiled_Image_Display::map_display_to_tile(const QPoint &coordinate) const
     return point;
 }
 
-QPoint Tiled_Image_Display::map_display_to_tile_offset(const QPoint &coordinate) const
+QPoint Tiled_Image_Display::map_display_to_tile_offset(const QPoint& coordinate) const
 {
     //	Display viewport coordinate.
     QPoint point(coordinate);
     //	Adjust to display tile grid origin.
-    point += Tile_Display_Offset; //	Display viewport offset.
+    point += Tile_Display_Offset;  //	Display viewport offset.
     //	Convert to tile offset.
     point.rx() %= Tile_Display_Size.width();
     point.ry() %= Tile_Display_Size.height();
     return point;
 }
 
-QRect Tiled_Image_Display::tile_relative_region(const QRect &tile_region, QPoint tile_origin)
+QRect Tiled_Image_Display::tile_relative_region(const QRect& tile_region, QPoint tile_origin)
 {
     QRect region(tile_region);
-    if (region.isEmpty())
-        tile_origin.rx() = tile_origin.ry() = 0;
+    if (region.isEmpty()) tile_origin.rx() = tile_origin.ry() = 0;
     else
     {
         //	Move the viewport-relative tile origin to the tile-relative coordinate.
-        if (tile_origin.rx() < 0)
-            tile_origin.rx() = -tile_origin.rx();
+        if (tile_origin.rx() < 0) tile_origin.rx() = -tile_origin.rx();
         else if (tile_region.left() > tile_origin.rx())
             tile_origin.rx() = tile_region.left() - tile_origin.rx();
-        else
-            tile_origin.rx() = 0;
-        if (tile_origin.ry() < 0)
-            tile_origin.ry() = -tile_origin.ry();
+        else tile_origin.rx() = 0;
+        if (tile_origin.ry() < 0) tile_origin.ry() = -tile_origin.ry();
         else if (tile_region.top() > tile_origin.ry())
             tile_origin.ry() = tile_region.top() - tile_origin.ry();
-        else
-            tile_origin.ry() = 0;
+        else tile_origin.ry() = 0;
     }
     //	Move the display region to the tile_relative origin.
     region.moveTo(tile_origin);
     return region;
 }
 
-void Tiled_Image_Display::viewport_relative_region(const QPoint &tile_coordinate, QRect &tile_region) const
+void Tiled_Image_Display::viewport_relative_region(const QPoint& tile_coordinate,
+                                                   QRect& tile_region) const
 {
     QPoint origin(tile_display_origin(tile_coordinate));
     //	Tile-relative origin offset.
@@ -1581,8 +1567,7 @@ void Tiled_Image_Display::viewport_relative_region(const QPoint &tile_coordinate
 */
 QSizeF Tiled_Image_Display::tile_image_size(int band) const
 {
-    if (band <= 0)
-        return Tile_Image_Size;
+    if (band <= 0) return Tile_Image_Size;
     return calculate_tile_image_size(band);
 }
 
@@ -1590,15 +1575,13 @@ bool Tiled_Image_Display::reset_tile_image_size()
 {
     QSizeF size(calculate_tile_image_size());
     bool changed = (size != Tile_Image_Size);
-    if (changed)
-        Tile_Image_Size = size;
+    if (changed) Tile_Image_Size = size;
     return changed;
 }
 
 QSizeF Tiled_Image_Display::calculate_tile_image_size(int band) const
 {
-    if (band < 0)
-        band = 0;
+    if (band < 0) band = 0;
     double scale_width, scale_height;
     image_scaling(&scale_width, &scale_height, band);
     QSizeF tile_size(tile_display_size());
@@ -1607,18 +1590,14 @@ QSizeF Tiled_Image_Display::calculate_tile_image_size(int band) const
     return tile_size;
 }
 
-void Tiled_Image_Display::tile_display_size(const QSize &size)
+void Tiled_Image_Display::tile_display_size(const QSize& size)
 {
-    if (Image_Loading)
-        return;
+    if (Image_Loading) return;
 
     QSize tile_size(size);
-    if (tile_size.isEmpty())
-        tile_size = Default_Tile_Display_Size;
-    if (tile_size.rwidth() < MINIMUM_TILE_DIMENSION)
-        tile_size.rwidth() = MINIMUM_TILE_DIMENSION;
-    if (tile_size.rheight() < MINIMUM_TILE_DIMENSION)
-        tile_size.rheight() = MINIMUM_TILE_DIMENSION;
+    if (tile_size.isEmpty()) tile_size = Default_Tile_Display_Size;
+    if (tile_size.rwidth() < MINIMUM_TILE_DIMENSION) tile_size.rwidth() = MINIMUM_TILE_DIMENSION;
+    if (tile_size.rheight() < MINIMUM_TILE_DIMENSION) tile_size.rheight() = MINIMUM_TILE_DIMENSION;
     if (tile_size != Tile_Display_Size)
     {
         Pending_State_Change_Enabled = false;
@@ -1641,7 +1620,7 @@ void Tiled_Image_Display::tile_display_size(const QSize &size)
     }
 }
 
-void Tiled_Image_Display::default_tile_display_size(const QSize &size)
+void Tiled_Image_Display::default_tile_display_size(const QSize& size)
 {
     QSize tile_size(size);
     if (tile_size.isEmpty())
@@ -1662,8 +1641,8 @@ void Tiled_Image_Display::default_tile_display_size(const QSize &size)
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
 void Tiled_Image_Display::print_tile_grid() const
 {
-    QList<Plastic_Image *> *tiles;
-    Plastic_Image *image;
+    QList<Plastic_Image*>* tiles;
+    Plastic_Image* image;
     QRect viewport(rect()), tile_region(-Tile_Display_Offset, Tile_Display_Size);
     //	Move to the tile grid origin.
     tile_region.translate(-Tile_Display_Size.width(), -Tile_Display_Size.height());
@@ -1683,27 +1662,21 @@ void Tiled_Image_Display::print_tile_grid() const
                 while (++col < cols)
                 {
                     clog << "     ";
-                    if (tile_region.intersects(viewport))
-                        clog << '*';
-                    else
-                        clog << ' ';
+                    if (tile_region.intersects(viewport)) clog << '*';
+                    else clog << ' ';
                     clog << "col " << col << ' ';
                     image = tiles->at(col);
-                    if (image)
-                        clog << *image << endl;
-                    else
-                        clog << "NULL" << endl;
+                    if (image) clog << *image << endl;
+                    else clog << "NULL" << endl;
                     tile_region.translate(Tile_Display_Size.width(), 0);
                 }
             }
-            else
-                clog << "      empty" << endl;
+            else clog << "      empty" << endl;
             tile_region.moveTo(tile_region_left_edge, tile_region.y() + Tile_Display_Size.height());
         }
         clog << "    -------------------------------------" << endl;
     }
-    else
-        clog << endl;
+    else clog << endl;
 }
 
 void Tiled_Image_Display::print_tile_pool() const
@@ -1716,18 +1689,13 @@ void Tiled_Image_Display::print_tile_pool() const
         for (int index = 0; index < entries; index++)
             clog << "    " << index << ": " << *Tile_Image_Pool[index] << endl;
     }
-    else
-        clog << "empty" << endl;
+    else clog << "empty" << endl;
 }
 
 #else
-void Tiled_Image_Display::print_tile_grid() const
-{
-}
+void Tiled_Image_Display::print_tile_grid() const {}
 
-void Tiled_Image_Display::print_tile_pool() const
-{
-}
+void Tiled_Image_Display::print_tile_pool() const {}
 #endif
 
 bool Tiled_Image_Display::resize_tile_grid()
@@ -1748,9 +1716,11 @@ bool Tiled_Image_Display::resize_tile_grid()
     if (Image_Loading || Tile_Display_Size.isEmpty())
     {
 #if ((DEBUG_SECTION) & DEBUG_TILE_GRID)
-        LOCKED_LOGGING((clog << "    " << (Image_Loading ? "Image_Loading in progress" : "empty Tile_Display_Size")
-                             << endl
-                             << "<<< Tiled_Image_Display::resize_tile_grid: " << boolalpha << resized << endl));
+        LOCKED_LOGGING((
+            clog << "    "
+                 << (Image_Loading ? "Image_Loading in progress" : "empty Tile_Display_Size")
+                 << endl
+                 << "<<< Tiled_Image_Display::resize_tile_grid: " << boolalpha << resized << endl));
 #endif
         return resized;
     }
@@ -1758,12 +1728,12 @@ bool Tiled_Image_Display::resize_tile_grid()
     //	Effective tile grid size.
     QSize display_size(size());
     int old_cols = Tile_Grid_Size.rwidth(), old_rows = Tile_Grid_Size.rheight(),
-        new_cols = (display_size.rwidth() + Tile_Display_Size.rwidth()) / Tile_Display_Size.rwidth(),
-        new_rows = (display_size.rheight() + Tile_Display_Size.rheight()) / Tile_Display_Size.rheight();
-    if (display_size.rwidth() % Tile_Display_Size.rwidth())
-        ++new_cols;
-    if (display_size.rheight() % Tile_Display_Size.rheight())
-        ++new_rows;
+        new_cols =
+            (display_size.rwidth() + Tile_Display_Size.rwidth()) / Tile_Display_Size.rwidth(),
+        new_rows =
+            (display_size.rheight() + Tile_Display_Size.rheight()) / Tile_Display_Size.rheight();
+    if (display_size.rwidth() % Tile_Display_Size.rwidth()) ++new_cols;
+    if (display_size.rheight() % Tile_Display_Size.rheight()) ++new_rows;
     //	Pre-render margins.
     new_cols += 2;
     new_rows += 2;
@@ -1773,7 +1743,8 @@ bool Tiled_Image_Display::resize_tile_grid()
                          << "          display size = " << size() << endl
                          << "     tile display size = " << Tile_Display_Size << endl
                          << "    old tile grid size = " << Tile_Grid_Size << endl
-                         << "    new tile grid size = " << new_cols << "w, " << new_rows << 'h' << endl));
+                         << "    new tile grid size = " << new_cols << "w, " << new_rows << 'h'
+                         << endl));
 #endif
     if (new_rows != old_rows || new_cols != old_cols)
     {
@@ -1781,16 +1752,14 @@ bool Tiled_Image_Display::resize_tile_grid()
         resized = true;
 
         //	Increase the maximum tile image pool size if needed.
-        if (Tile_Image_Pool_Max < (new_rows * new_cols))
-            Tile_Image_Pool_Max = new_rows * new_cols;
+        if (Tile_Image_Pool_Max < (new_rows * new_cols)) Tile_Image_Pool_Max = new_rows * new_cols;
 
-        QList<Plastic_Image *> *tiles;
-        Plastic_Image *tile_image;
+        QList<Plastic_Image*>* tiles;
+        Plastic_Image* tile_image;
         int tile_row = -1, tile_col;
         while (++tile_row < new_rows)
         {
-            if (tile_row < old_rows)
-                tiles = Tile_Grid_Images->at(tile_row);
+            if (tile_row < old_rows) tiles = Tile_Grid_Images->at(tile_row);
             else
             {
 //	Add empty tile row.
@@ -1805,11 +1774,10 @@ bool Tiled_Image_Display::resize_tile_grid()
                 {
 //	Add tile column.
 #if ((DEBUG_SECTION) & DEBUG_TILE_GRID)
-                    LOCKED_LOGGING(
-                        (clog << "      adding " << (new_cols - tile_col) << " columns to row " << tile_row << endl));
+                    LOCKED_LOGGING((clog << "      adding " << (new_cols - tile_col)
+                                         << " columns to row " << tile_row << endl));
 #endif
-                    while (tile_col++ < new_cols)
-                        tiles->append(NULL);
+                    while (tile_col++ < new_cols) tiles->append(NULL);
                 }
                 else
                 {
@@ -1817,8 +1785,9 @@ bool Tiled_Image_Display::resize_tile_grid()
                     while (tile_col-- > new_cols)
                     {
 #if ((DEBUG_SECTION) & DEBUG_TILE_GRID)
-                        LOCKED_LOGGING((clog << "      removing tile " << tile_col << ',' << tile_row << " @ "
-                                             << (void *)(tiles->at(tile_col)) << endl));
+                        LOCKED_LOGGING((clog << "      removing tile " << tile_col << ','
+                                             << tile_row << " @ " << (void*)(tiles->at(tile_col))
+                                             << endl));
 #endif
                         if ((tile_image = tiles->takeLast()))
                         {
@@ -1835,7 +1804,8 @@ bool Tiled_Image_Display::resize_tile_grid()
                             {
 //	Delete the unused image.
 #if ((DEBUG_SECTION) & DEBUG_TILE_GRID)
-                                LOCKED_LOGGING((clog << "        queue for deletion " << *tile_image << endl));
+                                LOCKED_LOGGING(
+                                    (clog << "        queue for deletion " << *tile_image << endl));
 #endif
                                 Renderer->delete_image(tile_image);
                             }
@@ -1855,8 +1825,8 @@ bool Tiled_Image_Display::resize_tile_grid()
                 while (tile_col--)
                 {
 #if ((DEBUG_SECTION) & DEBUG_TILE_GRID)
-                    LOCKED_LOGGING((clog << "      removing tile " << tile_col << ',' << tile_row << " @ "
-                                         << (void *)(tiles->at(tile_col)) << endl));
+                    LOCKED_LOGGING((clog << "      removing tile " << tile_col << ',' << tile_row
+                                         << " @ " << (void*)(tiles->at(tile_col)) << endl));
 #endif
                     if ((tile_image = tiles->takeLast()))
                     {
@@ -1872,7 +1842,8 @@ bool Tiled_Image_Display::resize_tile_grid()
                         else
                         {
 #if ((DEBUG_SECTION) & DEBUG_TILE_GRID)
-                            LOCKED_LOGGING((clog << "        queue for deletion " << *tile_image << endl));
+                            LOCKED_LOGGING(
+                                (clog << "        queue for deletion " << *tile_image << endl));
 #endif
                             Renderer->delete_image(tile_image);
                         }
@@ -1907,15 +1878,17 @@ bool Tiled_Image_Display::resize_tile_grid()
 #endif
     }
 #if ((DEBUG_SECTION) & DEBUG_TILE_GRID)
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::resize_tile_grid: " << boolalpha << resized << endl));
+    LOCKED_LOGGING(
+        (clog << "<<< Tiled_Image_Display::resize_tile_grid: " << boolalpha << resized << endl));
 #endif
     return resized;
 }
 
-QRect Tiled_Image_Display::tile_display_region(const QPoint &coordinate) const
+QRect Tiled_Image_Display::tile_display_region(const QPoint& coordinate) const
 {
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::tile_display_region: " << coordinate << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> Tiled_Image_Display::tile_display_region: " << coordinate << endl));
 #endif
     QRect region(tile_display_origin(coordinate), Tile_Display_Size);
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
@@ -1924,10 +1897,11 @@ QRect Tiled_Image_Display::tile_display_region(const QPoint &coordinate) const
     return region;
 }
 
-QPoint Tiled_Image_Display::tile_display_origin(const QPoint &coordinate) const
+QPoint Tiled_Image_Display::tile_display_origin(const QPoint& coordinate) const
 {
 #if ((DEBUG_SECTION) & DEBUG_MAP_POINTS)
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::tile_display_origin: " << coordinate << endl));
+    LOCKED_LOGGING(
+        (clog << ">>> Tiled_Image_Display::tile_display_origin: " << coordinate << endl));
 #endif
     //	Tile grid coordinate.
     QPoint origin(coordinate);
@@ -1955,8 +1929,7 @@ QPoint Tiled_Image_Display::tile_display_origin(const QPoint &coordinate) const
 
 QRectF Tiled_Image_Display::tiled_image_region(int band) const
 {
-    if (band <= 0)
-        return Tiled_Image_Region;
+    if (band <= 0) return Tiled_Image_Region;
     return calculate_tiled_image_region(band);
 }
 
@@ -1965,8 +1938,7 @@ bool Tiled_Image_Display::reset_tiled_image_region()
     reset_tile_image_size();
     QRectF region(calculate_tiled_image_region());
     bool changed = (region != Tiled_Image_Region);
-    if (changed)
-        Tiled_Image_Region = region;
+    if (changed) Tiled_Image_Region = region;
     return changed;
 }
 
@@ -1995,23 +1967,24 @@ QString move_change_description(int change)
 {
     switch (change)
     {
-    case NO_CHANGE:
-        return "NO_CHANGE";
-    case UPDATE_DISPLAY:
-        return "UPDATE_DISPLAY";
-    case RENDER_TILES:
-        return "RENDER_TILES";
+        case NO_CHANGE:
+            return "NO_CHANGE";
+        case UPDATE_DISPLAY:
+            return "UPDATE_DISPLAY";
+        case RENDER_TILES:
+            return "RENDER_TILES";
     }
     return "unknown";
 }
-} // namespace
+}  // namespace
 #endif
 
-bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
+bool Tiled_Image_Display::move_image(const QPoint& origin, int band)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN | DEBUG_OVERVIEW))
     QString pathname(object_pathname(this));
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::move_image: " << origin << ", " << band << 'b' << endl
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::move_image: " << origin << ", " << band << 'b'
+                         << endl
                          << "    in " << pathname << endl));
 #endif
     int change = NO_CHANGE, tiles_reset = NO_TILES_RESET;
@@ -2023,19 +1996,19 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
         clipped_origin.rx() = Lower_Right_Origin_Limit.rx();
     if (clipped_origin.ry() > Lower_Right_Origin_Limit.ry())
         clipped_origin.ry() = Lower_Right_Origin_Limit.ry();
-    if (clipped_origin.rx() < 0)
-        clipped_origin.rx() = 0;
-    if (clipped_origin.ry() < 0)
-        clipped_origin.ry() = 0;
+    if (clipped_origin.rx() < 0) clipped_origin.rx() = 0;
+    if (clipped_origin.ry() < 0) clipped_origin.ry() = 0;
 
     QPoint current_origin(round_down(displayed_image_origin(band)));
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
-    QPointF real_origin(displayed_image_origin(band)), mapped_origin(map_display_to_image(QPoint()));
+    QPointF real_origin(displayed_image_origin(band)),
+        mapped_origin(map_display_to_image(QPoint()));
     LOCKED_LOGGING((clog << "      Lower_Right_Origin_Limit = " << Lower_Right_Origin_Limit << endl
                          << "                clipped origin = " << clipped_origin << endl
-                         << "        displayed_image_origin = " << current_origin << " (" << real_origin << ')' << endl
-                         << "         mapped display origin = " << round_down(mapped_origin) << " (" << mapped_origin
-                         << ')' << endl));
+                         << "        displayed_image_origin = " << current_origin << " ("
+                         << real_origin << ')' << endl
+                         << "         mapped display origin = " << round_down(mapped_origin) << " ("
+                         << mapped_origin << ')' << endl));
 #endif
     if (clipped_origin != current_origin)
     {
@@ -2045,10 +2018,12 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
         QPointF location(clipped_origin);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
         LOCKED_LOGGING((clog << "            Tiled_Image_Region = " << Tiled_Image_Region << endl
-                             << "           Tile_Display_Offset = " << Tile_Display_Offset << endl));
+                             << "           Tile_Display_Offset = " << Tile_Display_Offset
+                             << endl));
         QPoint tile_display_offset(map_image_to_tile_offset(current_origin));
         LOCKED_LOGGING((clog << "    mapped tile display offset = " << tile_display_offset << endl
-                             << "        Displayed_Image_Region = " << Displayed_Image_Region << endl
+                             << "        Displayed_Image_Region = " << Displayed_Image_Region
+                             << endl
                              << "               Tile_Image_Size = " << Tile_Image_Size << endl));
 #endif
         if (band <= 0)
@@ -2109,8 +2084,8 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
                         Tiled_Image_Region.moveTop(Tiled_Image_Region.top() +
                                                    (offset.ry() * Tile_Image_Size.rheight()));
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
-                        LOCKED_LOGGING((clog << "    rotate rows " << offset.ry()
-                                             << "; new top = " << Tiled_Image_Region.top() << endl));
+                        LOCKED_LOGGING((clog << "    rotate rows " << offset.ry() << "; new top = "
+                                             << Tiled_Image_Region.top() << endl));
 #endif
                         if (offset.ry() > 0)
                             //	Rotate up.
@@ -2127,10 +2102,10 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
                         Tiled_Image_Region.moveLeft(Tiled_Image_Region.left() +
                                                     (offset.rx() * Tile_Image_Size.rwidth()));
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
-                        LOCKED_LOGGING((clog << "    rotate cols " << offset.rx()
-                                             << "; new left = " << Tiled_Image_Region.left() << endl));
+                        LOCKED_LOGGING((clog << "    rotate cols " << offset.rx() << "; new left = "
+                                             << Tiled_Image_Region.left() << endl));
 #endif
-                        QList<Plastic_Image *> *tiles;
+                        QList<Plastic_Image*>* tiles;
                         int shift, tile_row = Tile_Grid_Size.rheight();
                         while (tile_row)
                         {
@@ -2138,12 +2113,10 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
                             {
                                 if ((shift = offset.rx()) > 0)
                                     //	Rotate left.
-                                    while (shift--)
-                                        tiles->append(tiles->takeFirst());
+                                    while (shift--) tiles->append(tiles->takeFirst());
                                 else
                                     //	Rotate right.
-                                    while (shift++)
-                                        tiles->prepend(tiles->takeLast());
+                                    while (shift++) tiles->prepend(tiles->takeLast());
                             }
                         }
                     }
@@ -2169,7 +2142,8 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
                 location.rx() += Tile_Image_Size.rwidth();
                 location.ry() += Tile_Image_Size.rheight();
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
-                LOCKED_LOGGING((clog << "    relocated Tiled_Image_Region = " << Tiled_Image_Region << endl
+                LOCKED_LOGGING((clog << "    relocated Tiled_Image_Region = " << Tiled_Image_Region
+                                     << endl
                                      << "      displayed_tile_grid_origin = " << location << endl));
 #endif
                 displayed_tile_grid_origin(location, band);
@@ -2187,21 +2161,22 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
             mapped_origin = map_display_to_image(QPoint());
             LOCKED_LOGGING((clog << "    before map_image_to_tile_offset -" << endl
                                  << "                clipped_origin = " << clipped_origin << endl
-                                 << "        displayed_image_origin = " << round_down(real_origin) << " ("
-                                 << real_origin << ')' << endl
-                                 << "         mapped display origin = " << round_down(mapped_origin) << " ("
-                                 << mapped_origin << ')' << endl));
+                                 << "        displayed_image_origin = " << round_down(real_origin)
+                                 << " (" << real_origin << ')' << endl
+                                 << "         mapped display origin = " << round_down(mapped_origin)
+                                 << " (" << mapped_origin << ')' << endl));
 #endif
             Tile_Display_Offset = map_image_to_tile_offset(clipped_origin);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
             real_origin = displayed_image_origin(band);
             mapped_origin = map_display_to_image(QPoint());
             LOCKED_LOGGING((clog << "    after map_image_to_tile_offset -" << endl
-                                 << "       new Tile_Display_Offset = " << Tile_Display_Offset << endl
-                                 << "        displayed_image_origin = " << round_down(real_origin) << " ("
-                                 << real_origin << ')' << endl
-                                 << "         mapped display origin = " << round_down(mapped_origin) << " ("
-                                 << mapped_origin << ')' << endl));
+                                 << "       new Tile_Display_Offset = " << Tile_Display_Offset
+                                 << endl
+                                 << "        displayed_image_origin = " << round_down(real_origin)
+                                 << " (" << real_origin << ')' << endl
+                                 << "         mapped display origin = " << round_down(mapped_origin)
+                                 << " (" << mapped_origin << ')' << endl));
 #endif
 
             //	Reset the displayed image region.
@@ -2209,12 +2184,13 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
             real_origin = displayed_image_origin(band);
             mapped_origin = map_display_to_image(QPoint());
-            LOCKED_LOGGING((clog << "    reset_displayed_image_region = " << image_region_resized << endl
-                                 << "        Displayed_Image_Region = " << Displayed_Image_Region << endl
-                                 << "        displayed_image_origin = " << round_down(real_origin) << " ("
-                                 << real_origin << ')' << endl
-                                 << "         mapped display origin = " << round_down(mapped_origin) << " ("
-                                 << mapped_origin << ')' << endl));
+            LOCKED_LOGGING(
+                (clog << "    reset_displayed_image_region = " << image_region_resized << endl
+                      << "        Displayed_Image_Region = " << Displayed_Image_Region << endl
+                      << "        displayed_image_origin = " << round_down(real_origin) << " ("
+                      << real_origin << ')' << endl
+                      << "         mapped display origin = " << round_down(mapped_origin) << " ("
+                      << mapped_origin << ')' << endl));
 #endif
         }
         else
@@ -2227,7 +2203,7 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
                 map_display_to_image which depends on Tile_Display_Offset.
             */
             change = RENDER_TILES;
-            location -= current_origin; //	Origin offset.
+            location -= current_origin;  //	Origin offset.
             location += displayed_tile_grid_origin(band);
             displayed_tile_grid_origin(location, band);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
@@ -2237,7 +2213,8 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
         }
 
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
-        LOCKED_LOGGING((clog << "    change = " << change << " - " << move_change_description(change) << endl));
+        LOCKED_LOGGING((clog << "    change = " << change << " - "
+                             << move_change_description(change) << endl));
 #endif
         if (change == RENDER_TILES)
         {
@@ -2245,8 +2222,7 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
             LOCKED_LOGGING((clog << "    reset_tiles ..." << endl));
 #endif
-            if ((tiles_reset = reset_tiles()) != VISIBLE_TILES_RESET)
-                change = UPDATE_DISPLAY;
+            if ((tiles_reset = reset_tiles()) != VISIBLE_TILES_RESET) change = UPDATE_DISPLAY;
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
             if (tiles_reset)
             {
@@ -2268,19 +2244,21 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
         state_change_start(IMAGE_MOVE_STATE);
     }
 
-    if (change || clipped_origin != origin) //	Report if requested origin was clipped.
+    if (change || clipped_origin != origin)  //	Report if requested origin was clipped.
     {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
         real_origin = displayed_image_origin(band);
         mapped_origin = map_display_to_image(QPoint());
-        LOCKED_LOGGING((
-            clog << "    image " << (change ? "moved" : "requested origin clipped") << " to " << clipped_origin << endl
-                 << "            Tiled_Image_Region = " << Tiled_Image_Region << endl
-                 << "           Tile_Display_Offset = " << Tile_Display_Offset << endl
-                 << "        Displayed_Image_Region = " << Displayed_Image_Region << endl
-                 << "        displayed_image_origin = " << round_down(real_origin) << " (" << real_origin << ')' << endl
-                 << "         mapped display origin = " << round_down(mapped_origin) << " (" << mapped_origin << ')'
-                 << endl));
+        LOCKED_LOGGING((clog << "    image " << (change ? "moved" : "requested origin clipped")
+                             << " to " << clipped_origin << endl
+                             << "            Tiled_Image_Region = " << Tiled_Image_Region << endl
+                             << "           Tile_Display_Offset = " << Tile_Display_Offset << endl
+                             << "        Displayed_Image_Region = " << Displayed_Image_Region
+                             << endl
+                             << "        displayed_image_origin = " << round_down(real_origin)
+                             << " (" << real_origin << ')' << endl
+                             << "         mapped display origin = " << round_down(mapped_origin)
+                             << " (" << mapped_origin << ')' << endl));
 #endif
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN | DEBUG_SIGNALS))
@@ -2313,7 +2291,8 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
         {
 //	Report the completion of the state change.
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN))
-            LOCKED_LOGGING((clog << "    state_change_completed COMPLETED_WITHOUT_RENDERING_STATE" << endl));
+            LOCKED_LOGGING(
+                (clog << "    state_change_completed COMPLETED_WITHOUT_RENDERING_STATE" << endl));
 #endif
             state_change_completed(COMPLETED_WITHOUT_RENDERING_STATE);
         }
@@ -2321,7 +2300,8 @@ bool Tiled_Image_Display::move_image(const QPoint &origin, int band)
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MOVE | DEBUG_ORIGIN | DEBUG_OVERVIEW))
     real_origin = displayed_image_origin();
     LOCKED_LOGGING((clog << "    new origin = " << real_origin << endl
-                         << "<<< Tiled_Image_Display::move_image: " << boolalpha << (change != NO_CHANGE) << endl));
+                         << "<<< Tiled_Image_Display::move_image: " << boolalpha
+                         << (change != NO_CHANGE) << endl));
 #endif
     return change;
 }
@@ -2340,7 +2320,8 @@ int Tiled_Image_Display::reset_tiles()
     if (!tile_rows || !tile_cols)
     {
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
-        LOCKED_LOGGING((clog << "    no tiles" << endl << "<<< Tiled_Image_Display::reset_tiles: " << changed << endl));
+        LOCKED_LOGGING((clog << "    no tiles" << endl
+                             << "<<< Tiled_Image_Display::reset_tiles: " << changed << endl));
 #endif
         return changed;
     }
@@ -2371,7 +2352,8 @@ int Tiled_Image_Display::reset_tiles()
     double tile_locations_left_edge[3];
     QSizeF size_of_image(image_size()), tile_sizes[3];
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
-    LOCKED_LOGGING((clog << "    Image geometry -" << endl << "    image size = " << size_of_image << endl));
+    LOCKED_LOGGING((clog << "    Image geometry -" << endl
+                         << "    image size = " << size_of_image << endl));
 #endif
     int band = 3;
     while (band--)
@@ -2382,7 +2364,8 @@ int Tiled_Image_Display::reset_tiles()
         tile_locations_left_edge[band] = tile_locations[band].rx() -= tile_sizes[band].rwidth();
         tile_locations[band].ry() -= tile_sizes[band].rheight();
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
-        LOCKED_LOGGING((clog << "      band " << band << " tile size = " << tile_sizes[band] << endl));
+        LOCKED_LOGGING(
+            (clog << "      band " << band << " tile size = " << tile_sizes[band] << endl));
 #endif
     }
 
@@ -2394,12 +2377,13 @@ int Tiled_Image_Display::reset_tiles()
     print_tile_grid();
     UNLOCK_LOG;
 #endif
-    QList<Plastic_Image *> *tiles;
-    Plastic_Image *tile_image;
+    QList<Plastic_Image*>* tiles;
+    Plastic_Image* tile_image;
     while (true)
     {
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
-        LOCKED_LOGGING((clog << "    tile row " << tile_grid.ry() << " location = " << tile_locations[0] << endl));
+        LOCKED_LOGGING((clog << "    tile row " << tile_grid.ry()
+                             << " location = " << tile_locations[0] << endl));
 #endif
         if (!(tiles = Tile_Grid_Images->at(tile_grid.ry())))
         {
@@ -2409,10 +2393,9 @@ int Tiled_Image_Display::reset_tiles()
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
                 LOCKED_LOGGING((clog << "+++ activating row -" << endl));
 #endif
-                Tile_Grid_Images->replace(tile_grid.ry(), tiles = new QList<Plastic_Image *>);
+                Tile_Grid_Images->replace(tile_grid.ry(), tiles = new QList<Plastic_Image*>);
                 tile_grid.rx() = tile_cols;
-                while (tile_grid.rx()--)
-                    tiles->append(NULL);
+                while (tile_grid.rx()--) tiles->append(NULL);
             }
         }
         else if (tile_locations[0].ry() < 0 || tile_locations[0].ry() >= size_of_image.rheight())
@@ -2442,7 +2425,8 @@ int Tiled_Image_Display::reset_tiles()
                     else
                     {
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
-                        LOCKED_LOGGING((clog << "      queue for deletion " << *tile_image << endl));
+                        LOCKED_LOGGING(
+                            (clog << "      queue for deletion " << *tile_image << endl));
 #endif
                         Renderer->delete_image(tile_image);
                     }
@@ -2458,13 +2442,13 @@ int Tiled_Image_Display::reset_tiles()
             while (true)
             {
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
-                LOCKED_LOGGING(
-                    (clog << "      tile column " << tile_grid.rx() << " location = " << tile_locations[0] << endl));
+                LOCKED_LOGGING((clog << "      tile column " << tile_grid.rx()
+                                     << " location = " << tile_locations[0] << endl));
 #endif
                 if (!(tile_image = tiles->at(tile_grid.rx())))
                 {
-                    if (tile_locations[0].rx() >= 0 && tile_locations[0].rx() < size_of_image.rwidth() &&
-                        !Image_Loading)
+                    if (tile_locations[0].rx() >= 0 &&
+                        tile_locations[0].rx() < size_of_image.rwidth() && !Image_Loading)
                     {
 //	Activate the tile.
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
@@ -2472,31 +2456,31 @@ int Tiled_Image_Display::reset_tiles()
 #endif
                         if (Tile_Image_Pool.isEmpty())
                         {
-                            tile_image = Renderer->image_clone(Tile_Display_Size,
-                                                               //	Mappings shared with the Reference_Image.
-                                                               Plastic_Image::BAND_MAP | Plastic_Image::DATA_MAPS);
+                            tile_image = Renderer->image_clone(
+                                Tile_Display_Size,
+                                //	Mappings shared with the Reference_Image.
+                                Plastic_Image::BAND_MAP | Plastic_Image::DATA_MAPS);
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
                             LOCK_LOG;
-                            if (tile_image)
-                                clog << "      cloned " << *tile_image << endl;
-                            else
-                                clog << "!!!!! image_clone failed!" << endl;
+                            if (tile_image) clog << "      cloned " << *tile_image << endl;
+                            else clog << "!!!!! image_clone failed!" << endl;
                             UNLOCK_LOG;
 #endif
-                            if (!tile_image)
-                                goto Done;
+                            if (!tile_image) goto Done;
                         }
                         else
                         {
                             tile_image = Tile_Image_Pool.takeLast();
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
-                            LOCKED_LOGGING((clog << "      move from pool " << *tile_image << endl));
+                            LOCKED_LOGGING(
+                                (clog << "      move from pool " << *tile_image << endl));
 #endif
                         }
                         tiles->replace(tile_grid.rx(), tile_image);
                     }
                 }
-                else if ((tile_locations[0].rx() < 0 || tile_locations[0].rx() >= size_of_image.rwidth()) &&
+                else if ((tile_locations[0].rx() < 0 ||
+                          tile_locations[0].rx() >= size_of_image.rwidth()) &&
                          !Image_Loading)
                 {
 //	Deactivate the tile.
@@ -2515,7 +2499,8 @@ int Tiled_Image_Display::reset_tiles()
                     else
                     {
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
-                        LOCKED_LOGGING((clog << "      queue for deletion " << *tile_image << endl));
+                        LOCKED_LOGGING(
+                            (clog << "      queue for deletion " << *tile_image << endl));
 #endif
                         Renderer->delete_image(tile_image);
                     }
@@ -2527,8 +2512,8 @@ int Tiled_Image_Display::reset_tiles()
 //	Reset the tile image.
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
                     LOCKED_LOGGING((clog << "        ante " << *tile_image << endl
-                                         << "        display region " << tile_region << ", visible " << boolalpha
-                                         << tile_region.intersects(viewport) << endl));
+                                         << "        display region " << tile_region << ", visible "
+                                         << boolalpha << tile_region.intersects(viewport) << endl));
 #endif
 
                     origin_changed = scaling_changed = false;
@@ -2537,8 +2522,9 @@ int Tiled_Image_Display::reset_tiles()
                     {
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
                         QSizeF scaling(image_scaling(band));
-                        LOCKED_LOGGING((clog << "        band " << band << " - origin " << tile_locations[band]
-                                             << ", scaling " << scaling << endl));
+                        LOCKED_LOGGING((clog << "        band " << band << " - origin "
+                                             << tile_locations[band] << ", scaling " << scaling
+                                             << endl));
 #endif
                         scaling_changed |= tile_image->source_scaling(image_scaling(band));
                         origin_changed |= tile_image->source_origin(tile_locations[band], band);
@@ -2549,8 +2535,10 @@ int Tiled_Image_Display::reset_tiles()
                         changed = BACKGROUND_TILES_RESET;
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
                     LOCKED_LOGGING((clog << "        post " << *tile_image << endl
-                                         << boolalpha << "           origin_changed = " << origin_changed << endl
-                                         << "          scaling_changed = " << scaling_changed << endl));
+                                         << boolalpha
+                                         << "           origin_changed = " << origin_changed << endl
+                                         << "          scaling_changed = " << scaling_changed
+                                         << endl));
 #endif
 #if ((DEBUG_SECTION) & DEBUG_TILE_MARKINGS)
                     //	Tile markings.
@@ -2581,15 +2569,16 @@ int Tiled_Image_Display::reset_tiles()
                         /*	Move the tile-viewport intersection region origin
                             to its tile-relative coordinate.
                         */
-                        displayed_tile_region = tile_relative_region(tile_region & viewport, tile_region.topLeft());
-                        if (!displayed_tile_region.isEmpty())
-                            changed = VISIBLE_TILES_RESET;
+                        displayed_tile_region =
+                            tile_relative_region(tile_region & viewport, tile_region.topLeft());
+                        if (!displayed_tile_region.isEmpty()) changed = VISIBLE_TILES_RESET;
 
                         //	Queue the tile image for rendering.
-                        Renderer->queue(
-                            tile_image,
-                            (displayed_tile_region.isEmpty() ? Image_Renderer::LOW_PRIORITY_RENDERING : tile_grid),
-                            displayed_tile_region);
+                        Renderer->queue(tile_image,
+                                        (displayed_tile_region.isEmpty()
+                                             ? Image_Renderer::LOW_PRIORITY_RENDERING
+                                             : tile_grid),
+                                        displayed_tile_region);
                     }
                 }
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
@@ -2598,15 +2587,13 @@ int Tiled_Image_Display::reset_tiles()
                     LOCKED_LOGGING((clog << "..... inactive column" << endl));
                 }
 #endif
-                if (++tile_grid.rx() == tile_cols)
-                    break;
+                if (++tile_grid.rx() == tile_cols) break;
 
                 //	Move the tile locations to the next column.
                 tile_region.translate(Tile_Display_Size.rwidth(), 0);
 
                 band = 3;
-                while (band--)
-                    tile_locations[band].rx() += tile_sizes[band].rwidth();
+                while (band--) tile_locations[band].rx() += tile_sizes[band].rwidth();
             }
         }
 #if ((DEBUG_SECTION) & (DEBUG_RESET_TILES | DEBUG_IMAGE_GEOMETRY))
@@ -2615,8 +2602,7 @@ int Tiled_Image_Display::reset_tiles()
             LOCKED_LOGGING((clog << "... inactive row" << endl));
         }
 #endif
-        if (++tile_grid.ry() == tile_rows)
-            break;
+        if (++tile_grid.ry() == tile_rows) break;
 
         //	Move the tile locations to the beginning of the next row.
         tile_region.moveTo(tile_region_left_edge, tile_region.y() + Tile_Display_Size.rheight());
@@ -2645,7 +2631,8 @@ Done:
     Image_Tile::tile_accounting();
     Renderer->image_accounting();
 
-    clog << "    in " << pathname << endl << "<<< Tiled_Image_Display::reset_tiles: " << changed << endl;
+    clog << "    in " << pathname << endl
+         << "<<< Tiled_Image_Display::reset_tiles: " << changed << endl;
     UNLOCK_LOG;
 #endif
     return changed;
@@ -2664,7 +2651,7 @@ void Tiled_Image_Display::clear_tiles()
 #endif
     //	Cancel all rendering.
     Renderer->reset(Image_Renderer::WAIT_UNTIL_DONE);
-    QList<Plastic_Image *> *tiles;
+    QList<Plastic_Image*>* tiles;
     QPoint tile_grid(0, Tile_Grid_Size.rheight());
     int tile_cols = Tile_Grid_Size.rwidth();
     while (tile_grid.ry()--)
@@ -2677,10 +2664,8 @@ void Tiled_Image_Display::clear_tiles()
 #if ((DEBUG_SECTION) & (DEBUG_TILE_GRID | DEBUG_CONSTRUCTORS))
                 LOCK_LOG;
                 clog << "    removing tile grid " << tile_grid << ' ';
-                if (tiles->at(tile_grid.rx()))
-                    clog << *(tiles->at(tile_grid.rx()));
-                else
-                    clog << "NULL";
+                if (tiles->at(tile_grid.rx())) clog << *(tiles->at(tile_grid.rx()));
+                else clog << "NULL";
                 clog << endl;
                 UNLOCK_LOG;
 #endif
@@ -2695,14 +2680,15 @@ void Tiled_Image_Display::clear_tiles()
 
 //	Clear the tile image pool.
 #if ((DEBUG_SECTION) & (DEBUG_TILE_GRID | DEBUG_CONSTRUCTORS))
-    LOCKED_LOGGING(
-        (clog << "    clearing " << Tile_Image_Pool.size() << " images from the the Tile_Image_Pool" << endl));
+    LOCKED_LOGGING((clog << "    clearing " << Tile_Image_Pool.size()
+                         << " images from the the Tile_Image_Pool" << endl));
 #endif
     tile_cols = Tile_Image_Pool.size();
     while (tile_cols--)
     {
 #if ((DEBUG_SECTION) & (DEBUG_TILE_GRID | DEBUG_CONSTRUCTORS))
-        LOCKED_LOGGING((clog << "    " << tile_cols << ": " << *Tile_Image_Pool[tile_cols] << endl));
+        LOCKED_LOGGING(
+            (clog << "    " << tile_cols << ": " << *Tile_Image_Pool[tile_cols] << endl));
 #endif
         Renderer->delete_image(Tile_Image_Pool.takeLast());
     }
@@ -2729,7 +2715,7 @@ void Tiled_Image_Display::clear_tiles()
 /*==============================================================================
     Scaling
 */
-bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center, int band)
+bool Tiled_Image_Display::scale_image(const QSizeF& scale, const QPoint& center, int band)
 {
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
     LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::scale_image:" << endl
@@ -2740,7 +2726,8 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
     if (Image_Loading || Tile_Display_Size.isEmpty())
     {
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-        LOCKED_LOGGING((clog << "    " << (Image_Loading ? "Image_Loading in progress" : "no tiles") << endl
+        LOCKED_LOGGING((clog << "    " << (Image_Loading ? "Image_Loading in progress" : "no tiles")
+                             << endl
                              << "<<< Tiled_Image_Display::scale_image: false" << endl));
 #endif
         return false;
@@ -2748,14 +2735,10 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
 
     bool changed = false;
     QSizeF current_scaling(image_scaling(band)), scaling(scale);
-    if (scaling.rwidth() < Min_Scale)
-        scaling.rwidth() = Min_Scale;
-    else if (scaling.rwidth() > Max_Scale)
-        scaling.rwidth() = Max_Scale;
-    if (scaling.rheight() < Min_Scale)
-        scaling.rheight() = Min_Scale;
-    else if (scaling.rheight() > Max_Scale)
-        scaling.rheight() = Max_Scale;
+    if (scaling.rwidth() < Min_Scale) scaling.rwidth() = Min_Scale;
+    else if (scaling.rwidth() > Max_Scale) scaling.rwidth() = Max_Scale;
+    if (scaling.rheight() < Min_Scale) scaling.rheight() = Min_Scale;
+    else if (scaling.rheight() > Max_Scale) scaling.rheight() = Max_Scale;
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
     LOCKED_LOGGING((clog << "    current scaling = " << current_scaling << endl
                          << "    limited scaling = " << scaling << endl));
@@ -2780,11 +2763,13 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
 
 //	Reset the lower-right image display origin limit.
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-        LOCKED_LOGGING((clog << "      old Lower_Right_Origin_Limit = " << Lower_Right_Origin_Limit << endl));
+        LOCKED_LOGGING(
+            (clog << "      old Lower_Right_Origin_Limit = " << Lower_Right_Origin_Limit << endl));
 #endif
         Lower_Right_Origin_Limit = calculate_lower_right_origin_limit();
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-        LOCKED_LOGGING((clog << "      new Lower_Right_Origin_Limit = " << Lower_Right_Origin_Limit << endl));
+        LOCKED_LOGGING(
+            (clog << "      new Lower_Right_Origin_Limit = " << Lower_Right_Origin_Limit << endl));
 #endif
 
         if (band <= 0)
@@ -2793,11 +2778,13 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
 
 //	Tile image size.
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-            LOCKED_LOGGING((clog << "               old Tile_Image_Size = " << Tile_Image_Size << endl));
+            LOCKED_LOGGING(
+                (clog << "               old Tile_Image_Size = " << Tile_Image_Size << endl));
 #endif
             reset_tile_image_size();
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-            LOCKED_LOGGING((clog << "               new Tile_Image_Size = " << Tile_Image_Size << endl));
+            LOCKED_LOGGING(
+                (clog << "               new Tile_Image_Size = " << Tile_Image_Size << endl));
 #endif
 
 //	New image origin.
@@ -2818,12 +2805,10 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
             LOCKED_LOGGING((clog << "                        new origin = " << origin << endl));
 #endif
             //	Clip the origin to within the display limits.
-            if (origin.rx() < 0)
-                origin.rx() = 0;
+            if (origin.rx() < 0) origin.rx() = 0;
             if (origin.rx() > Lower_Right_Origin_Limit.rx())
                 origin.rx() = Lower_Right_Origin_Limit.rx();
-            if (origin.ry() < 0)
-                origin.ry() = 0;
+            if (origin.ry() < 0) origin.ry() = 0;
             if (origin.ry() > Lower_Right_Origin_Limit.ry())
                 origin.ry() = Lower_Right_Origin_Limit.ry();
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
@@ -2838,7 +2823,8 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
 */
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
         QPointF tile_grid_origin(displayed_tile_grid_origin(band));
-        LOCKED_LOGGING((clog << "    old displayed_tile_grid_origin = " << tile_grid_origin << endl));
+        LOCKED_LOGGING(
+            (clog << "    old displayed_tile_grid_origin = " << tile_grid_origin << endl));
 #endif
         QSizeF size(tile_image_size(band));
         QPointF grid_origin(static_cast<int>(origin.rx() / size.rwidth()) * size.rwidth(),
@@ -2860,11 +2846,13 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
 */
 //	Tiled image region.
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-            LOCKED_LOGGING((clog << "            old Tiled_Image_Region = " << Tiled_Image_Region << endl));
+            LOCKED_LOGGING(
+                (clog << "            old Tiled_Image_Region = " << Tiled_Image_Region << endl));
 #endif
             reset_tiled_image_region();
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-            LOCKED_LOGGING((clog << "            new Tiled_Image_Region = " << Tiled_Image_Region << endl));
+            LOCKED_LOGGING(
+                (clog << "            new Tiled_Image_Region = " << Tiled_Image_Region << endl));
 #endif
 
 /*	Reset the display tile offset.
@@ -2875,29 +2863,35 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
     map_display_to_image which depends on Tile_Display_Offset.
 */
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-            LOCKED_LOGGING((clog << "           old Tile_Display_Offset = " << Tile_Display_Offset << endl));
+            LOCKED_LOGGING(
+                (clog << "           old Tile_Display_Offset = " << Tile_Display_Offset << endl));
 #endif
             Tile_Display_Offset = map_image_to_tile_offset(origin);
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-            LOCKED_LOGGING((clog << "           new Tile_Display_Offset = " << Tile_Display_Offset << endl));
+            LOCKED_LOGGING(
+                (clog << "           new Tile_Display_Offset = " << Tile_Display_Offset << endl));
 #endif
 
 //	Reset the displayed image region.
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-            LOCKED_LOGGING((clog << "        old Displayed_Image_Region = " << Displayed_Image_Region << endl));
+            LOCKED_LOGGING((
+                clog << "        old Displayed_Image_Region = " << Displayed_Image_Region << endl));
 #endif
             image_region_resized = reset_displayed_image_region();
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-            LOCKED_LOGGING((clog << "        new Displayed_Image_Region = " << Displayed_Image_Region << endl));
+            LOCKED_LOGGING((
+                clog << "        new Displayed_Image_Region = " << Displayed_Image_Region << endl));
 #endif
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
             QPoint point;
             QPointF pointF;
             point = map_image_to_display(center);
             LOCK_LOG;
-            clog << "    Tiled_Image_Display - map_image_to_display (" << center << ") = " << point << endl;
+            clog << "    Tiled_Image_Display - map_image_to_display (" << center << ") = " << point
+                 << endl;
             point = map_image_to_display(origin);
-            clog << "    Tiled_Image_Display - map_image_to_display (" << origin << ") = " << point << endl;
+            clog << "    Tiled_Image_Display - map_image_to_display (" << origin << ") = " << point
+                 << endl;
             pointF = map_display_to_image(QPoint());
             clog << "    Tiled_Image_Display - map_display_to_image (0, 0) = " << pointF << endl;
             UNLOCK_LOG;
@@ -2908,7 +2902,8 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
         reset_tiles();
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
         display_center = map_image_to_display(center);
-        LOCKED_LOGGING((clog << "    center display point after reset_tiles = " << display_center << endl));
+        LOCKED_LOGGING(
+            (clog << "    center display point after reset_tiles = " << display_center << endl));
 #endif
 
 //	Restart rendering.
@@ -2916,8 +2911,7 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
         LOCKED_LOGGING((clog << "    start Renderer" << endl));
 #endif
         int change = IMAGE_SCALE_STATE;
-        if (old_origin != origin)
-            change |= IMAGE_MOVE_STATE;
+        if (old_origin != origin) change |= IMAGE_MOVE_STATE;
         Pending_State_Change_Enabled = true;
         state_change_start(change);
 
@@ -2962,7 +2956,8 @@ bool Tiled_Image_Display::scale_image(const QSizeF &scale, const QPoint &center,
         }
     }
 #if ((DEBUG_SECTION) & DEBUG_SCALING)
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::scale_image: " << boolalpha << changed << endl));
+    LOCKED_LOGGING(
+        (clog << "<<< Tiled_Image_Display::scale_image: " << boolalpha << changed << endl));
 #endif
     return changed;
 }
@@ -2971,7 +2966,7 @@ QSize Tiled_Image_Display::scaled_image_size(int band) const
 {
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
     LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::scaled_image_size:" << band << endl
-                         << "    Source_Image @ " << (void *)Source_Image << endl));
+                         << "    Source_Image @ " << (void*)Source_Image << endl));
 #endif
     if (band < 0)
     {
@@ -2983,7 +2978,8 @@ QSize Tiled_Image_Display::scaled_image_size(int band) const
             inclusive |= band_rect;
         }
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
-        LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::scaled_image_size: " << inclusive.size() << endl));
+        LOCKED_LOGGING(
+            (clog << "<<< Tiled_Image_Display::scaled_image_size: " << inclusive.size() << endl));
 #endif
         return inclusive.size();
     }
@@ -2994,7 +2990,8 @@ QSize Tiled_Image_Display::scaled_image_size(int band) const
         scaled_size.rwidth() = round_up(scaled_size.rwidth() * scaling.rwidth());
         scaled_size.rheight() = round_up(scaled_size.rheight() * scaling.rheight());
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
-        LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::scaled_image_size: " << scaled_size << endl));
+        LOCKED_LOGGING(
+            (clog << "<<< Tiled_Image_Display::scaled_image_size: " << scaled_size << endl));
 #endif
         return scaled_size;
     }
@@ -3022,21 +3019,22 @@ void Tiled_Image_Display::max_scale(double scale_factor)
     Max_Scale = scale_factor;
 }
 
-double Tiled_Image_Display::scale_to_size(const QSize &source_size, const QSize &destination_size)
+double Tiled_Image_Display::scale_to_size(const QSize& source_size, const QSize& destination_size)
 {
     double scale = 1.0;
     QSize from_size(source_size), to_size(destination_size);
     if (!destination_size.isEmpty() && !from_size.isEmpty() &&
         (from_size.rwidth() > to_size.width() || from_size.rheight() > to_size.height()))
     {
-        scale =
-            qMin(((double)to_size.rwidth() / from_size.rwidth()), ((double)to_size.rheight() / from_size.rheight()));
+        scale = qMin(((double)to_size.rwidth() / from_size.rwidth()),
+                     ((double)to_size.rheight() / from_size.rheight()));
         while (to_size.rwidth() > 1 && (int)(scale * from_size.rwidth()) > destination_size.width())
         {
             --to_size.rwidth();
             scale = (double)to_size.rwidth() / from_size.rwidth();
         }
-        while (to_size.rheight() > 1 && (int)(scale * from_size.rheight()) > destination_size.height())
+        while (to_size.rheight() > 1 &&
+               (int)(scale * from_size.rheight()) > destination_size.height())
         {
             --to_size.rheight();
             scale = (double)to_size.rheight() / from_size.rheight();
@@ -3046,7 +3044,8 @@ double Tiled_Image_Display::scale_to_size(const QSize &source_size, const QSize 
     clog << ">-< Tiled_Image_Display::scale_to_size:" << endl
          << "         source size = " << source_size << endl
          << "    destination size = " << destination_size << endl;
-    << "               scale = " << scale << endl << "         scaled size = " << (source_size * scale) << endl;
+    << "               scale = " << scale << endl
+    << "         scaled size = " << (source_size * scale) << endl;
 #endif
     return scale;
 }
@@ -3054,16 +3053,15 @@ double Tiled_Image_Display::scale_to_size(const QSize &source_size, const QSize 
 /*==============================================================================
     Band and Data Mappings
 */
-bool Tiled_Image_Display::map_bands(const unsigned int *band_map)
+bool Tiled_Image_Display::map_bands(const unsigned int* band_map)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MAP_BANDS))
     LOCK_LOG;
     clog << ">>> Tiled_Image_Display::map_bands: ";
-    if (band_map)
-        clog << band_map[0] << ", " << band_map[1] << ", " << band_map[2] << endl;
-    else
-        clog << "NULL" << endl;
-    clog << "    in " << object_pathname(this) << endl << "       tile grid size = " << Tile_Grid_Size << endl;
+    if (band_map) clog << band_map[0] << ", " << band_map[1] << ", " << band_map[2] << endl;
+    else clog << "NULL" << endl;
+    clog << "    in " << object_pathname(this) << endl
+         << "       tile grid size = " << Tile_Grid_Size << endl;
     UNLOCK_LOG;
 #endif
     if (!band_map || Tile_Grid_Size.isEmpty())
@@ -3078,7 +3076,8 @@ bool Tiled_Image_Display::map_bands(const unsigned int *band_map)
     //	Test if the band map has changed.
     bool changed = Reference_Image->different_band_map(band_map);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MAP_BANDS))
-    LOCKED_LOGGING((clog << "    Reference_Image different_band_map = " << boolalpha << changed << endl));
+    LOCKED_LOGGING(
+        (clog << "    Reference_Image different_band_map = " << boolalpha << changed << endl));
 #endif
     if (changed)
     {
@@ -3092,7 +3091,8 @@ bool Tiled_Image_Display::map_bands(const unsigned int *band_map)
 
 //	Reset the band map in the Reference_Image.
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MAP_BANDS))
-        LOCKED_LOGGING((clog << "    set band map for Reference_Image @ " << (void *)Reference_Image << endl));
+        LOCKED_LOGGING(
+            (clog << "    set band map for Reference_Image @ " << (void*)Reference_Image << endl));
 #endif
         Reference_Image->source_band_map(band_map);
 
@@ -3103,14 +3103,16 @@ bool Tiled_Image_Display::map_bands(const unsigned int *band_map)
         if (Source_Image->different_band_map(band_map))
         {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MAP_BANDS))
-            LOCKED_LOGGING((clog << "    set band map for Source_Image @ " << (void *)Source_Image << endl));
+            LOCKED_LOGGING(
+                (clog << "    set band map for Source_Image @ " << (void*)Source_Image << endl));
 #endif
             //	Reset the band map in the Source_Image.
             Source_Image->source_band_map(band_map);
 
             if (Source_Image_Rendering)
                 //	Queue the Source_Image for low priority uncancelable rendering.
-                Renderer->queue(Source_Image, Image_Renderer::LOW_PRIORITY_RENDERING, !Image_Renderer::CANCELABLE);
+                Renderer->queue(Source_Image, Image_Renderer::LOW_PRIORITY_RENDERING,
+                                !Image_Renderer::CANCELABLE);
         }
 
 //	Start rendering tiles.
@@ -3121,27 +3123,28 @@ bool Tiled_Image_Display::map_bands(const unsigned int *band_map)
         state_change_start(BAND_MAPPING_STATE);
     }
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_MAP_BANDS))
-    LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::map_bands: " << boolalpha << changed << endl));
+    LOCKED_LOGGING(
+        (clog << "<<< Tiled_Image_Display::map_bands: " << boolalpha << changed << endl));
 #endif
     return changed;
 }
 
-bool Tiled_Image_Display::map_data(Data_Map **maps)
+bool Tiled_Image_Display::map_data(Data_Map** maps)
 {
 #if ((DEBUG_SECTION) & DEBUG_MAP_DATA)
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::map_data: @ " << (void *)maps << endl));
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::map_data: @ " << (void*)maps << endl));
 #endif
     if (!maps)
     {
         maps = data_maps();
 #if ((DEBUG_SECTION) & DEBUG_MAP_DATA)
-        LOCKED_LOGGING((clog << "    using Reference_Image data_maps @ " << (void *)maps << endl));
+        LOCKED_LOGGING((clog << "    using Reference_Image data_maps @ " << (void*)maps << endl));
 #endif
     }
 #if ((DEBUG_SECTION) & DEBUG_MAP_DATA)
     else
     {
-        LOCKED_LOGGING((clog << "    Reference_Image data_maps @ " << (void *)data_maps() << endl));
+        LOCKED_LOGGING((clog << "    Reference_Image data_maps @ " << (void*)data_maps() << endl));
     }
 #endif
 
@@ -3160,9 +3163,10 @@ bool Tiled_Image_Display::map_data(Data_Map **maps)
 #if ((DEBUG_SECTION) & DEBUG_MAP_DATA)
     LOCKED_LOGGING((clog << "    Comparing Source_Image data maps with proffered maps" << endl));
 #endif
-    bool changed = Source_Image->different_data_maps((const Data_Map **)maps);
+    bool changed = Source_Image->different_data_maps((const Data_Map**)maps);
 #if ((DEBUG_SECTION) & DEBUG_MAP_DATA)
-    LOCKED_LOGGING((clog << "    Source_Image different_data_maps = " << boolalpha << changed << endl));
+    LOCKED_LOGGING(
+        (clog << "    Source_Image different_data_maps = " << boolalpha << changed << endl));
 #endif
     if (changed)
     {
@@ -3178,7 +3182,7 @@ bool Tiled_Image_Display::map_data(Data_Map **maps)
 #if ((DEBUG_SECTION) & DEBUG_MAP_DATA)
         LOCKED_LOGGING((clog << "    apply data maps to the Reference_Image" << endl));
 #endif
-        Reference_Image->source_data_maps((const Data_Map **)maps);
+        Reference_Image->source_data_maps((const Data_Map**)maps);
 
         //	Apply the update to the tile images.
         image_update_needed(Plastic_Image::DATA_MAPS);
@@ -3187,13 +3191,14 @@ bool Tiled_Image_Display::map_data(Data_Map **maps)
 #if ((DEBUG_SECTION) & DEBUG_MAP_DATA)
         LOCKED_LOGGING((clog << "    apply data maps to the Source_Image" << endl));
 #endif
-        if (Source_Image->source_data_maps((const Data_Map **)maps) && Source_Image_Rendering)
+        if (Source_Image->source_data_maps((const Data_Map**)maps) && Source_Image_Rendering)
         {
 #if ((DEBUG_SECTION) & DEBUG_MAP_DATA)
             LOCKED_LOGGING((clog << "    queue the Source_Image for rendering" << endl));
 #endif
             //	Queue the Source_Image for low priority uncancelable rendering.
-            Renderer->queue(Source_Image, Image_Renderer::LOW_PRIORITY_RENDERING, !Image_Renderer::CANCELABLE);
+            Renderer->queue(Source_Image, Image_Renderer::LOW_PRIORITY_RENDERING,
+                            !Image_Renderer::CANCELABLE);
         }
 
 //	Start rendering tiles.
@@ -3220,7 +3225,8 @@ void Tiled_Image_Display::image_update_needed(Mapping_Type update_type)
     if (!tile_rows || !tile_cols)
     {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_BANDS | DEBUG_MAP_DATA))
-        LOCKED_LOGGING((clog << "    no tiles" << endl << "<<< Tiled_Image_Display::image_update_needed" << endl));
+        LOCKED_LOGGING((clog << "    no tiles" << endl
+                             << "<<< Tiled_Image_Display::image_update_needed" << endl));
 #endif
         return;
     }
@@ -3238,8 +3244,8 @@ void Tiled_Image_Display::image_update_needed(Mapping_Type update_type)
     LOCKED_LOGGING((clog << "    Tile_Display_Size = " << Tile_Display_Size << endl
                          << "             viewport = " << rect() << endl));
 #endif
-    QList<Plastic_Image *> *tiles;
-    Plastic_Image *image;
+    QList<Plastic_Image*>* tiles;
+    Plastic_Image* image;
     while (true)
     {
 #if ((DEBUG_SECTION) & (DEBUG_MAP_BANDS | DEBUG_MAP_DATA))
@@ -3260,16 +3266,20 @@ void Tiled_Image_Display::image_update_needed(Mapping_Type update_type)
                     /*	Move the tile-viewport intersection region origin
                         to its tile-relative coordinate.
                     */
-                    displayed_tile_region = tile_relative_region(tile_region & viewport, tile_region.topLeft());
+                    displayed_tile_region =
+                        tile_relative_region(tile_region & viewport, tile_region.topLeft());
 #if ((DEBUG_SECTION) & (DEBUG_MAP_BANDS | DEBUG_MAP_DATA))
-                    LOCKED_LOGGING((clog << "                  tile_region = " << tile_region << endl
-                                         << "        displayed_tile_region = " << displayed_tile_region << endl
-                                         << "        queue for rendering" << endl));
+                    LOCKED_LOGGING(
+                        (clog << "                  tile_region = " << tile_region << endl
+                              << "        displayed_tile_region = " << displayed_tile_region << endl
+                              << "        queue for rendering" << endl));
 #endif
 
                     //	Queue the tile image for rendering.
                     Renderer->queue(
-                        image, (displayed_tile_region.isEmpty() ? Image_Renderer::LOW_PRIORITY_RENDERING : tile_grid),
+                        image,
+                        (displayed_tile_region.isEmpty() ? Image_Renderer::LOW_PRIORITY_RENDERING
+                                                         : tile_grid),
                         displayed_tile_region);
                 }
 #if ((DEBUG_SECTION) & (DEBUG_MAP_BANDS | DEBUG_MAP_DATA))
@@ -3278,8 +3288,7 @@ void Tiled_Image_Display::image_update_needed(Mapping_Type update_type)
                     LOCKED_LOGGING((clog << "      inactive column" << endl));
                 }
 #endif
-                if (++tile_grid.rx() == tile_cols)
-                    break;
+                if (++tile_grid.rx() == tile_cols) break;
 
                 //	Move the tile region to the next column.
                 tile_region.translate(Tile_Display_Size.rwidth(), 0);
@@ -3291,8 +3300,7 @@ void Tiled_Image_Display::image_update_needed(Mapping_Type update_type)
             LOCKED_LOGGING((clog << "    inactive row" << endl));
         }
 #endif
-        if (++tile_grid.ry() == tile_rows)
-            break;
+        if (++tile_grid.ry() == tile_rows) break;
 
         //	Move the tile region to the beginning of the next row.
         tile_region.moveTo(tile_region_left_edge, tile_region.y() + Tile_Display_Size.rheight());
@@ -3305,10 +3313,7 @@ void Tiled_Image_Display::image_update_needed(Mapping_Type update_type)
 /*------------------------------------------------------------------------------
     State
 */
-int Tiled_Image_Display::rendering_status() const
-{
-    return Renderer->rendering_status();
-}
+int Tiled_Image_Display::rendering_status() const { return Renderer->rendering_status(); }
 
 void Tiled_Image_Display::state_change_start(int state)
 {
@@ -3326,18 +3331,17 @@ void Tiled_Image_Display::state_change_start(int state)
         Pending_State_Change |= state_type;
         state |= Pending_State_Change;
 
-        if (state & IMAGE_LOAD_STATE)
-            state |= RENDERING_VISIBLE_TILES_STATE;
+        if (state & IMAGE_LOAD_STATE) state |= RENDERING_VISIBLE_TILES_STATE;
         else
         {
             int status = rendering_status();
 #if ((DEBUG_SECTION) & DEBUG_STATE)
-            LOCKED_LOGGING(
-                (clog << "    rendering_status = " << status << " - " << rendering_status_description(status) << endl));
+            LOCKED_LOGGING((clog << "    rendering_status = " << status << " - "
+                                 << rendering_status_description(status) << endl));
 #endif
             if (status)
-                state |=
-                    ((status == RENDERING_VISIBLE_TILES) ? RENDERING_VISIBLE_TILES_STATE : RENDERING_BACKGROUND_STATE);
+                state |= ((status == RENDERING_VISIBLE_TILES) ? RENDERING_VISIBLE_TILES_STATE
+                                                              : RENDERING_BACKGROUND_STATE);
         }
 
 //	>>> SIGNAL <<<
@@ -3369,13 +3373,13 @@ void Tiled_Image_Display::state_change_completed(int qualifier)
     */
     int status = rendering_status();
 #if ((DEBUG_SECTION) & DEBUG_STATE)
-    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::state_change_completed: " << qualifier << " - "
-                         << state_change_description(qualifier) << endl
+    LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::state_change_completed: " << qualifier
+                         << " - " << state_change_description(qualifier) << endl
                          << "    in " << object_pathname(this) << endl
                          << "    Pending_State_Change = " << Pending_State_Change << " - "
                          << state_change_description(Pending_State_Change) << endl
-                         << "    rendering_status = " << status << " - " << rendering_status_description(status)
-                         << endl));
+                         << "    rendering_status = " << status << " - "
+                         << rendering_status_description(status) << endl));
 #endif
     if (!status && Pending_State_Change)
     {
@@ -3410,43 +3414,37 @@ QString Tiled_Image_Display::state_change_description(int state)
         }
         if (state & DISPLAY_SIZE_STATE)
         {
-            if (!names.isEmpty())
-                names += ", ";
+            if (!names.isEmpty()) names += ", ";
             names += "Display Resizing";
             has_type = true;
         }
         if (state & TILE_SIZE_STATE)
         {
-            if (!names.isEmpty())
-                names += ", ";
+            if (!names.isEmpty()) names += ", ";
             names += "Tiles Resizing";
             has_type = true;
         }
         if (state & IMAGE_MOVE_STATE)
         {
-            if (!names.isEmpty())
-                names += ", ";
+            if (!names.isEmpty()) names += ", ";
             names += "Moving";
             has_type = true;
         }
         if (state & IMAGE_SCALE_STATE)
         {
-            if (!names.isEmpty())
-                names += ", ";
+            if (!names.isEmpty()) names += ", ";
             names += "Scaling";
             has_type = true;
         }
         if (state & BAND_MAPPING_STATE)
         {
-            if (!names.isEmpty())
-                names += ", ";
+            if (!names.isEmpty()) names += ", ";
             names += "Band Mapping";
             has_type = true;
         }
         if (state & DATA_MAPPING_STATE)
         {
-            if (!names.isEmpty())
-                names += ", ";
+            if (!names.isEmpty()) names += ", ";
             names += "Data Mapping";
             has_type = true;
         }
@@ -3456,65 +3454,50 @@ QString Tiled_Image_Display::state_change_description(int state)
 
         if (state & RENDERING_VISIBLE_TILES_STATE)
         {
-            if (has_type)
-                names += ';';
-            if (!names.isEmpty())
-                names += ' ';
+            if (has_type) names += ';';
+            if (!names.isEmpty()) names += ' ';
             names += "Rendering Visible Tiles";
             has_type = false;
             has_qualifier = true;
         }
         if (state & RENDERING_BACKGROUND_STATE)
         {
-            if (has_type)
-                names += ';';
-            else if (has_qualifier)
-                names += ',';
-            if (!names.isEmpty())
-                names += ' ';
+            if (has_type) names += ';';
+            else if (has_qualifier) names += ',';
+            if (!names.isEmpty()) names += ' ';
             names += "Rendering Background";
             has_type = false;
             has_qualifier = true;
         }
         if (state & RENDERING_CANCELED_STATE)
         {
-            if (has_type)
-                names += ';';
-            else if (has_qualifier)
-                names += ',';
-            if (!names.isEmpty())
-                names += ' ';
+            if (has_type) names += ';';
+            else if (has_qualifier) names += ',';
+            if (!names.isEmpty()) names += ' ';
             names += "Canceled";
             has_type = false;
             has_qualifier = true;
         }
         if (state & RENDERING_COMPLETED_STATE)
         {
-            if (has_type)
-                names += ';';
-            else if (has_qualifier)
-                names += ',';
-            if (!names.isEmpty())
-                names += ' ';
+            if (has_type) names += ';';
+            else if (has_qualifier) names += ',';
+            if (!names.isEmpty()) names += ' ';
             names += "Completed";
             has_type = false;
             has_qualifier = true;
         }
         if (state & COMPLETED_WITHOUT_RENDERING_STATE)
         {
-            if (has_type)
-                names += ';';
-            else if (has_qualifier)
-                names += ',';
-            if (!names.isEmpty())
-                names += ' ';
+            if (has_type) names += ';';
+            else if (has_qualifier) names += ',';
+            if (!names.isEmpty()) names += ' ';
             names += "Completed w/o Rendering";
             has_type = false;
             has_qualifier = true;
         }
     }
-    else
-        names = "No State Change";
+    else names = "No State Change";
     return names;
 }
 
@@ -3538,9 +3521,10 @@ void Tiled_Image_Display::renderer_status(int status)
         Renderer->clean_up();
 
 #if ((DEBUG_SECTION) & (DEBUG_STATE | DEBUG_SIGNALS))
-        LOCKED_LOGGING((clog << "    Pending_State_Change_Enabled = " << Pending_State_Change_Enabled << endl
-                             << "    Pending_State_Change = " << Pending_State_Change << " - "
-                             << state_change_description(Pending_State_Change) << endl));
+        LOCKED_LOGGING(
+            (clog << "    Pending_State_Change_Enabled = " << Pending_State_Change_Enabled << endl
+                  << "    Pending_State_Change = " << Pending_State_Change << " - "
+                  << state_change_description(Pending_State_Change) << endl));
 #endif
         if (Pending_State_Change_Enabled &&
             /*
@@ -3549,7 +3533,8 @@ void Tiled_Image_Display::renderer_status(int status)
                 that is done in the loaded method.
             */
             !(Pending_State_Change & IMAGE_LOAD_STATE))
-            state_change_completed((status == NOT_RENDERING) ? RENDERING_COMPLETED_STATE : RENDERING_CANCELED_STATE);
+            state_change_completed((status == NOT_RENDERING) ? RENDERING_COMPLETED_STATE
+                                                             : RENDERING_CANCELED_STATE);
     }
 #if ((DEBUG_SECTION) & DEBUG_STATE)
     LOCKED_LOGGING((clog << "<<< Tiled_Image_Display::renderer_status" << endl));
@@ -3561,23 +3546,22 @@ QString Tiled_Image_Display::rendering_status_description(int status)
     QString description;
     switch (status & ~RENDERING_CANCELED)
     {
-    case NOT_RENDERING:
-        description = tr("Not Rendering");
-        break;
-    case RENDERING_BACKGROUND:
-        description = tr("Rendering Background");
-        break;
-    case RENDERING_VISIBLE_TILES:
-        description = tr("Rendering Visible Tiles");
-        break;
-    case LOADING_IMAGE:
-        description = tr("Loading Image");
-        break;
-    default:
-        description = tr("Unknown Status %1").arg(status);
+        case NOT_RENDERING:
+            description = tr("Not Rendering");
+            break;
+        case RENDERING_BACKGROUND:
+            description = tr("Rendering Background");
+            break;
+        case RENDERING_VISIBLE_TILES:
+            description = tr("Rendering Visible Tiles");
+            break;
+        case LOADING_IMAGE:
+            description = tr("Loading Image");
+            break;
+        default:
+            description = tr("Unknown Status %1").arg(status);
     }
-    if (status & RENDERING_CANCELED)
-        description += tr(" Canceled");
+    if (status & RENDERING_CANCELED) description += tr(" Canceled");
     return description;
 }
 
@@ -3605,28 +3589,29 @@ void Tiled_Image_Display::cancel_rendering()
 */
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & (DEBUG_STATE | DEBUG_SIGNALS))
-        LOCKED_LOGGING((clog << "^^^ Tiled_Image_Display::cancel_rendering: "
-                                "emit state_change: "
-                             << (Pending_State_Change | RENDERING_CANCELED_STATE) << " - "
-                             << state_change_description(Pending_State_Change | RENDERING_CANCELED_STATE) << endl
-                             << "    in " << object_pathname(this) << endl));
+        LOCKED_LOGGING(
+            (clog << "^^^ Tiled_Image_Display::cancel_rendering: "
+                     "emit state_change: "
+                  << (Pending_State_Change | RENDERING_CANCELED_STATE) << " - "
+                  << state_change_description(Pending_State_Change | RENDERING_CANCELED_STATE)
+                  << endl
+                  << "    in " << object_pathname(this) << endl));
 #endif
         emit state_change(Pending_State_Change | RENDERING_CANCELED_STATE);
         Pending_State_Change = NO_STATE_CHANGE;
     }
 }
 
-void Tiled_Image_Display::rendering_error(const QString &message)
+void Tiled_Image_Display::rendering_error(const QString& message)
 {
     QString report(message);
-    if (Error_Message)
-        Error_Message->showMessage(report.replace("\n", "<br>"));
+    if (Error_Message) Error_Message->showMessage(report.replace("\n", "<br>"));
 }
 
 /*==============================================================================
     Event Handlers
 */
-void Tiled_Image_Display::rendered(const QPoint &tile_coordinate, const QRect &tile_region)
+void Tiled_Image_Display::rendered(const QPoint& tile_coordinate, const QRect& tile_region)
 {
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_RENDERED | DEBUG_PAINT | DEBUG_LOCATION))
     LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::rendered:" << endl
@@ -3645,11 +3630,13 @@ void Tiled_Image_Display::rendered(const QPoint &tile_coordinate, const QRect &t
         {
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_RENDERED | DEBUG_PAINT | DEBUG_STATE | DEBUG_SIGNALS))
-            LOCKED_LOGGING((
-                clog << "^^^ Tiled_Image_Display::rendered: emit state_change: "
-                     << (Pending_State_Change | RENDERING_VISIBLE_TILES_COMPLETED_STATE) << " - "
-                     << state_change_description(Pending_State_Change | RENDERING_VISIBLE_TILES_COMPLETED_STATE) << endl
-                     << "    in " << object_pathname(this) << endl));
+            LOCKED_LOGGING(
+                (clog << "^^^ Tiled_Image_Display::rendered: emit state_change: "
+                      << (Pending_State_Change | RENDERING_VISIBLE_TILES_COMPLETED_STATE) << " - "
+                      << state_change_description(Pending_State_Change |
+                                                  RENDERING_VISIBLE_TILES_COMPLETED_STATE)
+                      << endl
+                      << "    in " << object_pathname(this) << endl));
 #endif
             emit state_change(Pending_State_Change |
                               /*
@@ -3665,15 +3652,14 @@ void Tiled_Image_Display::rendered(const QPoint &tile_coordinate, const QRect &t
     {
         //	Incremental tile image rendering. Single tile region repaint.
         QRect display_region(tile_region);
-        if (display_region.isEmpty())
-            display_region = tile_display_region(tile_coordinate);
+        if (display_region.isEmpty()) display_region = tile_display_region(tile_coordinate);
         else
             //	Convert tile_region to viewport relative display_region.
             viewport_relative_region(tile_coordinate, display_region);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_RENDERED | DEBUG_PAINT | DEBUG_LOCATION))
         LOCKED_LOGGING((clog << "     display region = " << display_region << endl));
 #endif
-        display_region &= rect(); //	Only the portion within the viewport.
+        display_region &= rect();  //	Only the portion within the viewport.
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_RENDERED | DEBUG_PAINT | DEBUG_LOCATION))
         LOCKED_LOGGING((clog << "           viewport = " << rect() << endl
                              << "     clipped region = " << display_region << endl));
@@ -3689,8 +3675,7 @@ void Tiled_Image_Display::rendered(const QPoint &tile_coordinate, const QRect &t
             char input[4];
             clog << "Repainted " << display_region << " > ";
             cin.getline(input, 2);
-            if (input[0] == 'q')
-                exit(7);
+            if (input[0] == 'q') exit(7);
 #endif
         }
     }
@@ -3699,7 +3684,7 @@ void Tiled_Image_Display::rendered(const QPoint &tile_coordinate, const QRect &t
 #endif
 }
 
-void Tiled_Image_Display::paintEvent(QPaintEvent *event)
+void Tiled_Image_Display::paintEvent(QPaintEvent* event)
 {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT | DEBUG_PAINT_ONE | DEBUG_LOCATION))
     QString pathname(object_pathname(this));
@@ -3723,7 +3708,8 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
     {
         painter.eraseRect(rect());
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT | DEBUG_PAINT_ONE | DEBUG_LOCATION))
-        LOCKED_LOGGING((clog << "    no tiles to paint" << endl << "<<< Tiled_Image_Display::paintEvent" << endl));
+        LOCKED_LOGGING((clog << "    no tiles to paint" << endl
+                             << "<<< Tiled_Image_Display::paintEvent" << endl));
 #endif
         return;
     }
@@ -3737,13 +3723,11 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
     entire visible tile grid.
 */
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
-    LOCKED_LOGGING(
-        (clog << "        grid coverage = " << tile_grid << " to " << tile_grid_limit << " inclusive" << endl));
+    LOCKED_LOGGING((clog << "        grid coverage = " << tile_grid << " to " << tile_grid_limit
+                         << " inclusive" << endl));
 #endif
-    if (tile_grid.rx() < 1)
-        tile_grid.rx() = 1;
-    if (tile_grid.ry() < 1)
-        tile_grid.ry() = 1;
+    if (tile_grid.rx() < 1) tile_grid.rx() = 1;
+    if (tile_grid.ry() < 1) tile_grid.ry() = 1;
 
     QRect
         //	Display region of the first visible tile.
@@ -3751,14 +3735,15 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
         //	Region of the tile visible in the display.
         displayed_tile_region;
 
-    QList<Plastic_Image *> *tiles = NULL;
-    Plastic_Image *tile_image = NULL;
+    QList<Plastic_Image*>* tiles = NULL;
+    Plastic_Image* tile_image = NULL;
 
-    if (tile_grid == tile_grid_limit && //	Only one tile.
-        paint_region != rect())         //	Not the entire viewport.
+    if (tile_grid == tile_grid_limit &&  //	Only one tile.
+        paint_region != rect())          //	Not the entire viewport.
     {
         //	Single tile update.
-        if ((tiles = Tile_Grid_Images->at(tile_grid.ry())) && (tile_image = tiles->at(tile_grid.rx())))
+        if ((tiles = Tile_Grid_Images->at(tile_grid.ry())) &&
+            (tile_image = tiles->at(tile_grid.rx())))
         {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT | DEBUG_PAINT_ONE | DEBUG_LOCATION))
             LOCKED_LOGGING((clog << "======> tile " << tile_grid << ' ' << *tile_image << endl
@@ -3773,8 +3758,8 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
 #if ((DEBUG_SECTION) & DEBUG_PIXEL_DATA)
             LOCK_LOG;
             display_image_data(*tile_image);
-            clog << "<-- image data for tile " << tile_grid << " -------------------------------------------------"
-                 << endl;
+            clog << "<-- image data for tile " << tile_grid
+                 << " -------------------------------------------------" << endl;
             UNLOCK_LOG;
 #endif
 #endif
@@ -3783,10 +3768,11 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
             painter.drawLine(paint_region.topLeft(), paint_region.bottomRight());
             painter.drawLine(paint_region.bottomLeft(), paint_region.topRight());
             ostringstream report;
-            report << " incr. paint @ " << (void *)tile_image << ": gc " << tile_grid << "; tr " << tile_region
-                   << "; pr " << paint_region;
+            report << " incr. paint @ " << (void*)tile_image << ": gc " << tile_grid << "; tr "
+                   << tile_region << "; pr " << paint_region;
             QRect rect(paint_region.x(), paint_region.y(), paint_region.width(), 12);
-            painter.drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, QString::fromStdString(report.str()));
+            painter.drawText(rect, Qt::AlignLeft | Qt::AlignVCenter,
+                             QString::fromStdString(report.str()));
 #endif
 
             //	Flush painting to the display.
@@ -3796,11 +3782,14 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
         else
         {
             LOCKED_LOGGING((clog << "    no tile to paint" << endl
-                                 << "    tiles @ " << (void *)tiles << ", tile_image @ " << (void *)tile_image << endl
-                                 << "    tile_region (" << tile_region << ") contains paint_region (" << paint_region
-                                 << ") = " << boolalpha << tile_region.contains(paint_region) << endl));
+                                 << "    tiles @ " << (void*)tiles << ", tile_image @ "
+                                 << (void*)tile_image << endl
+                                 << "    tile_region (" << tile_region
+                                 << ") contains paint_region (" << paint_region << ") = "
+                                 << boolalpha << tile_region.contains(paint_region) << endl));
         }
-        LOCKED_LOGGING((clog << "    in " << pathname << endl << "<<< Tiled_Image_Display::paintEvent" << endl));
+        LOCKED_LOGGING((clog << "    in " << pathname << endl
+                             << "<<< Tiled_Image_Display::paintEvent" << endl));
 #endif
         return;
     }
@@ -3809,7 +3798,8 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
     LOCKED_LOGGING((clog << "    source " << *Source_Image << endl));
 #endif
-    if (Source_Image_Rendering && Source_Image->needs_update() && !Renderer->is_queued(Source_Image))
+    if (Source_Image_Rendering && Source_Image->needs_update() &&
+        !Renderer->is_queued(Source_Image))
     {
 //	The Source image has not yet been rendered.
 #if ((DEBUG_SECTION) & (DEBUG_PAINT | DEBUG_LOAD_IMAGE))
@@ -3817,7 +3807,8 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
                                 "queue new Source_Image for rendering"
                              << endl));
 #endif
-        Renderer->queue(Source_Image, Image_Renderer::LOW_PRIORITY_RENDERING, !Image_Renderer::CANCELABLE);
+        Renderer->queue(Source_Image, Image_Renderer::LOW_PRIORITY_RENDERING,
+                        !Image_Renderer::CANCELABLE);
     }
 
     QSizeF source_size(tile_image_size()), source_scaling(Source_Image->source_scaling());
@@ -3840,17 +3831,15 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
 #endif
     );
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
-    clog << "    background_fill_color = 0x" << hex << setfill('0') << setw(8) << background_fill_color.rgba()
-         << setfill(' ') << dec << endl;
+    clog << "    background_fill_color = 0x" << hex << setfill('0') << setw(8)
+         << background_fill_color.rgba() << setfill(' ') << dec << endl;
 #endif
 
-    if (++tile_grid_limit.rx() == 0)
-        tile_grid_limit.rx() = Tile_Grid_Size.rwidth();
-    if (++tile_grid_limit.ry() == 0)
-        tile_grid_limit.ry() = Tile_Grid_Size.rheight();
+    if (++tile_grid_limit.rx() == 0) tile_grid_limit.rx() = Tile_Grid_Size.rwidth();
+    if (++tile_grid_limit.ry() == 0) tile_grid_limit.ry() = Tile_Grid_Size.rheight();
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT | DEBUG_PAINT_ONE))
-    LOCKED_LOGGING(
-        (clog << "++> multi-tile coverage = " << tile_grid << " to " << tile_grid_limit << " exclusive" << endl));
+    LOCKED_LOGGING((clog << "++> multi-tile coverage = " << tile_grid << " to " << tile_grid_limit
+                         << " exclusive" << endl));
 #endif
     int tile_col_start = tile_grid.rx(), x_origin = tile_region.x();
 
@@ -3865,17 +3854,20 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
             while (true)
             {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
-                LOCKED_LOGGING((clog << "      col " << tile_grid.rx() << " - tile region " << tile_region << endl));
+                LOCKED_LOGGING((clog << "      col " << tile_grid.rx() << " - tile region "
+                                     << tile_region << endl));
 #endif
                 if ((tile_image = tiles->at(tile_grid.rx())))
                 {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
-                    LOCKED_LOGGING((clog << "======> tile " << tile_grid << ' ' << *tile_image << endl));
+                    LOCKED_LOGGING(
+                        (clog << "======> tile " << tile_grid << ' ' << *tile_image << endl));
 #endif
                     if (tile_image->needs_update())
                     {
                         //	Re-queue the tile for rendering.
-                        displayed_tile_region = tile_relative_region(tile_region & rect(), tile_region.topLeft());
+                        displayed_tile_region =
+                            tile_relative_region(tile_region & rect(), tile_region.topLeft());
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
                         LOCKED_LOGGING((clog << "        queue tile image for rendering -" << endl
                                              << *tile_image << endl
@@ -3886,13 +3878,15 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
 
 //	Paint the source image region on the display.
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
-                        LOCKED_LOGGING((clog << "------> source region = " << round_down(source_region) << " ("
-                                             << source_region << ')' << endl));
+                        LOCKED_LOGGING((clog
+                                        << "------> source region = " << round_down(source_region)
+                                        << " (" << source_region << ')' << endl));
 #endif
 #if ((DEBUG_SECTION) & DEBUG_TILE_MARKINGS)
                         label = QString(" fill: ");
 #endif
-                        if (Source_Image->needs_update() || source_region.right() >= source_size.rwidth() ||
+                        if (Source_Image->needs_update() ||
+                            source_region.right() >= source_size.rwidth() ||
                             source_region.bottom() >= source_size.rheight())
                         {
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
@@ -3910,7 +3904,8 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT))
                             LOCKED_LOGGING((clog << "------> source image fill" << endl));
 #endif
-                            painter.drawImage(tile_region, *Source_Image, round_down(source_region));
+                            painter.drawImage(tile_region, *Source_Image,
+                                              round_down(source_region));
 #if ((DEBUG_SECTION) & DEBUG_TILE_MARKINGS)
                             label = QString(" source fill: ");
 #endif
@@ -3947,7 +3942,8 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
                                  .arg(tile_image->source_origin().y())
                                  .arg(tile_region.x())
                                  .arg(tile_region.y());
-                    QRect rect(tile_region.x(), tile_region.y() + TILE_MARKINGS_PAINT_Y, tile_region.width(), 12);
+                    QRect rect(tile_region.x(), tile_region.y() + TILE_MARKINGS_PAINT_Y,
+                               tile_region.width(), 12);
                     painter.fillRect(rect, Qt::white);
                     painter.drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, label);
                     if (tile_region.height() > (TILE_MARKINGS_PAINT_Y << 1))
@@ -3969,8 +3965,7 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
                 }
 #endif
 
-                if (++tile_grid.rx() == tile_grid_limit.rx())
-                    break;
+                if (++tile_grid.rx() == tile_grid_limit.rx()) break;
                 //	Move to the next tile column.
                 tile_region.translate(Tile_Display_Size.rwidth(), 0);
                 source_region.translate(source_region.width(), 0);
@@ -3986,8 +3981,7 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
 
         //	Move to the beginning of the next tile row.
         tile_region.moveTo(x_origin, tile_region.y() + Tile_Display_Size.rheight());
-        if (++tile_grid.ry() == tile_grid_limit.ry())
-            break;
+        if (++tile_grid.ry() == tile_grid_limit.ry()) break;
         source_region.moveTo(source_x_origin, source_region.y() + source_region.height());
     }
 
@@ -4026,15 +4020,15 @@ void Tiled_Image_Display::paintEvent(QPaintEvent *event)
     char input[4];
     clog << "Painted " << paint_region << " > ";
     cin.getline(input, 2);
-    if (input[0] == 'q')
-        exit(7);
+    if (input[0] == 'q') exit(7);
 #endif
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_PAINT | DEBUG_PAINT_ONE | DEBUG_LOCATION))
-    LOCKED_LOGGING((clog << "    in " << pathname << endl << "<<< Tiled_Image_Display::paintEvent" << endl));
+    LOCKED_LOGGING((clog << "    in " << pathname << endl
+                         << "<<< Tiled_Image_Display::paintEvent" << endl));
 #endif
 }
 
-void Tiled_Image_Display::mouseMoveEvent(QMouseEvent *event)
+void Tiled_Image_Display::mouseMoveEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_MOVE_EVENTS)
     LOCKED_LOGGING((clog << ">>> Tiled_Image_Display::mouseMoveEvent: " << endl
@@ -4043,14 +4037,12 @@ void Tiled_Image_Display::mouseMoveEvent(QMouseEvent *event)
 #endif
     if (rect().contains(event->pos()))
     {
-
         QPoint point(round_down(map_display_to_image(event->pos())));
 #if ((DEBUG_SECTION) & DEBUG_MOUSE_MOVE_EVENTS)
         LOCKED_LOGGING((clog << "      image position = " << point << endl
                              << "    Displayed_Image_Region = " << Displayed_Image_Region << endl));
 #endif
-        if (!Displayed_Image_Region.contains(point))
-            point.rx() = point.ry() = -1;
+        if (!Displayed_Image_Region.contains(point)) point.rx() = point.ry() = -1;
 
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & (DEBUG_MOUSE_MOVE_EVENTS | DEBUG_SIGNALS))
@@ -4069,7 +4061,7 @@ void Tiled_Image_Display::mouseMoveEvent(QMouseEvent *event)
 #endif
 }
 
-void Tiled_Image_Display::mousePressEvent(QMouseEvent *event)
+void Tiled_Image_Display::mousePressEvent(QMouseEvent* event)
 {
     if (event->buttons() == Qt::LeftButton || event->buttons() == Qt::RightButton)
     {
@@ -4082,7 +4074,7 @@ void Tiled_Image_Display::mousePressEvent(QMouseEvent *event)
     QWidget::mousePressEvent(event);
 }
 
-void Tiled_Image_Display::resizeEvent(QResizeEvent *
+void Tiled_Image_Display::resizeEvent(QResizeEvent*
 #if ((DEBUG_SECTION) & (DEBUG_EVENTS | DEBUG_REGION | DEBUG_OVERVIEW))
                                           event
 #endif
@@ -4099,8 +4091,7 @@ void Tiled_Image_Display::resizeEvent(QResizeEvent *
 #endif
     Pending_State_Change_Enabled = false;
     int tiles_reset = NO_TILES_RESET;
-    if (resize_tile_grid())
-        tiles_reset = reset_tiles();
+    if (resize_tile_grid()) tiles_reset = reset_tiles();
 
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & (DEBUG_SIGNALS | DEBUG_EVENTS | DEBUG_REGION))
@@ -4145,19 +4136,12 @@ void Tiled_Image_Display::resizeEvent(QResizeEvent *
 #endif
 }
 
-const QPoint Tiled_Image_Display::Get_Saved_Coordinate()
-{
-    return Last_Clicked_Coord;
-}
+const QPoint Tiled_Image_Display::Get_Saved_Coordinate() { return Last_Clicked_Coord; }
 
-void Tiled_Image_Display::leaveEvent(QEvent *)
-{
-    emit image_cursor_moved(QPoint(-1, -1), QPoint(-1, -1));
-}
+void Tiled_Image_Display::leaveEvent(QEvent*)
+{ emit image_cursor_moved(QPoint(-1, -1), QPoint(-1, -1)); }
 
 QSize Tiled_Image_Display::sizeHint() const
-{
-    return const_cast<Tiled_Image_Display *>(this)->scaled_image_size();
-}
+{ return const_cast<Tiled_Image_Display*>(this)->scaled_image_size(); }
 
-} // namespace UA::HiRISE
+}  // namespace UA::HiRISE

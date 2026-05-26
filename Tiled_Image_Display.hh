@@ -21,15 +21,12 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Tiled_Image_Display_hh
-#define HiView_Tiled_Image_Display_hh
-
-#include "Plastic_Image.hh"
-
-//	PIRL++
-#include "Reference_Counted_Pointer.hh"
+#pragma once
 
 #include <QWidget>
+
+#include "Plastic_Image.hh"
+#include "Reference_Counted_Pointer.hh"
 
 //	Forward references.
 // template<typename T> class QVector;
@@ -38,13 +35,10 @@ class QPaintEvent;
 class QMouseEvent;
 class QErrorMessage;
 
-namespace idaeim
-{
-namespace PVL
+namespace idaeim::PVL
 {
 class Aggregate;
 }
-} // namespace idaeim
 
 namespace UA::HiRISE
 {
@@ -172,21 +166,21 @@ class Tiled_Image_Display
     //	Qt Object declaration.
     Q_OBJECT
 
-  public:
+ public:
     /*==============================================================================
         Types:
     */
-    typedef PIRL::Reference_Counted_Pointer<Plastic_Image> Shared_Image;
+    using Shared_Image = PIRL::Reference_Counted_Pointer<Plastic_Image>;
 
-    typedef Plastic_Image::Mapping_Type Mapping_Type;
-    typedef Plastic_Image::Data_Map Data_Map;
-    typedef Plastic_Image::Histogram Histogram;
+    using Mapping_Type = Plastic_Image::Mapping_Type;
+    using Data_Map = Plastic_Image::Data_Map;
+    using Histogram = Plastic_Image::Histogram;
 
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     //!	Minimum allowable tile size dimension.
     static const int MINIMUM_TILE_DIMENSION;
@@ -195,7 +189,7 @@ class Tiled_Image_Display
         symbols in the Image_Renderer.
     */
     //!	The {@link rendering_status(int) rendering status} values.
-    enum
+    enum : quint8
     {
         NOT_RENDERING = 0,
         RENDERING_BACKGROUND = (1 << 0),
@@ -205,7 +199,7 @@ class Tiled_Image_Display
     };
 
     //!	{@link state_change(int) state change} bit flags.
-    enum
+    enum : quint16
     {
         NO_STATE_CHANGE = 0,
         IMAGE_LOAD_STATE = (1 << 0),
@@ -215,8 +209,9 @@ class Tiled_Image_Display
         IMAGE_SCALE_STATE = (1 << 4),
         BAND_MAPPING_STATE = (1 << 5),
         DATA_MAPPING_STATE = (1 << 6),
-        STATE_TYPE_MASK = IMAGE_LOAD_STATE | DISPLAY_SIZE_STATE | TILE_SIZE_STATE | IMAGE_MOVE_STATE |
-                          IMAGE_SCALE_STATE | BAND_MAPPING_STATE | DATA_MAPPING_STATE,
+        STATE_TYPE_MASK = IMAGE_LOAD_STATE | DISPLAY_SIZE_STATE | TILE_SIZE_STATE |
+                          IMAGE_MOVE_STATE | IMAGE_SCALE_STATE | BAND_MAPPING_STATE |
+                          DATA_MAPPING_STATE,
 
         RENDERING_VISIBLE_TILES_STATE = (1 << 7),
         RENDERING_BACKGROUND_STATE = (1 << 8),
@@ -225,14 +220,15 @@ class Tiled_Image_Display
         RENDERING_VISIBLE_TILES_COMPLETED_STATE =
             RENDERING_VISIBLE_TILES_STATE | RENDERING_BACKGROUND_STATE | RENDERING_COMPLETED_STATE,
         COMPLETED_WITHOUT_RENDERING_STATE = (1 << 11),
-        STATE_QUALIFIER_MASK = RENDERING_VISIBLE_TILES_STATE | RENDERING_BACKGROUND_STATE | RENDERING_CANCELED_STATE |
-                               RENDERING_COMPLETED_STATE | COMPLETED_WITHOUT_RENDERING_STATE
+        STATE_QUALIFIER_MASK = RENDERING_VISIBLE_TILES_STATE | RENDERING_BACKGROUND_STATE |
+                               RENDERING_CANCELED_STATE | RENDERING_COMPLETED_STATE |
+                               COMPLETED_WITHOUT_RENDERING_STATE
     };
 
     /*------------------------------------------------------------------------------
         Defaults
     */
-  protected:
+ protected:
     //!	Default size of an image rendering tile in the display space.
     static QSize Default_Tile_Display_Size;
 
@@ -245,13 +241,13 @@ class Tiled_Image_Display
     /*==============================================================================
         Constructors
     */
-  public:
+ public:
     /**	Construct a Tiled_Image_Display with no image.
 
         @param	parent	A pointer to the parent QWidget for this widget.
             May be NULL.
     */
-    Tiled_Image_Display(QWidget *parent = NULL);
+    Tiled_Image_Display(QWidget* parent = nullptr);
 
     virtual ~Tiled_Image_Display();
 
@@ -270,10 +266,7 @@ class Tiled_Image_Display
             source, or an arbitrary name. It may be empty if the source of
             the image being displayed in not known.
     */
-    inline QString image_name() const
-    {
-        return Source_Image->source_name();
-    }
+    QString image_name() const { return Source_Image->source_name(); }
 
     /**	Request that an image be loaded for display.
 
@@ -296,7 +289,7 @@ class Tiled_Image_Display
             identical to the current {@link image() image} being displayed.
         @see	image(const QString&, const QSize&)
     */
-    bool image(const QString &source_name, const QSizeF &scaling = QSizeF(1.0, 1.0));
+    bool image(const QString& source_name, const QSizeF& scaling = QSizeF(1.0, 1.0));
 
     /**	Request that an image be loaded for display.
 
@@ -319,7 +312,7 @@ class Tiled_Image_Display
             identical to the current {@link image() image} being displayed.
         @see	image(const QString&, const QSizeF&)
     */
-    bool image(const QString &source_name, const QSize &display_size);
+    bool image(const QString& source_name, const QSize& display_size);
 
     /**	Request that an image be loaded for display.
 
@@ -341,7 +334,7 @@ class Tiled_Image_Display
             identical to the current {@link image() image} being displayed.
         @see	image(const QString&, const QSizeF&)
     */
-    bool image(const Shared_Image &source_image, const QSizeF &scaling = QSizeF(1.0, 1.0));
+    bool image(const Shared_Image& source_image, const QSizeF& scaling = QSizeF(1.0, 1.0));
 
     /**	Request that an image be loaded for display.
 
@@ -364,7 +357,7 @@ class Tiled_Image_Display
             identical to the current {@link image() image} being displayed.
         @see	image(const QString&, const QSize&)
     */
-    bool image(const Shared_Image &source_image, const QSize &display_size);
+    bool image(const Shared_Image& source_image, const QSize& display_size);
 
     /**	Get the source image for the currently displayed image.
 
@@ -372,27 +365,13 @@ class Tiled_Image_Display
             the pointer to the Plastic_Image used as the source image
             for the display.
     */
-    inline Shared_Image image() const
-    {
-        return Source_Image;
-    }
+    Shared_Image image() const { return Source_Image; }
 
-    inline static void default_source_image_rendering(bool enabled)
-    {
-        Default_Source_Image_Rendering = enabled;
-    }
-    inline static bool default_source_image_rendering()
-    {
-        return Default_Source_Image_Rendering;
-    }
-    inline void source_image_rendering(bool enabled)
-    {
-        Source_Image_Rendering = enabled;
-    }
-    inline bool source_image_rendering()
-    {
-        return Source_Image_Rendering;
-    }
+    static void default_source_image_rendering(bool enabled)
+    { Default_Source_Image_Rendering = enabled; }
+    static bool default_source_image_rendering() { return Default_Source_Image_Rendering; }
+    void source_image_rendering(bool enabled) { Source_Image_Rendering = enabled; }
+    bool source_image_rendering() { return Source_Image_Rendering; }
 
     /**	Set the suggested rendering increment.
 
@@ -405,16 +384,11 @@ class Tiled_Image_Display
         @see	rendering_increment_lines()
     */
     void rendering_increment_lines(int rendering_increment);
-    inline static int rendering_increment_lines()
-    {
-        return (int)Plastic_Image::default_rendering_increment_lines();
-    }
+    static int rendering_increment_lines()
+    { return (int)Plastic_Image::default_rendering_increment_lines(); }
 
     void background_color(QRgb color);
-    inline static QRgb background_color()
-    {
-        return Plastic_Image::default_background_color();
-    }
+    static QRgb background_color() { return Plastic_Image::default_background_color(); }
 
     /**	Set the maximum image area to use when loading a JP2 source image.
 
@@ -460,10 +434,7 @@ class Tiled_Image_Display
 
         @return	A pointer to the metadata parameters.
     */
-    inline idaeim::PVL::Aggregate *image_metadata() const
-    {
-        return Source_Image->metadata();
-    }
+    idaeim::PVL::Aggregate* image_metadata() const { return Source_Image->metadata(); }
 
     /**	Receives notifications of changes to image metadata.
 
@@ -484,20 +455,11 @@ class Tiled_Image_Display
             metadata changed. This should be the {@link image() source
             image}.
     */
-    virtual void metadata_changed(Plastic_Image &image);
+    void metadata_changed(Plastic_Image& image) override;
 
-    inline QSize image_size() const
-    {
-        return Source_Image->source_size();
-    }
-    inline int image_width() const
-    {
-        return Source_Image->source_width();
-    }
-    inline int image_height() const
-    {
-        return Source_Image->source_height();
-    }
+    QSize image_size() const { return Source_Image->source_size(); }
+    unsigned int image_width() const { return Source_Image->source_width(); }
+    unsigned int image_height() const { return Source_Image->source_height(); }
 
     /**	Get the size of the scaled image.
 
@@ -545,10 +507,7 @@ class Tiled_Image_Display
             origin limit.
         @see	calculate_lower_right_origin_limit()
     */
-    QPoint lower_right_origin_limit() const
-    {
-        return Lower_Right_Origin_Limit;
-    }
+    QPoint lower_right_origin_limit() const { return Lower_Right_Origin_Limit; }
 
     /**	Map a display coordinate to its image coordinate.
 
@@ -568,7 +527,7 @@ class Tiled_Image_Display
             viewport that is not within the {@link displayed_image_region(int)
             displayed image region} for the band.
     */
-    QPointF map_display_to_image(const QPoint &coordinate, int band = 0) const;
+    QPointF map_display_to_image(const QPoint& coordinate, int band = 0) const;
 
     /**	Map an image display viewport rectangle to its source image region.
 
@@ -587,10 +546,11 @@ class Tiled_Image_Display
             displayed_image_region(int) displayed image region} for the band.
         @see	map_display_to_image(const QPoint&, int) const
     */
-    inline QRectF map_display_to_image(const QRect &display_region, int band = 0) const
+    QRectF map_display_to_image(const QRect& display_region, int band = 0) const
     {
-        return QRectF(map_display_to_image(display_region.topLeft(), band),
-                      map_display_to_image(display_region.bottomRight() += QPoint(1, 1) /* QRect BR adjust */, band));
+        return {map_display_to_image(display_region.topLeft(), band),
+                map_display_to_image(
+                    display_region.bottomRight() += QPoint(1, 1) /* QRect BR adjust */, band)};
     }
 
     /**	Map an image coordinate to its display viewport coordinate.
@@ -602,7 +562,7 @@ class Tiled_Image_Display
             corresponding the image coordinate. <b>N.B.</b>: The coordinate
             may lie outside the bounds of the display viewport.
     */
-    QPoint map_image_to_display(const QPointF &coordinate, int band = 0) const;
+    QPoint map_image_to_display(const QPointF& coordinate, int band = 0) const;
 
     /**	Map an image coordinate to its display viewport coordinate.
 
@@ -618,10 +578,11 @@ class Tiled_Image_Display
             outside the bounds of the display viewport.
         @see	map_image_to_display(const QPointF&, int) const
     */
-    inline QRect map_image_to_display(const QRectF &image_region, int band = 0) const
+    QRect map_image_to_display(const QRectF& image_region, int band = 0) const
     {
-        return QRect(map_image_to_display(image_region.topLeft(), band),
-                     map_image_to_display(image_region.bottomRight(), band) -= QPoint(1, 1) /* QRect BR adjust */);
+        return {map_image_to_display(image_region.topLeft(), band),
+                map_image_to_display(image_region.bottomRight(), band) -=
+                QPoint(1, 1) /* QRect BR adjust */};
     }
 
     /**	Get the region of the image, in image space, that is contained within
@@ -680,41 +641,25 @@ class Tiled_Image_Display
     */
     QRect image_display_region(int band = 0) const;
 
-    inline QSizeF image_scaling(int band = 0) const
+    QSizeF image_scaling(int band = 0) const
+    { return Reference_Image->source_scaling((band < 0) ? 0 : band); }
+    void image_scaling(double* horizontal_scaling, double* vertical_scaling, int band) const
     {
-        return Reference_Image->source_scaling((band < 0) ? 0 : band);
-    }
-    inline void image_scaling(double *horizontal_scaling, double *vertical_scaling, int band) const
-    {
-        return Reference_Image->source_scaling(horizontal_scaling, vertical_scaling, (band < 0) ? 0 : band);
+        return Reference_Image->source_scaling(horizontal_scaling, vertical_scaling,
+                                               (band < 0) ? 0 : band);
     }
 
     static void min_scale(double scale_factor);
-    inline static double min_scale()
-    {
-        return Min_Scale;
-    }
+    static double min_scale() { return Min_Scale; }
 
     static void max_scale(double scale_factor);
-    inline static double max_scale()
-    {
-        return Max_Scale;
-    }
+    static double max_scale() { return Max_Scale; }
 
-    inline int image_bands() const
-    {
-        return Reference_Image->source_bands();
-    }
+    int image_bands() const { return Reference_Image->source_bands(); }
 
-    inline unsigned int *band_map() const
-    {
-        return Reference_Image->source_band_map();
-    }
+    unsigned int* band_map() const { return Reference_Image->source_band_map(); }
 
-    inline int image_data_precision() const
-    {
-        return Reference_Image->source_precision_bits();
-    }
+    int image_data_precision() const { return Reference_Image->source_precision_bits(); }
 
     /**	Get the image pixel datum at an image band coordinate.
 
@@ -733,7 +678,8 @@ class Tiled_Image_Display
             is not within an active image tile or the image does not
             contain the specified band.
     */
-    Plastic_Image::Pixel_Datum image_pixel_datum(unsigned int x, unsigned int y, unsigned int band) const;
+    Plastic_Image::Pixel_Datum image_pixel_datum(unsigned int x, unsigned int y,
+                                                 unsigned int band) const;
 
     /**	Get the image pixel value at an image coordinate.
 
@@ -747,7 +693,7 @@ class Tiled_Image_Display
             an active image tile or the image does not contain the
             corresponding band.
     */
-    Plastic_Image::Triplet image_pixel(const QPoint &coordinate) const;
+    Plastic_Image::Triplet image_pixel(const QPoint& coordinate) const;
 
     /**	Get the display pixel value at a viewport display coordinate.
 
@@ -762,7 +708,7 @@ class Tiled_Image_Display
             returned, but this can only be a hint that the value may be
             invalid because the default alpha value is 0xFF.
     */
-    QRgb display_value(const QPoint &coordinate) const;
+    QRgb display_value(const QPoint& coordinate) const;
 
     /**	Get the display pixel value at a viewport display coordinate.
 
@@ -771,7 +717,7 @@ class Tiled_Image_Display
             green blue {@link display_value(const QPoint&) display value}
             datum components at the display coordinate.
     */
-    Plastic_Image::Triplet display_pixel(const QPoint &coordinate) const;
+    Plastic_Image::Triplet display_pixel(const QPoint& coordinate) const;
 
     /**	Preferred size of the display.
 
@@ -780,7 +726,7 @@ class Tiled_Image_Display
 
         @return	A QSize containing the preferred size of the display.
     */
-    virtual QSize sizeHint() const;
+    QSize sizeHint() const override;
 
     /**	Get the Data_Maps to be used for mapping source image data to
         display image data.
@@ -798,10 +744,7 @@ class Tiled_Image_Display
 
         @return	A pointer to an array of three Data_Map vector pointers.
     */
-    inline Data_Map **data_maps() const
-    {
-        return Reference_Image->source_data_maps();
-    }
+    Data_Map** data_maps() const { return Reference_Image->source_data_maps(); }
 
     /**	Get the pending state change of the image display.
 
@@ -811,10 +754,7 @@ class Tiled_Image_Display
         @return A state change code with bit flags indicating the pending
             state change.
     */
-    inline int pending_state_change() const
-    {
-        return Pending_State_Change;
-    }
+    int pending_state_change() const { return Pending_State_Change; }
 
     //	Histograms:
 
@@ -840,8 +780,8 @@ class Tiled_Image_Display
             source image for which to produce histograms. An empty region
             produces empty histograms.
     */
-    bool source_data_histograms(QVector<Histogram *> histograms, const QRect &image_region) const;
-    bool display_data_histograms(QVector<Histogram *> histograms, const QRect &display_region) const;
+    bool source_data_histograms(QVector<Histogram*> histograms, const QRect& image_region) const;
+    bool display_data_histograms(QVector<Histogram*> histograms, const QRect& display_region) const;
 
     /*------------------------------------------------------------------------------
         Display tiling
@@ -863,7 +803,7 @@ class Tiled_Image_Display
         @see	default_tile_display_size()
         @see	tile_display_size(const QSize&)
     */
-    static void default_tile_display_size(const QSize &size = QSize());
+    static void default_tile_display_size(const QSize& size = QSize());
 
     /**	Get the default size of an image rendering tile in display space.
 
@@ -873,10 +813,7 @@ class Tiled_Image_Display
             set to the minimum.
         @see	default_tile_display_size(const QSize&)
     */
-    inline static QSize default_tile_display_size()
-    {
-        return Default_Tile_Display_Size;
-    }
+    static QSize default_tile_display_size() { return Default_Tile_Display_Size; }
 
     /**	Set the size, in display space, of an image rendering tile.
 
@@ -888,24 +825,18 @@ class Tiled_Image_Display
         @see	default_tile_display_size(const QSize&)
         @see	tile_display_size()
     */
-    void tile_display_size(const QSize &size);
+    void tile_display_size(const QSize& size);
 
     /**	Get the size of an image rendering tile in display space.
 
         @return	A QSize specifying the display size of a tile.
         @see	tile_display_size(const QSize&)
     */
-    inline QSize tile_display_size() const
-    {
-        return Tile_Display_Size;
-    }
+    QSize tile_display_size() const { return Tile_Display_Size; }
 
-    inline static int minimum_tile_dimension()
-    {
-        return MINIMUM_TILE_DIMENSION;
-    }
+    static int minimum_tile_dimension() { return MINIMUM_TILE_DIMENSION; }
 
-  protected:
+ protected:
     /**	Get the origin of the displayed tile grid in image space.
 
         The origin of the displayed tile grid is held by the source image.
@@ -926,10 +857,8 @@ class Tiled_Image_Display
             placement of tiles relative to the grid origin.
         @see	displayed_tile_grid_origin(const QPointF&, int)
     */
-    inline QPointF displayed_tile_grid_origin(int band = 0) const
-    {
-        return Reference_Image->source_origin((band < 0) ? 0 : band);
-    }
+    QPointF displayed_tile_grid_origin(int band = 0) const
+    { return Reference_Image->source_origin((band < 0) ? 0 : band); }
 
     /**	Set the origin of the displayed tile grid in image space.
 
@@ -945,10 +874,8 @@ class Tiled_Image_Display
             applies. If negative the origin of all image bands are set.
         @see	displayed_tile_grid_origin(int)
     */
-    void displayed_tile_grid_origin(const QPointF &origin, int band = -1)
-    {
-        Reference_Image->source_origin(origin, band);
-    }
+    void displayed_tile_grid_origin(const QPointF& origin, int band = -1)
+    { Reference_Image->source_origin(origin, band); }
 
     /**	Get the size of a tile in scaled image space.
 
@@ -977,7 +904,7 @@ class Tiled_Image_Display
             boundaries of the display viewport.
         @see	tile_display_region(const QPoint&)
     */
-    QPoint tile_display_origin(const QPoint &coordinate) const;
+    QPoint tile_display_origin(const QPoint& coordinate) const;
 
     /**	Get the region of a tile in display viewport coordinates.
 
@@ -993,7 +920,7 @@ class Tiled_Image_Display
             the boundaries of the display viewport.
         @see	tile_display_origin(const QPoint&)
     */
-    QRect tile_display_region(const QPoint &coordinate) const;
+    QRect tile_display_region(const QPoint& coordinate) const;
 
     /**	Get the effective tile grid region in image space.
 
@@ -1027,7 +954,7 @@ class Tiled_Image_Display
             origin (upper-left corner) of the specified tile.
         @see	map_image_to_tile (const QPointF&, int)
     */
-    QPointF map_tile_to_image(const QPoint &coordinate, int band = 0) const;
+    QPointF map_tile_to_image(const QPoint& coordinate, int band = 0) const;
 
     /**	Map an image coordinate to a tile grid coordinate.
 
@@ -1044,7 +971,7 @@ class Tiled_Image_Display
             do not fall on an effective tile.
         @see	map_tile_to_image (const QPointF&, int)
     */
-    QPoint map_image_to_tile(const QPointF &coordinate, int band = 0) const;
+    QPoint map_image_to_tile(const QPointF& coordinate, int band = 0) const;
 
     /**	Map an image coordinate to a tile display coordinate.
 
@@ -1064,7 +991,7 @@ class Tiled_Image_Display
             coordinate is outside the boundaries of the {@link
             tiled_image_region(int) tiled image region}.
     */
-    QPoint map_image_to_tile_offset(const QPointF &coordinate, int band = 0) const;
+    QPoint map_image_to_tile_offset(const QPointF& coordinate, int band = 0) const;
 
     /**	Map a viewport display coordinate to a tile grid coordinate.
 
@@ -1082,7 +1009,7 @@ class Tiled_Image_Display
             boundaries of the effective tile grid.
         @see	map_image_to_tile(const QPointF&, int)
     */
-    QPoint map_display_to_tile(const QPoint &coordinate) const;
+    QPoint map_display_to_tile(const QPoint& coordinate) const;
 
     /**	Map a viewport display coordinate to a tile display coordinate.
 
@@ -1090,25 +1017,16 @@ class Tiled_Image_Display
         @return	A QPoint providing the coordinate in tile display units,
             relative to the upper-left (0,0) datum, of the image coordinate.
     */
-    QPoint map_display_to_tile_offset(const QPoint &coordinate) const;
+    QPoint map_display_to_tile_offset(const QPoint& coordinate) const;
 
     /**	Get the size of the effective tile grid in tile grid units.
 
         @return A QSize providing the size of the effiective tile grid in
             terms of the number of tiles wide and high.
     */
-    inline QSize tile_grid_size() const
-    {
-        return Tile_Grid_Size;
-    }
-    inline int tile_grid_width() const
-    {
-        return Tile_Grid_Size.width();
-    }
-    inline int tile_grid_height() const
-    {
-        return Tile_Grid_Size.height();
-    }
+    QSize tile_grid_size() const { return Tile_Grid_Size; }
+    int tile_grid_width() const { return Tile_Grid_Size.width(); }
+    int tile_grid_height() const { return Tile_Grid_Size.height(); }
 
     /**	Resize the tile grid to the size of the display viewport.
 
@@ -1194,7 +1112,7 @@ class Tiled_Image_Display
     /*==============================================================================
         Utilities
     */
-  public:
+ public:
     /**	Get the next image tile rendering status.
 
         Image tiles for the display grid are queued for rendering in high-to-low
@@ -1225,7 +1143,7 @@ class Tiled_Image_Display
         @return	A double scale factor less than or equal to 1.0 and greater
             than 0.0.
     */
-    static double scale_to_size(const QSize &source_size, const QSize &destination_size);
+    static double scale_to_size(const QSize& source_size, const QSize& destination_size);
 
     /**	Provide a brief description of a {@link rendering_status(int)
         rendering status} value;
@@ -1244,16 +1162,10 @@ class Tiled_Image_Display
     */
     static QString state_change_description(int state);
 
-    inline static QErrorMessage *error_message()
-    {
-        return Error_Message;
-    }
+    static QErrorMessage* error_message() { return Error_Message; }
 
     //	Ownership of the QErrorMesage is NOT transferred.
-    inline static void error_message(QErrorMessage *dialog)
-    {
-        Error_Message = dialog;
-    }
+    static void error_message(QErrorMessage* dialog) { Error_Message = dialog; }
 
     //	DEBUG only methods.
     void print_tile_grid() const;
@@ -1262,7 +1174,7 @@ class Tiled_Image_Display
     /*==============================================================================
         Qt signals
     */
-  signals:
+ signals:
 
     /**	Signals the result of an image load request.
 
@@ -1286,7 +1198,7 @@ class Tiled_Image_Display
             metadata. This should be the same as the idaeim::PVL::Aggregate
             pointer returned from the most recent image metadata
     */
-    void image_metadata_changed(idaeim::PVL::Aggregate *metadata);
+    void image_metadata_changed(idaeim::PVL::Aggregate* metadata);
 
     /**	Signals the position of the image cursor.
 
@@ -1302,7 +1214,7 @@ class Tiled_Image_Display
             is not within the {@link displayed_image_region(int) displayed
             image region} of the reference band.
     */
-    void image_cursor_moved(const QPoint &display_position, const QPoint &image_position);
+    void image_cursor_moved(const QPoint& display_position, const QPoint& image_position);
 
     /**	Signals a change to the image location in the display viewport.
 
@@ -1323,7 +1235,7 @@ class Tiled_Image_Display
         @param	band	The image band that moved. This will be -1 if all
             image bands moved.
     */
-    void image_moved(const QPoint &origin, int band);
+    void image_moved(const QPoint& origin, int band);
 
     /**	Signals that the size of the displayed image region changed.
 
@@ -1360,7 +1272,7 @@ class Tiled_Image_Display
             displayed_image_region() displayed image region} truncated to
             remove partial pixels.
     */
-    void displayed_image_region_resized(const QSize &region_size);
+    void displayed_image_region_resized(const QSize& region_size);
 
     /**	Signals that the size of the image display viewport changed.
 
@@ -1371,7 +1283,7 @@ class Tiled_Image_Display
         @param	viewport_size	A QSize specifying the new display viewport
             size.
     */
-    void display_viewport_resized(const QSize &viewport_size);
+    void display_viewport_resized(const QSize& viewport_size);
 
     /**	Signals that image scaling has changed.
 
@@ -1392,7 +1304,7 @@ class Tiled_Image_Display
         @param	band	The image band that was scaled. This will be -1
             if all image bands were scaled.
     */
-    void image_scaled(const QSizeF &scaling, int band);
+    void image_scaled(const QSizeF& scaling, int band);
 
     /**	Signals the status of tile image rendering.
 
@@ -1414,7 +1326,7 @@ class Tiled_Image_Display
         @param	message	A QString forwarded from the rendering progress status
             notice message.
     */
-    void rendering_status_notice(const QString &message);
+    void rendering_status_notice(const QString& message);
 
     /**	Signals a state change of the image display.
 
@@ -1630,7 +1542,7 @@ class Tiled_Image_Display
     /*==============================================================================
         Qt slots
     */
-  public slots:
+ public slots:
 
     /**	Move the position of the image in the display viewport.
 
@@ -1670,7 +1582,7 @@ class Tiled_Image_Display
             bands will be moved.
         @return	true if the image was moved; false otherwise.
     */
-    bool move_image(const QPoint &origin, int band = -1);
+    bool move_image(const QPoint& origin, int band = -1);
 
     /**	Scale the image by horizontal and vertical scaling factors about a
         center (invariant) point.
@@ -1712,9 +1624,9 @@ class Tiled_Image_Display
             image_scaled(const QSizeF&, int) image scaled signal} was emitted;
             false otherwise.
     */
-    bool scale_image(const QSizeF &scaling, const QPoint &center, int band = -1);
+    bool scale_image(const QSizeF& scaling, const QPoint& center, int band = -1);
 
-    bool map_bands(const unsigned int *band_map);
+    bool map_bands(const unsigned int* band_map);
 
     /**	Map the source image data to the display image data.
 
@@ -1729,7 +1641,7 @@ class Tiled_Image_Display
         @return	true if the data mapping changed and tile image updates
             have been (or will be) applied.
     */
-    bool map_data(Data_Map **maps = NULL);
+    bool map_data(Data_Map** maps = NULL);
 
     /**	Cancel any and all image rendering.
 
@@ -1751,7 +1663,7 @@ class Tiled_Image_Display
     */
     void cancel_rendering();
 
-  private slots:
+ private slots:
 
     /**	Handle the {@link Image_Renderer::image_loaded(bool) image loaded}
         signal from the Image_Renderer.
@@ -1836,24 +1748,24 @@ class Tiled_Image_Display
             tile for the tile_coordinate that has completed rendering. If the
             value is not valid the entire tile has been rendered.
     */
-    void rendered(const QPoint &tile_coordinate, const QRect &tile_region = QRect());
+    void rendered(const QPoint& tile_coordinate, const QRect& tile_region = QRect());
 
-    void rendering_error(const QString &message);
+    void rendering_error(const QString& message);
 
     /*==============================================================================
         Event Handlers
     */
-  public:
-    virtual void paintEvent(QPaintEvent *event);
-    virtual void resizeEvent(QResizeEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *event);
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void leaveEvent(QEvent *event);
+ protected:
+    void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void leaveEvent(QEvent* event) override;
 
     /*==============================================================================
         Helpers
     */
-  protected:
+
     /**	Calculate the image origin lower right limit point.
 
         When setting the {@link move_image (const QPoint&, int) image display
@@ -2009,7 +1921,7 @@ class Tiled_Image_Display
         @return	The tile_region with its origin (top-left) changed to be
             tile-relative.
     */
-    static QRect tile_relative_region(const QRect &tile_region, QPoint tile_origin);
+    static QRect tile_relative_region(const QRect& tile_region, QPoint tile_origin);
 
     /**	Convert a tile-relative region to a viewport-relative region.
 
@@ -2028,7 +1940,7 @@ class Tiled_Image_Display
             tile_coordinate. The origin (top-left) will be changed to bw
             viewport-relative.
     */
-    void viewport_relative_region(const QPoint &tile_coordinate, QRect &tile_region) const;
+    void viewport_relative_region(const QPoint& tile_coordinate, QRect& tile_region) const;
 
     /**	Set each tile image as needing the specified rendering update
         and queue it for rendering.
@@ -2095,11 +2007,11 @@ class Tiled_Image_Display
     /*==============================================================================
         Data
     */
-  private:
+ private:
     QPoint Last_Clicked_Coord;
 
     //!	Tile image rendering.
-    Image_Renderer *Renderer;
+    Image_Renderer* Renderer;
 
     /**	The source image.
 
@@ -2123,7 +2035,7 @@ class Tiled_Image_Display
         image space and its scale values are applied to all image tiles. Its
         band and data mapping structures are shared with all the tiles.
     */
-    Plastic_Image *Reference_Image;
+    Plastic_Image* Reference_Image;
 
     //!	Flag that image loading is in progress.
     bool Image_Loading;
@@ -2151,10 +2063,10 @@ class Tiled_Image_Display
     //	The tile grid:
 
     //!	The grid of image rendering tiles covering the Tiled_Image_Region.
-    QList<QList<Plastic_Image *> *> *Tile_Grid_Images;
+    QList<QList<Plastic_Image*>*>* Tile_Grid_Images;
 
     //!	Pool of unused tile grid images.
-    QList<Plastic_Image *> Tile_Image_Pool;
+    QList<Plastic_Image*> Tile_Image_Pool;
     int Tile_Image_Pool_Max;
 
     //!	Size of the tile grid in tile units.
@@ -2194,8 +2106,7 @@ class Tiled_Image_Display
     /*------------------------------------------------------------------------------
      */
     //!	Shared error message dialog.
-    static QErrorMessage *Error_Message;
+    static QErrorMessage* Error_Message;
 };
 
-} // namespace UA::HiRISE
-#endif
+}  // namespace UA::HiRISE

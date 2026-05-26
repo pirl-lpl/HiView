@@ -260,18 +260,17 @@ class Image_Renderer : public QObject
         @param	area	The maximum image area to be allowed when loading
             a JP2 image.
     */
-    inline void max_source_image_area(unsigned long area)
+    void max_source_image_area(unsigned long area)
     {
         if (area < Default_Min_Source_Image_Area) area = Default_Min_Source_Image_Area;
         Max_Source_Image_Area = area;
     }
 
-    inline unsigned long max_source_image_area() const { return Max_Source_Image_Area; }
+    unsigned long max_source_image_area() const { return Max_Source_Image_Area; }
 
-    inline static unsigned long default_max_source_image_area()
-    { return Default_Max_Source_Image_Area; }
+    static unsigned long default_max_source_image_area() { return Default_Max_Source_Image_Area; }
 
-    inline static void default_max_source_image_area(unsigned long area)
+    static void default_max_source_image_area(unsigned long area)
     {
         if (area < Default_Min_Source_Image_Area) area = Default_Min_Source_Image_Area;
         Default_Max_Source_Image_Area = area;
@@ -655,7 +654,7 @@ class Image_Renderer : public QObject
         @return	The index in the queue where the matching Image_Tile was
             found, or -1 if no match was found.
     */
-    static int find_tile(Plastic_Image* image, const Tile_Queue& queue);
+    static unsigned int find_tile(Plastic_Image* image, const Tile_Queue& queue);
 
     /**	Add an Image_Tile to the Render_Queue.
 

@@ -33,7 +33,7 @@ using namespace UA::HiRISE;
 #include <QUrl>
 
 #include "HiView_Application.hh"
-#ifdef __APPLE__
+#ifdef _Q_OS_MACOS__
 #include <QPalette>
 #include <QStyleFactory>
 #endif
@@ -78,7 +78,7 @@ const char* const HiView_Application::ID =
 */
 HiView_Application::HiView_Application(int& argc, char** argv) : QApplication(argc, argv)
 {
-#ifdef __APPLE__
+#ifdef __Q_OS_MACOS__
     // QApplication::setStyle(QStyleFactory::create("Fusion"));
     QPalette p;
     p = qApp->palette();
@@ -113,7 +113,7 @@ bool HiView_Application::is_jpip_passthru_link(const QString& input)
 #if ((DEBUG_SECTION) & DEBUG_HELPERS)
         clog << "<<< jpip_passthru_link: true" << endl;
 #endif
-        return true;
+        return true;  // NOLINT
     }
 #if ((DEBUG_SECTION) & DEBUG_HELPERS)
     clog << "<<< jpip_passthru_link: false" << endl;

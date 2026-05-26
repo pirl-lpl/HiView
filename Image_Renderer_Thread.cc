@@ -158,7 +158,7 @@ bool Image_Renderer_Thread::is_ready()
         Suspended = false;
         Ready_Event.reset();
     }
-    bool continue_rendering = !Finish;
+    bool const continue_rendering = !Finish;
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
     LOCKED_LOGGING((clog << "    Image_Renderer_Thread::is_ready " << thread_ID
                          << ": unlock Ready_Lock" << endl
@@ -211,7 +211,7 @@ bool Image_Renderer_Thread::suspend_rendering(bool wait)
                          << ": wait = " << boolalpha << wait << endl
                          << "    in " << pathname << endl));
 #endif
-    bool ready_locked = Ready_Lock.tryLock(), done = Image_Renderer::suspend_rendering(wait);
+    bool const ready_locked = Ready_Lock.tryLock(), done = Image_Renderer::suspend_rendering(wait);
     Ready_Event.reset();
     if (ready_locked) Ready_Lock.unlock();
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
@@ -251,7 +251,7 @@ bool Image_Renderer_Thread::finish(int cancel_options)
             wait(Wait_Seconds * 1000);
         }
     }
-    bool finished = isFinished();
+    bool const finished = isFinished();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_RENDER))
     LOCKED_LOGGING((clog << "<<< Image_Renderer_Thread::finish " << thread_ID << ": " << boolalpha
                          << finished << endl));
