@@ -168,7 +168,7 @@ class Image_Viewer : public QFrame
      @param	parent	A pointer to the parent QWidget for this widget.
      May be NULL.
      */
-    Image_Viewer(QWidget* parent = NULL);
+    Image_Viewer(QWidget* parent = nullptr);
 
     virtual ~Image_Viewer();
 
