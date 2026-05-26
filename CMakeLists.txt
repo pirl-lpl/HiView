@@ -188,8 +188,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE QWT_DLL=1)
 #
 if (MSVC)
     # TODO disable these for release build
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _DISABLE_VECTOR_ANNOTATION _DISABLE_STL_ANNOTATION)
-    target_compile_options(${PROJECT_NAME} PRIVATE /fsanitize=address /Zi /Zc:preprocessor)
+    #target_compile_definitions(${PROJECT_NAME} PRIVATE _DISABLE_VECTOR_ANNOTATION _DISABLE_STL_ANNOTATION)
+    #target_compile_options(${PROJECT_NAME} PRIVATE /fsanitize=address /Zi /Zc:preprocessor)
 
     target_link_options(${PROJECT_NAME} PRIVATE /FORCE)
 endif()
