@@ -3515,7 +3515,6 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
         settings.value(HTTP_TO_JPIP_HOSTNAME_KEY, Default_HTTP_to_JPIP_Hostname).toString();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    " << HTTP_TO_JPIP_HOSTNAME_KEY << " = \"" << HTTP_to_JPIP_Hostname << '"' << endl;
-    << endl;
 #endif
     if (!settings.contains(HTTP_TO_JPIP_HOSTNAME_KEY) ||
         settings.value(HTTP_TO_JPIP_HOSTNAME_KEY).toString().isEmpty())
