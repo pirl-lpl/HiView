@@ -1671,16 +1671,9 @@ const char* Rendering_Section::BACKGROUND_COLOR_KEY = "Background_Color";
 
 const char* Rendering_Section::LINE_COLOR_KEY = "Line_Color";
 
+#define STRINGIZE(string) #string
 #ifndef AS_STRING
-/*	Provides stringification of #defined names.
-
-    Note: The extra double quotes are for MSVC which fails to stringify
-    __VA_ARGS__ if its value is empty (STRINGIFIED has no argument).
-    In this case the double quotes coalesce into the intended empty
-    string constant; otherwise they have no effect on the string generated.
-*/
-#define STRINGIFIED(...) "" #__VA_ARGS__ ""
-#define AS_STRING(...) STRINGIFIED(__VA_ARGS__)
+#define AS_STRING(string) STRINGIZE(string)
 #endif
 
 #ifndef DEFAULT_BACKGROUND_COLOR
@@ -3407,16 +3400,16 @@ const char* JPIP_Section::HTTP_TO_JPIP_HOSTNAME_KEY = "HTTP_to_JPIP_Hostname";
 #ifndef DEFAULT_HTTP_TO_JPIP_HOSTNAME
 #define DEFAULT_HTTP_TO_JPIP_HOSTNAME "hirise-jpip.lpl.arizona.edu"
 #endif
-#define DEFAULT_HTTP_TO_JPIP_HOSTNAME_ AS_STRING(DEFAULT_HTTP_TO_JPIP_HOSTNAME)
-QString JPIP_Section::Default_HTTP_to_JPIP_Hostname = DEFAULT_HTTP_TO_JPIP_HOSTNAME_;  // NOLINT
+////#define DEFAULT_HTTP_TO_JPIP_HOSTNAME_ DEFAULT_HTTP_TO_JPIP_HOSTNAME
+QString JPIP_Section::Default_HTTP_to_JPIP_Hostname = DEFAULT_HTTP_TO_JPIP_HOSTNAME;  // NOLINT
 
 const char* JPIP_Section::JPIP_TO_HTTP_HOSTNAME_KEY = "JPIP_to_HTTP_Hostname";
 
 #ifndef DEFAULT_JPIP_TO_HTTP_HOSTNAME
 #define DEFAULT_JPIP_TO_HTTP_HOSTNAME "hirise-pds.lpl.arizona.edu"
 #endif
-#define DEFAULT_JPIP_TO_HTTP_HOSTNAME_ AS_STRING(DEFAULT_JPIP_TO_HTTP_HOSTNAME)
-QString JPIP_Section::Default_JPIP_to_HTTP_Hostname = DEFAULT_JPIP_TO_HTTP_HOSTNAME_;  // NOLINT
+////#define DEFAULT_JPIP_TO_HTTP_HOSTNAME_ DEFAULT_JPIP_TO_HTTP_HOSTNAME
+QString JPIP_Section::Default_JPIP_to_HTTP_Hostname = DEFAULT_JPIP_TO_HTTP_HOSTNAME;  // NOLINT
 
 const char* JPIP_Section::JPIP_SERVER_PORT_KEY = "JPIP_Server_Port";
 
@@ -3522,8 +3515,10 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
         settings.value(HTTP_TO_JPIP_HOSTNAME_KEY, Default_HTTP_to_JPIP_Hostname).toString();
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    " << HTTP_TO_JPIP_HOSTNAME_KEY << " = \"" << HTTP_to_JPIP_Hostname << '"' << endl;
+    << endl;
 #endif
-    if (!settings.contains(HTTP_TO_JPIP_HOSTNAME_KEY))
+    if (!settings.contains(HTTP_TO_JPIP_HOSTNAME_KEY) ||
+        settings.value(HTTP_TO_JPIP_HOSTNAME_KEY).toString().isEmpty())
         settings.setValue(HTTP_TO_JPIP_HOSTNAME_KEY, Default_HTTP_to_JPIP_Hostname);
 
     QString const hostnameJ2H = JPIP_to_HTTP_Hostname =
@@ -3531,7 +3526,8 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    " << JPIP_TO_HTTP_HOSTNAME_KEY << " = \"" << JPIP_to_HTTP_Hostname << '"' << endl;
 #endif
-    if (!settings.contains(JPIP_TO_HTTP_HOSTNAME_KEY))
+    if (!settings.contains(JPIP_TO_HTTP_HOSTNAME_KEY) ||
+        settings.value(JPIP_TO_HTTP_HOSTNAME_KEY).toString().isEmpty())
         settings.setValue(JPIP_TO_HTTP_HOSTNAME_KEY, Default_JPIP_to_HTTP_Hostname);
 
     int port = Port = settings.value(JPIP_SERVER_PORT_KEY, Default_JPIP_Server_Port).toInt(&OK);
@@ -3540,7 +3536,7 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
 #endif
     if (!OK)
     {
-        QMessageBox::warning((isVisible() ? this : NULL), Title,
+        QMessageBox::warning((isVisible() ? this : nullptr), Title,
                              tr("The ") + JPIP_SERVER_PORT_KEY + " \"" +
                                  settings.value(JPIP_SERVER_PORT_KEY).toString() +
                                  tr("\" value is invalid - a number is required.\n\n") +
@@ -3592,7 +3588,7 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
 #endif
     if (!OK)
     {
-        QMessageBox::warning((isVisible() ? this : NULL), Title,
+        QMessageBox::warning((isVisible() ? this : nullptr), Title,
                              tr("The ") + MAX_SOURCE_IMAGE_AREA_MB_KEY + " \"" +
                                  settings.value(MAX_SOURCE_IMAGE_AREA_MB_KEY).toString() +
                                  tr("\" value is invalid - a number is required.\n\n") +
@@ -3604,11 +3600,13 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
     else if (!settings.contains(MAX_SOURCE_IMAGE_AREA_MB_KEY))
         settings.setValue(MAX_SOURCE_IMAGE_AREA_MB_KEY, Default_Max_Source_Image_Area_MB);
 
+    settings.sync();
+
 //	Layout controls.
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_JPIP))
     clog << "    layout controls -" << endl;
 #endif
-    QGridLayout* grid_layout = new QGridLayout(this);
+    auto* grid_layout = new QGridLayout(this);
     grid_layout->setHorizontalSpacing(HORIZONTAL_SPACING);
     QLabel* label;
     int row, col;
@@ -3864,11 +3862,11 @@ JPIP_Section::JPIP_Section(QWidget* parent) : QWidget(parent), File_Selection_Di
 
     //	Defaults/Apply buttons.
     ++row;
-    QDialogButtonBox* buttons = new QDialogButtonBox(Qt::Horizontal, this);
+    auto* buttons = new QDialogButtonBox(Qt::Horizontal, this);
     Defaults_Button = buttons->addButton(tr("Defaults"), QDialogButtonBox::ResetRole);
     Defaults_Button->setIcon(*Defaults_Button_Icon);
     connect(Defaults_Button, SIGNAL(clicked()), SLOT(defaults()));
-    QAction* action = new QAction(tr("Defaults"), this);
+    auto* action = new QAction(tr("Defaults"), this);
     action->setShortcut(tr("Ctrl+Shift+D"));
     action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(action);
@@ -3938,10 +3936,12 @@ void JPIP_Section::JPIP_to_HTTP_hostname(const QString& text)
 bool JPIP_Section::HTTP_to_JPIP_hostname_verify(const QString& hostname)
 {
     bool accepted = true;
-
+#if ((DEBUG_SECTION) & DEBUG_JPIP)
+    clog << "<<< HTTP_to_JPIP_hostname_verify: " << hostname << endl;
+#endif
     if (hostname.isEmpty() || QHostInfo::fromName(hostname).error() == QHostInfo::NoError ||
         QMessageBox::question(
-            (isVisible() ? this : NULL), Title,
+            (isVisible() ? this : nullptr), Title,
             tr("A DNS lookup of the \"") + hostname + tr("\" hostname failed.\n\n") +
                 tr("The host may be temporarily unavailable -\n") +
                 tr("for example, a VPN connection may be required.\n\n") +
@@ -3958,10 +3958,12 @@ bool JPIP_Section::HTTP_to_JPIP_hostname_verify(const QString& hostname)
 bool JPIP_Section::JPIP_to_HTTP_hostname_verify(const QString& hostname)
 {
     bool accepted = true;
-
+#if ((DEBUG_SECTION) & DEBUG_JPIP)
+    clog << "<<< JPIP_to_HTTP_hostname_verify: " << hostname << endl;
+#endif
     if (hostname.isEmpty() || QHostInfo::fromName(hostname).error() == QHostInfo::NoError ||
         QMessageBox::question(
-            (isVisible() ? this : NULL), Title,
+            (isVisible() ? this : nullptr), Title,
             tr("A DNS lookup of the \"") + hostname + tr("\" hostname failed.\n\n") +
                 tr("The host may be temporarily unavailable -\n") +
                 tr("for example, a VPN connection may be required.\n\n") +
