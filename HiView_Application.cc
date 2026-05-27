@@ -33,7 +33,7 @@ using namespace UA::HiRISE;
 #include <QUrl>
 
 #include "HiView_Application.hh"
-#ifdef _Q_OS_MACOS__
+#ifdef Q_OS_MACOS
 #include <QPalette>
 #include <QStyleFactory>
 #endif
@@ -78,7 +78,7 @@ const char* const HiView_Application::ID =
 */
 HiView_Application::HiView_Application(int& argc, char** argv) : QApplication(argc, argv)
 {
-#ifdef __Q_OS_MACOS__
+#ifdef Q_OS_MACOS
     // QApplication::setStyle(QStyleFactory::create("Fusion"));
     QPalette p;
     p = qApp->palette();

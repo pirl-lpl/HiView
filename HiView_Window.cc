@@ -591,7 +591,7 @@ HiView_Window::HiView_Window(const QString& source, const QSizeF& scaling,
         connect(application, SIGNAL(file_open_request(const QString&)), SLOT(open(const QString&)));
     }
 
-#ifdef __Q_OS_MACOS__
+#ifdef Q_OS_MACOS
     // if (View_SpeechRecog_Action->isChecked ())
     //{
     adapter = new Mac_Voice_Adapter(Image_View, Statistics, Data_Mapper);
@@ -618,7 +618,7 @@ HiView_Window::~HiView_Window()
 #endif
 }
 
-#ifdef __Q_OS_MACOS__
+#ifdef Q_OS_MACOS
 void HiView_Window::recognizer_toggled(bool enable)
 {
     if (enable)
@@ -1075,7 +1075,7 @@ void HiView_Window::create_menus()
     View_Tooltips_Action->setChecked(true);
     View_Menu->addAction(View_Tooltips_Action);
 
-#ifdef __Q_OS_MACOS_
+#ifdef Q_OS_MACOS
     View_SpeechRecog_Action = new QAction(tr("Speech Recognizer"), this);
     View_SpeechRecog_Action->setCheckable(true);
     View_SpeechRecog_Action->setChecked(false);
