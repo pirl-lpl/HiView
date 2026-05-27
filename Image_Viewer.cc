@@ -288,34 +288,34 @@ Image_Viewer::Image_Viewer(QWidget* parent)
     //		Default cursor.
     Default_Cursor = Reticule_Cursor;
     Image_Display->setCursor(*Default_Cursor);
-    /* TODO
-        //	Instantiate an empty Image_Display.
-        loaded(true);
 
-        //		Image load connection.
-        connect(Image_Display, SIGNAL(image_loaded(bool)), SLOT(loaded(bool)));
-        //		Image cursor move connection.
-        connect(Image_Display, SIGNAL(image_cursor_moved(const QPoint&, const QPoint&)),
-                SLOT(cursor_moved(const QPoint&, const QPoint&)));
-        //		Image display move propagation.
-        connect(Image_Display, SIGNAL(image_moved(const QPoint&, int)),
-                SIGNAL(image_moved(const QPoint&, int)));
-        //		Image display resize propagation.
-        connect(Image_Display, SIGNAL(displayed_image_region_resized(const QSize&)),
-                SIGNAL(displayed_image_region_resized(const QSize&)));
-        connect(Image_Display, SIGNAL(display_viewport_resized(const QSize&)),
-                SIGNAL(display_viewport_resized(const QSize&)));
-        //		Image scaling propagation.
-        connect(Image_Display, SIGNAL(image_scaled(const QSizeF&, int)),
-                SIGNAL(image_scaled(const QSizeF&, int)));
-        //		Image display rendering status propagation.
-        connect(Image_Display, SIGNAL(rendering_status(int)), SIGNAL(rendering_status(int)));
-        //		Image display status notice propagation.
-        connect(Image_Display, SIGNAL(rendering_status_notice(const QString&)),
-                SIGNAL(rendering_status_notice(const QString&)));
-        //		Image display status change notice propagation.
-        connect(Image_Display, SIGNAL(state_change(int)), SIGNAL(state_change(int)));
-    */
+    //	Instantiate an empty Image_Display.
+    loaded(true);
+
+    //		Image load connection.
+    connect(Image_Display, SIGNAL(image_loaded(bool)), SLOT(loaded(bool)));
+    //		Image cursor move connection.
+    connect(Image_Display, SIGNAL(image_cursor_moved(const QPoint&, const QPoint&)),
+            SLOT(cursor_moved(const QPoint&, const QPoint&)));
+    //		Image display move propagation.
+    connect(Image_Display, SIGNAL(image_moved(const QPoint&, int)),
+            SIGNAL(image_moved(const QPoint&, int)));
+    //		Image display resize propagation.
+    connect(Image_Display, SIGNAL(displayed_image_region_resized(const QSize&)),
+            SIGNAL(displayed_image_region_resized(const QSize&)));
+    connect(Image_Display, SIGNAL(display_viewport_resized(const QSize&)),
+            SIGNAL(display_viewport_resized(const QSize&)));
+    //		Image scaling propagation.
+    connect(Image_Display, SIGNAL(image_scaled(const QSizeF&, int)),
+            SIGNAL(image_scaled(const QSizeF&, int)));
+    //		Image display rendering status propagation.
+    connect(Image_Display, SIGNAL(rendering_status(int)), SIGNAL(rendering_status(int)));
+    //		Image display status notice propagation.
+    connect(Image_Display, SIGNAL(rendering_status_notice(const QString&)),
+            SIGNAL(rendering_status_notice(const QString&)));
+    //		Image display status change notice propagation.
+    connect(Image_Display, SIGNAL(state_change(int)), SIGNAL(state_change(int)));
+
     Block_Image_Updates = false;
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     OBJECT_CONDITIONAL(clog << "<<< Image_Viewer " << object_pathname(this) << endl;)
