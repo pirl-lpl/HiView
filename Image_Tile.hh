@@ -21,19 +21,15 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Image_Tile_hh
-#define HiView_Image_Tile_hh
+#pragma once
 
 #include <QMetaType>
 #include <QPoint>
 #include <QRect>
 #include <QString>
-
 #include <iosfwd>
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward reference.
 class Plastic_Image;
@@ -46,12 +42,12 @@ class Plastic_Image;
 */
 class Image_Tile
 {
-  public:
+ public:
     /*==============================================================================
         Constants
     */
     //!	Class identification name with source code version and date.
-    static const char *const ID;
+    static const char* const ID;
 
     /**	The {@link status() status of an Image_Tile.
 
@@ -67,7 +63,7 @@ class Image_Tile
         <b>N.B.</b>: Corresponding Image_Renderer status values depend on
         these values.
     */
-    enum
+    enum : quint8
     {
         LOW_PRIORITY = 1,
         HIGH_PRIORITY = 2
@@ -102,8 +98,9 @@ class Image_Tile
         @param	delete_when_done	If true the tile's Plastic_Image is to
             be deleted when the tile is destroyed.
     */
-    Image_Tile(Plastic_Image *image, const QPoint &tile_coordinate = QPoint(), const QRect &tile_region = QRect(),
-               bool cancelable = true, bool delete_when_done = false);
+    Image_Tile(Plastic_Image* image, const QPoint& tile_coordinate = QPoint(),
+               const QRect& tile_region = QRect(), bool cancelable = true,
+               bool delete_when_done = false);
 
     /**	Construct an Image_Tile with a Plastic_Image and
         rendering characteristics.
@@ -123,7 +120,7 @@ class Image_Tile
         @param	delete_when_done	If true the tile's Plastic_Image is to
             be deleted when the tile is destroyed.
     */
-    Image_Tile(Plastic_Image *image, const QPoint &tile_coordinate, bool cancelable = true,
+    Image_Tile(Plastic_Image* image, const QPoint& tile_coordinate, bool cancelable = true,
                bool delete_when_done = false);
 
     /**	Construct an Image_Tile from a copy of another Image_Tile.
@@ -132,7 +129,7 @@ class Image_Tile
 
         @param	image_tile	A reference to the Image_Tile to be copied.
     */
-    Image_Tile(const Image_Tile &image_tile);
+    Image_Tile(const Image_Tile& image_tile);
 
     /**	Assign the content of another Image_Tile to this Image_Tile.
 
@@ -141,7 +138,7 @@ class Image_Tile
 
         @param	image_tile	A reference to the Image_Tile to be assigned.
     */
-    Image_Tile &operator=(const Image_Tile &image_tile);
+    Image_Tile& operator=(const Image_Tile& image_tile);
 
     /**	Delete the Image_Tile.
 
@@ -158,20 +155,14 @@ class Image_Tile
         @return	LOW_PRIORITY if the tile {@link is_low_priority() is low
             priority}; HIGH_PRIORITY otherwise.
     */
-    inline int status() const
-    {
-        return (is_low_priority() ? LOW_PRIORITY : HIGH_PRIORITY);
-    }
+    int status() const { return (is_low_priority() ? LOW_PRIORITY : HIGH_PRIORITY); }
 
     /**	Test if tile has low priority status.
 
         @return	true if the Tile_Coordinate x value is zero; false otherwise.
         @see	status()
     */
-    inline bool is_low_priority() const
-    {
-        return Tile_Coordinate.x() == 0;
-    }
+    bool is_low_priority() const { return Tile_Coordinate.x() == 0; }
 
     /**	Test if tile has high priority status.
 
@@ -179,10 +170,7 @@ class Image_Tile
             false otherwise.
         @see	status()
     */
-    inline bool is_high_priority() const
-    {
-        return Tile_Coordinate.x() > 0;
-    }
+    bool is_high_priority() const { return Tile_Coordinate.x() > 0; }
 
     /**	Get the area of the tile visible in the display viewport.
 
@@ -191,10 +179,8 @@ class Image_Tile
             is_low_priority() low priority} tile will always have a zero
             area.
     */
-    inline unsigned long long area() const
-    {
-        return (unsigned long long)Tile_Region.width() * Tile_Region.height();
-    }
+    unsigned long long area() const
+    { return (unsigned long long)Tile_Region.width() * Tile_Region.height(); }
 
     /*==============================================================================
         Tile Accounting
@@ -214,7 +200,7 @@ class Image_Tile
         Data Members
     */
     //	The image that renders this tile.
-    Plastic_Image *Image;
+    Plastic_Image* Image;
 
     //	The coordinate of the tile in the tile grid.
     QPoint Tile_Coordinate;
@@ -247,12 +233,9 @@ class Image_Tile
     @param	image_tile	An Image_Tile reference.
     @return	The stream reference.
 */
-std::ostream &operator<<(std::ostream &stream, const Image_Tile &image_tile);
+std::ostream& operator<<(std::ostream& stream, const Image_Tile& image_tile);
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE
 
 //!	Qt meta-type declaration.
 Q_DECLARE_METATYPE(UA::HiRISE::Image_Tile);
-
-#endif

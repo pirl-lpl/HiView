@@ -193,7 +193,7 @@ enum : qint8
 /*==============================================================================
     Class data members
 */
-QErrorMessage* Tiled_Image_Display::Error_Message = NULL;
+QErrorMessage* Tiled_Image_Display::Error_Message = nullptr;
 
 /*==============================================================================
     Constructors
@@ -882,7 +882,8 @@ bool Tiled_Image_Display::source_data_histograms(QVector<Histogram*> histograms,
 #endif
         return true;
     }
-    unsigned long long area = image_region.width() * image_region.height(), counted, count = 0;
+    unsigned long long const area = image_region.width() * image_region.height();
+    unsigned long long counted, count = 0;
 #if ((DEBUG_SECTION) & DEBUG_HISTOGRAMS)
     clog << "    image_region area = " << area << endl;
 #endif
@@ -891,12 +892,12 @@ bool Tiled_Image_Display::source_data_histograms(QVector<Histogram*> histograms,
     int tile_row = Tile_Grid_Size.height(), tile_col, tile_cols = Tile_Grid_Size.width();
     while (tile_row--)
     {
-        if ((tiles = Tile_Grid_Images->at(tile_row)))
+        if ((tiles = Tile_Grid_Images->at(tile_row)))  // NOLINT
         {
             tile_col = tile_cols;
             while (tile_col--)
             {
-                if ((tile_image = tiles->at(tile_col)) &&
+                if ((tile_image = tiles->at(tile_col)) &&  // NOLINT
                     image_region.intersects(tile_image->image_region()))
                 {
                     counted = tile_image->source_histograms(histograms, image_region);
@@ -911,7 +912,7 @@ bool Tiled_Image_Display::source_data_histograms(QVector<Histogram*> histograms,
 #endif
                         goto Done;
                     }
-                    if ((count += counted) >= area) goto Completed;
+                    if ((count += counted) >= area) goto Completed;  // NOLINT
                 }
             }
         }

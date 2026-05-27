@@ -162,7 +162,7 @@ class Image_Renderer_Rendering_Monitor : public Plastic_Image::Rendering_Monitor
     Image_Renderer* Owner;
 
  public:
-    Image_Renderer_Rendering_Monitor(Image_Renderer* owner = NULL) { Owner = owner; }
+    Image_Renderer_Rendering_Monitor(Image_Renderer* owner = nullptr) { Owner = owner; }
 
     bool notification(
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_NOTIFY | DEBUG_NOTIFY_VISIBLE | DEBUG_LOCATION))
@@ -171,7 +171,7 @@ class Image_Renderer_Rendering_Monitor : public Plastic_Image::Rendering_Monitor
         Plastic_Image&,
 #endif
         Plastic_Image::Rendering_Monitor::Status status, const QString& message,
-        const QRect& tile_region)
+        const QRect& tile_region) override
     {
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_NOTIFY | DEBUG_NOTIFY_VISIBLE | DEBUG_LOCATION))
         void* thread_ID = (void*)QThread::currentThreadId();
@@ -338,7 +338,7 @@ Image_Renderer::Image_Renderer(QObject* parent)
       Source_Image(new Plastic_QImage()),
       Max_Source_Image_Area(Default_Max_Source_Image_Area),
       Reference_Image(Source_Image->clone(QSize(0, 0))),
-      Active_Tile(NULL),
+      Active_Tile(nullptr),
       Cancel(false),
       Image_Rendering_Monitor(new Image_Renderer_Rendering_Monitor(this))
 {
@@ -459,7 +459,7 @@ void Image_Renderer::queue(Plastic_Image* image, const QPoint& tile_coordinate,
 #endif
     QMutexLocker const qLocker(&Queue_Lock);
 
-    int index = find_tile(image, Render_Queue);
+    unsigned int const index = find_tile(image, Render_Queue);
     if (index < 0)
     {
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
@@ -647,7 +647,7 @@ bool Image_Renderer::cancel(int cancel_options)
 #endif
     QMutexLocker const qLocker(&Queue_Lock);
 
-    bool done = clear(cancel_options);
+    bool const done = clear(cancel_options);
 #if ((DEBUG_SECTION) & (DEBUG_SLOTS | DEBUG_QUEUE))
     LOCKED_LOGGING(
         (clog << "    Image_Renderer::cancel " << thread_ID << ": unlock Queue_Lock" << endl));

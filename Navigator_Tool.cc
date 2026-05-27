@@ -23,11 +23,6 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include "Navigator_Tool.hh"
 
-#include "Drawn_Line.hh"
-#include "HiView_Config.hh"
-#include "HiView_Utilities.hh"
-#include "Icon_Button.hh"
-
 #include <QColor>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -44,6 +39,11 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <QWidget>
+
+#include "Drawn_Line.hh"
+#include "HiView_Config.hh"
+#include "HiView_Utilities.hh"
+#include "Icon_Button.hh"
 
 #if defined(DEBUG_SECTION)
 /*	DEBUG_SECTION controls
@@ -77,16 +77,15 @@ using std::clog;
 using std::dec;
 using std::endl;
 using std::hex;
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const Navigator_Tool::ID = "UA::HiRISE::Navigator_Tool ($Revision: 1.77 $ $Date: 2012/06/15 01:16:07 $)";
+const char* const Navigator_Tool::ID =
+    "UA::HiRISE::Navigator_Tool ($Revision: 1.77 $ $Date: 2012/06/15 01:16:07 $)";
 
 #ifndef NAVIGATOR_TOOL_IMAGE_MIN_WIDTH
 #define NAVIGATOR_TOOL_IMAGE_MIN_WIDTH 250
@@ -94,7 +93,8 @@ const char *const Navigator_Tool::ID = "UA::HiRISE::Navigator_Tool ($Revision: 1
 #ifndef NAVIGATOR_TOOL_IMAGE_MIN_HEIGHT
 #define NAVIGATOR_TOOL_IMAGE_MIN_HEIGHT 100
 #endif
-const QSize Navigator_Tool::IMAGE_MIN_SIZE(NAVIGATOR_TOOL_IMAGE_MIN_WIDTH, NAVIGATOR_TOOL_IMAGE_MIN_HEIGHT);
+const QSize Navigator_Tool::IMAGE_MIN_SIZE(NAVIGATOR_TOOL_IMAGE_MIN_WIDTH,
+                                           NAVIGATOR_TOOL_IMAGE_MIN_HEIGHT);
 
 /*==============================================================================
     Application configuration parameters
@@ -136,37 +136,47 @@ bool Navigator_Tool::Default_Scaling_X_Y_Distinct = NAVIGATOR_DEFAULT_SCALING_X_
 #endif
 bool Navigator_Tool::Default_Immediate_Mode = NAVIGATOR_IMMEDIATE_MODE;
 
-QErrorMessage *Navigator_Tool::Error_Message = NULL;
+QErrorMessage* Navigator_Tool::Error_Message = NULL;
 
 /*==============================================================================
     Local constants
 */
-enum Changes_Pending_Flags
+namespace
+{
+
+enum Changes_Pending_Flags : quint8
 {
     REGION_ORIGIN = (1 << 0),
     SCALING = (1 << 1),
     BAND_MAPPING = (1 << 2)
 };
 
-enum Apply_When_Modes
+enum Apply_When_Modes : quint8
 {
     DEFERRED_MODE = 0,
     IMMEDIATE_MODE = 1
 };
 
+}  // namespace
+
 /*==============================================================================
     Constructors
 */
-Navigator_Tool::Navigator_Tool(QWidget *parent)
-    : QDockWidget(tr("Navigator"), parent), Image_View(NULL), Band_Map_Reset_Button(NULL), Changes_Pending(0),
-      Received_Knowledge(false), Region_Overlay(NULL), Region_Drag_Offset(-1, -1)
+Navigator_Tool::Navigator_Tool(QWidget* parent)
+    : QDockWidget(tr("Navigator"), parent),
+      Image_View(nullptr),
+      Band_Map_Reset_Button(nullptr),
+      Changes_Pending(0),
+      Received_Knowledge(false),
+      Region_Overlay(nullptr),
+      Region_Drag_Offset(-1, -1)
 {
     setObjectName("Navigator_Tool");
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
     clog << ">>> Navigator_Tool: " << object_pathname(this) << endl;
 #endif
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    QSplitter *split_panel = new QSplitter(Qt::Vertical, this);
+    auto* split_panel = new QSplitter(Qt::Vertical, this);
     split_panel->setObjectName(windowTitle() + " Splitter");
     split_panel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     split_panel->setChildrenCollapsible(true);
@@ -220,19 +230,23 @@ Navigator_Tool::Navigator_Tool(QWidget *parent)
     connect(Image_View, SIGNAL(image_loaded(bool)), SLOT(image_loaded(bool)));
 
     //	Image pixel value.
-    connect(Image_View, SIGNAL(image_pixel_value(const Plastic_Image::Triplet &, const Plastic_Image::Triplet &)),
-            SLOT(image_pixel_value(const Plastic_Image::Triplet &, const Plastic_Image::Triplet &)));
+    connect(Image_View,
+            SIGNAL(image_pixel_value(const Plastic_Image::Triplet&, const Plastic_Image::Triplet&)),
+            SLOT(image_pixel_value(const Plastic_Image::Triplet&, const Plastic_Image::Triplet&)));
 
     //	Image cursor location.
-    connect(Image_View, SIGNAL(image_cursor_moved(const QPoint &, const QPoint &)),
-            SLOT(nav_image_cursor_moved(const QPoint &, const QPoint &)));
+    connect(Image_View, SIGNAL(image_cursor_moved(const QPoint&, const QPoint&)),
+            SLOT(nav_image_cursor_moved(const QPoint&, const QPoint&)));
 
     //	Overview image scrolling and scaling tracking.
-    connect(Image_View, SIGNAL(image_moved(const QPoint &, int)), SLOT(overview_image_moved(const QPoint &, int)));
-    connect(Image_View, SIGNAL(image_scaled(const QSizeF &, int)), SLOT(overview_image_scaled(const QSizeF &, int)));
+    connect(Image_View, SIGNAL(image_moved(const QPoint&, int)),
+            SLOT(overview_image_moved(const QPoint&, int)));
+    connect(Image_View, SIGNAL(image_scaled(const QSizeF&, int)),
+            SLOT(overview_image_scaled(const QSizeF&, int)));
 
     //	Band mapping.
-    connect(this, SIGNAL(bands_mapped(const unsigned int *)), Image_View, SLOT(map_bands(const unsigned int *)));
+    connect(this, SIGNAL(bands_mapped(const unsigned int*)), Image_View,
+            SLOT(map_bands(const unsigned int*)));
 
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
     clog << "<<< Navigator_Tool" << endl;
@@ -242,14 +256,14 @@ Navigator_Tool::Navigator_Tool(QWidget *parent)
 Navigator_Tool::~Navigator_Tool()
 {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    clog << ">-< ~Navigator_Tool: @ " << (void *)this << endl;
+    clog << ">-< ~Navigator_Tool: @ " << (void*)this << endl;
 #endif
 }
 
 /*==============================================================================
     Accessors
 */
-void Navigator_Tool::image_name(const QString &name)
+void Navigator_Tool::image_name(const QString& name)
 {
     if (name.isEmpty())
     {
@@ -260,43 +274,28 @@ void Navigator_Tool::image_name(const QString &name)
     {
         QString text(name);
         int index = text.lastIndexOf('/');
-        if (index >= 0)
-            text.remove(0, ++index);
-        text.insert(0, "<b>"); //	Bold text.
+        if (index >= 0) text.remove(0, ++index);
+        text.insert(0, "<b>");  //	Bold text.
         Source_Name->setText(text);
         Source_Name->setVisible(true);
     }
 }
 
-QString Navigator_Tool::image_name() const
-{
-    return Source_Name->text().mid(3);
-}
+QString Navigator_Tool::image_name() const { return Source_Name->text().mid(3); }
 
 void Navigator_Tool::immediate_mode(bool enabled)
-{
-    Apply_When->setCurrentIndex(enabled ? IMMEDIATE_MODE : DEFERRED_MODE);
-}
+{ Apply_When->setCurrentIndex(enabled ? IMMEDIATE_MODE : DEFERRED_MODE); }
 
-bool Navigator_Tool::immediate_mode() const
-{
-    return Apply_When->currentIndex() == IMMEDIATE_MODE;
-}
+bool Navigator_Tool::immediate_mode() const { return Apply_When->currentIndex() == IMMEDIATE_MODE; }
 
-QSize Navigator_Tool::minimumSizeHint() const
-{
-    return minimumSize();
-}
+QSize Navigator_Tool::minimumSizeHint() const { return minimumSize(); }
 
-QSize Navigator_Tool::sizeHint() const
-{
-    return minimumSize();
-}
+QSize Navigator_Tool::sizeHint() const { return minimumSize(); }
 
 /*==============================================================================
     GUI elements
 */
-QWidget *Navigator_Tool::image_panel()
+QWidget* Navigator_Tool::image_panel()
 {
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << ">>> Navigator_Tool::image_panel" << endl;
@@ -314,7 +313,7 @@ QWidget *Navigator_Tool::image_panel()
     return Image_View;
 }
 
-QWidget *Navigator_Tool::info_panel()
+QWidget* Navigator_Tool::info_panel()
 {
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << ">>> Navigator_Tool::info_panel" << endl;
@@ -325,30 +324,30 @@ QWidget *Navigator_Tool::info_panel()
         Band_Map_Reset_Button->setToolTip(tr("Reset to default band selections"));
     }
 
-    QFrame *panel = new QFrame;
-    QGridLayout *layout = new QGridLayout(panel);
+    QFrame* panel = new QFrame;
+    QGridLayout* layout = new QGridLayout(panel);
     panel->setFrameStyle(Panel_Frame_Style);
     panel->setLineWidth(Panel_Frame_Width);
     panel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-    QLabel *label;
+    QLabel* label;
     int band, row = -1, display_band_row, source_band_row, source_value_row, display_value_row, col,
-              label_col = 0, //	Labels
-        X_col = 1,           //	X/Width/First values
+              label_col = 0,  //	Labels
+        X_col = 1,            //	X/Width/First values
         X_adjust_col = 2,
-              Y_col = 3, //	Y/Height/Second values
+              Y_col = 3,  //	Y/Height/Second values
         Y_adjust_col = 4,
-              Z_col = 5, //	Third values
+              Z_col = 5,  //	Third values
         Z_adjust_col = 6,
-              spacer_col = 7, //	Fill (quad left) space
-                              /*
-                                  HACK !!!
-                                  The correct solution to determine the width of the numeric value
-                                  fields to line up with the values in the edit fields of the spin
-                                  boxes has not been found. This hack is based on trial-and-error to
-                                  come up with values that seem to work; but they may not work on
-                                  all platforms and with all styles.
-                              */
+              spacer_col = 7,  //	Fill (quad left) space
+                               /*
+                                   HACK !!!
+                                   The correct solution to determine the width of the numeric value
+                                   fields to line up with the values in the edit fields of the spin
+                                   boxes has not been found. This hack is based on trial-and-error to
+                                   come up with values that seem to work; but they may not work on
+                                   all platforms and with all styles.
+                               */
         value_width = QLabel("999").sizeHint().width() * 2;
 
     layout->setColumnStretch(label_col, 1);
@@ -365,7 +364,8 @@ QWidget *Navigator_Tool::info_panel()
     layout->setColumnStretch(Z_adjust_col, 1);
     layout->setColumnMinimumWidth(Z_adjust_col, 10);
     layout->setColumnStretch(spacer_col, 100);
-    layout->setColumnMinimumWidth(spacer_col, (Band_Map_Reset_Button ? Band_Map_Reset_Button->iconSize().width() : 1));
+    layout->setColumnMinimumWidth(
+        spacer_col, (Band_Map_Reset_Button ? Band_Map_Reset_Button->iconSize().width() : 1));
 
     layout->setVerticalSpacing(1);
 
@@ -400,7 +400,8 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Bands" << endl;
 #endif
-    layout->addWidget(new QLabel(tr("<b>Bands</b>")), row, 0, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
+    layout->addWidget(new QLabel(tr("<b>Bands</b>")), row, 0, 1, -1,
+                      Qt::AlignLeft | Qt::AlignVCenter);
 
     display_band_row = ++row;
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
@@ -427,7 +428,8 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Pixel Values" << endl;
 #endif
-    layout->addWidget(new QLabel(tr("<b>Pixel Values</b>")), row, 0, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
+    layout->addWidget(new QLabel(tr("<b>Pixel Values</b>")), row, 0, 1, -1,
+                      Qt::AlignLeft | Qt::AlignVCenter);
 
     display_value_row = ++row;
     layout->addWidget(label = new QLabel(tr("256 Display:")), display_value_row, label_col,
@@ -475,7 +477,8 @@ QWidget *Navigator_Tool::info_panel()
         Band_Map_Reset_Button->setVisible(false);
         Band_Map_Reset_Button->setFocusPolicy(Qt::NoFocus);
         connect(Band_Map_Reset_Button, SIGNAL(clicked()), SLOT(band_map_reset()));
-        layout->addWidget(Band_Map_Reset_Button, source_band_row, spacer_col, Qt::AlignLeft | Qt::AlignVCenter);
+        layout->addWidget(Band_Map_Reset_Button, source_band_row, spacer_col,
+                          Qt::AlignLeft | Qt::AlignVCenter);
     }
 
     //------------------------------------------------------------------------------
@@ -491,7 +494,8 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Geometry" << endl;
 #endif
-    layout->addWidget(new QLabel(tr("<b>Geometry</b>")), row, 0, 1, -1, Qt::AlignLeft | Qt::AlignVCenter);
+    layout->addWidget(new QLabel(tr("<b>Geometry</b>")), row, 0, 1, -1,
+                      Qt::AlignLeft | Qt::AlignVCenter);
 
     //	Column names
     ++row;
@@ -513,7 +517,8 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Source Size" << endl;
 #endif
-    layout->addWidget(label = new QLabel(tr("Source Size:")), row, label_col, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(label = new QLabel(tr("Source Size:")), row, label_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
     label->setToolTip(tr("Source image size"));
     layout->addWidget(Source_Size_X = new QLabel, row, X_col, Qt::AlignRight | Qt::AlignVCenter);
     layout->addWidget(Source_Size_Y = new QLabel, row, Y_col, Qt::AlignRight | Qt::AlignVCenter);
@@ -523,7 +528,8 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Region Size" << endl;
 #endif
-    layout->addWidget(label = new QLabel(tr("Region Size:")), row, label_col, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(label = new QLabel(tr("Region Size:")), row, label_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
     label->setToolTip(tr("Source image region size in the display viewport"));
     layout->addWidget(Region_Size_X = new QLabel, row, X_col, Qt::AlignRight | Qt::AlignVCenter);
     Region_Size_X->setAlignment(Qt::AlignRight);
@@ -535,7 +541,8 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << '-' << (row + 2) << ": Region Origin" << endl;
 #endif
-    layout->addWidget(label = new QLabel(tr("Region Origin:")), row, 0, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(label = new QLabel(tr("Region Origin:")), row, 0,
+                      Qt::AlignRight | Qt::AlignVCenter);
     label->setToolTip(tr("Source image location at the display viewport origin"));
     Show_All_Region_Origins = Default_Show_All_Region_Origins;
     for (band = 0; band < 3; band++, row++)
@@ -567,27 +574,34 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Source Location" << endl;
 #endif
-    layout->addWidget(label = new QLabel(tr("Source Location:")), row, label_col, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(label = new QLabel(tr("Source Location:")), row, label_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
     label->setToolTip(tr("Source image cursor location"));
-    layout->addWidget(Source_Location_X = new QLabel, row, X_col, Qt::AlignRight | Qt::AlignVCenter);
-    layout->addWidget(Source_Location_Y = new QLabel, row, Y_col, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(Source_Location_X = new QLabel, row, X_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(Source_Location_Y = new QLabel, row, Y_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
 
     //	Display Location
     ++row;
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Display Location" << endl;
 #endif
-    layout->addWidget(label = new QLabel(tr("Display Location:")), row, label_col, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(label = new QLabel(tr("Display Location:")), row, label_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
     label->setToolTip(tr("Display viewport cursor location"));
-    layout->addWidget(Display_Location_X = new QLabel, row, X_col, Qt::AlignRight | Qt::AlignVCenter);
-    layout->addWidget(Display_Location_Y = new QLabel, row, Y_col, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(Display_Location_X = new QLabel, row, X_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(Display_Location_Y = new QLabel, row, Y_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
 
     //	Display Size
     ++row;
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Display Size" << endl;
 #endif
-    layout->addWidget(label = new QLabel(tr("Display Size:")), row, label_col, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(label = new QLabel(tr("Display Size:")), row, label_col,
+                      Qt::AlignRight | Qt::AlignVCenter);
     label->setToolTip(tr("Display viewport size"));
     layout->addWidget(Display_Size_X = new QLabel, row, X_col, Qt::AlignRight | Qt::AlignVCenter);
     layout->addWidget(Display_Size_Y = new QLabel, row, Y_col, Qt::AlignRight | Qt::AlignVCenter);
@@ -604,7 +618,8 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << '-' << (row + 2) << ": Image Scale" << endl;
 #endif
-    layout->addWidget(label = new QLabel(tr("Image Scale:")), row, 0, Qt::AlignRight | Qt::AlignVCenter);
+    layout->addWidget(label = new QLabel(tr("Image Scale:")), row, 0,
+                      Qt::AlignRight | Qt::AlignVCenter);
     label->setToolTip(tr("Source image scaling factor"));
     Show_All_Scalings = Default_Show_All_Scalings;
     for (band = 0; band < 3; band++, row++)
@@ -637,8 +652,7 @@ QWidget *Navigator_Tool::info_panel()
             Scaling_X[band]->setVisible(Show_All_Scalings);
             Scaling_Y[band]->setVisible(Show_All_Scalings && Scaling_X_Y_Distinct[band]);
         }
-        else
-            Scaling_Y[band]->setVisible(Scaling_X_Y_Distinct[band]);
+        else Scaling_Y[band]->setVisible(Scaling_X_Y_Distinct[band]);
     }
 
 //------------------------------------------------------------------------------
@@ -653,7 +667,7 @@ QWidget *Navigator_Tool::info_panel()
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
     clog << "    " << row << ": Apply actions" << endl;
 #endif
-    QHBoxLayout *accept_actions_layout = new QHBoxLayout;
+    QHBoxLayout* accept_actions_layout = new QHBoxLayout;
 
     Apply = new QPushButton(tr("Apply"));
     Apply->setToolTip(tr("Apply changed settings"));
@@ -683,7 +697,8 @@ QWidget *Navigator_Tool::info_panel()
     layout->setRowStretch(row, 100);
 
 #if ((DEBUG_SECTION) & DEBUG_INITIALIZE)
-    clog << "    sizeHint = " << panel->sizeHint() << endl << "<<< Navigator_Tool::info_panel" << endl;
+    clog << "    sizeHint = " << panel->sizeHint() << endl
+         << "<<< Navigator_Tool::info_panel" << endl;
 #endif
     return panel;
 }
@@ -698,14 +713,15 @@ void Navigator_Tool::reset_info()
 
     //	The Source_Name is set when the image is loaded.
 
-    int source_bands = Image_View->image_bands(), source_values = 1 << Image_View->image_data_precision(),
+    int source_bands = Image_View->image_bands(),
+        source_values = 1 << Image_View->image_data_precision(),
         source_width = Image_View->image_width(), source_height = Image_View->image_height();
 
     //	Source bands
     Source_Bands->setVisible(source_bands);
     Source_Bands->setText(QString::number(source_bands) + tr(" Source:"));
 
-    const unsigned int *band_map = Image_View->image()->source_band_map();
+    const unsigned int* band_map = Image_View->image()->source_band_map();
     Initial_Band_Map[0] = band_map[0];
     Initial_Band_Map[1] = band_map[1];
     Initial_Band_Map[2] = band_map[2];
@@ -762,7 +778,7 @@ void Navigator_Tool::refresh_band_numbers()
     clog << "    band range = " << HiView_Utilities::band_index_to_number(0) << " - "
          << HiView_Utilities::band_index_to_number(source_bands - 1) << endl;
 #endif
-    const unsigned int *band_map = Image_View->image()->source_band_map();
+    const unsigned int* band_map = Image_View->image()->source_band_map();
     bool blocked;
     for (int band = 0; band < 3; ++band)
     {
@@ -804,10 +820,10 @@ void Navigator_Tool::show_all_scalings(bool enabled)
         if (band)
         {
             Scaling_X[band]->setVisible((band < source_bands) && Show_All_Scalings);
-            Scaling_Y[band]->setVisible((band < source_bands) && Show_All_Scalings && Scaling_X_Y_Distinct[band]);
+            Scaling_Y[band]->setVisible((band < source_bands) && Show_All_Scalings &&
+                                        Scaling_X_Y_Distinct[band]);
         }
-        else
-            Scaling_Y[band]->setVisible((band < source_bands) && Scaling_X_Y_Distinct[band]);
+        else Scaling_Y[band]->setVisible((band < source_bands) && Scaling_X_Y_Distinct[band]);
     }
 }
 
@@ -816,10 +832,8 @@ void Navigator_Tool::scaling_X_Y_distinct(bool enabled, int band)
     if (band < 3)
     {
         int source_bands = Image_View->image_bands(), bands = 3;
-        if (band < 0)
-            band = 0;
-        else
-            bands = band + 1;
+        if (band < 0) band = 0;
+        else bands = band + 1;
         while (band < bands)
         {
             Scaling_X_Y_Distinct[band] = enabled;
@@ -829,15 +843,13 @@ void Navigator_Tool::scaling_X_Y_distinct(bool enabled, int band)
     }
 }
 
-void Navigator_Tool::error_message(QErrorMessage *dialog)
-{
-    Image_Viewer::error_message(Error_Message = dialog);
-}
+void Navigator_Tool::error_message(QErrorMessage* dialog)
+{ Image_Viewer::error_message(Error_Message = dialog); }
 
 /*==============================================================================
     Slots
 */
-bool Navigator_Tool::image(const Shared_Image &source_image, const QString &name)
+bool Navigator_Tool::image(const Shared_Image& source_image, const QString& name)
 {
 #if ((DEBUG_SECTION) & (DEBUG_MANIPULATORS | DEBUG_OVERVIEW))
     clog << ">>> Navigator_Tool::image " << object_pathname(this) << endl
@@ -847,11 +859,9 @@ bool Navigator_Tool::image(const Shared_Image &source_image, const QString &name
          << "    Loading the image in the Image_Viewer ..." << endl;
 #endif
     QSize image_size;
-    if (!isVisible())
-        image_size = IMAGE_MIN_SIZE;
+    if (!isVisible()) image_size = IMAGE_MIN_SIZE;
     bool registered = Image_View->image(source_image, image_size);
-    if (registered)
-        image_name(name);
+    if (registered) image_name(name);
 #if ((DEBUG_SECTION) & (DEBUG_MANIPULATORS | DEBUG_OVERVIEW))
     clog << "<<< Navigator_Tool::image: " << boolalpha << registered << endl;
 #endif
@@ -864,8 +874,7 @@ void Navigator_Tool::image_loaded(bool successful)
     clog << ">>> Navigator_Tool::image_loaded: " << boolalpha << successful << endl
          << "    Source_Name = \"" << image_name() << '"' << endl;
 #endif
-    if (!successful)
-        image_name("");
+    if (!successful) image_name("");
 #if ((DEBUG_SECTION) & DEBUG_MANIPULATORS)
     clog << "    Resetting the image info ..." << endl;
 #endif
@@ -875,8 +884,8 @@ void Navigator_Tool::image_loaded(bool successful)
 #endif
 }
 
-void Navigator_Tool::image_pixel_value(const Plastic_Image::Triplet &display_pixel,
-                                       const Plastic_Image::Triplet &image_pixel)
+void Navigator_Tool::image_pixel_value(const Plastic_Image::Triplet& display_pixel,
+                                       const Plastic_Image::Triplet& image_pixel)
 {
     bool display_values = false;
     for (int band = 0; band < 3; ++band)
@@ -893,12 +902,11 @@ void Navigator_Tool::image_pixel_value(const Plastic_Image::Triplet &display_pix
     {
         if (display_values && display_pixel.Datum[band] != Plastic_Image::UNDEFINED_PIXEL_VALUE)
             Display_Value[band]->setNum(static_cast<int>(display_pixel.Datum[band]));
-        else
-            Display_Value[band]->clear();
+        else Display_Value[band]->clear();
     }
 }
 
-void Navigator_Tool::displayed_image_region_resized(const QSize &region)
+void Navigator_Tool::displayed_image_region_resized(const QSize& region)
 {
 #if ((DEBUG_SECTION) & DEBUG_SLOTS)
     clog << ">>> Navigator_Tool::displayed_image_region_resized: " << region << endl
@@ -928,13 +936,13 @@ void Navigator_Tool::displayed_image_region_resized(const QSize &region)
 #endif
 }
 
-void Navigator_Tool::display_viewport_resized(const QSize &viewport_size)
+void Navigator_Tool::display_viewport_resized(const QSize& viewport_size)
 {
     Display_Size_X->setNum(viewport_size.width());
     Display_Size_Y->setNum(viewport_size.height());
 }
 
-void Navigator_Tool::move_region(const QPoint &origin, int band)
+void Navigator_Tool::move_region(const QPoint& origin, int band)
 {
 #if ((DEBUG_SECTION) & DEBUG_SLOTS)
     clog << ">>> Navigator_Tool::move_region: " << origin << ", " << band << 'b' << endl;
@@ -942,14 +950,12 @@ void Navigator_Tool::move_region(const QPoint &origin, int band)
     Received_Knowledge = true;
     QPoint display_origin(origin);
     int bands = 3;
-    if (band < 0)
-        band = 0;
-    else
-        bands = band + 1;
+    if (band < 0) band = 0;
+    else bands = band + 1;
     bool reset = false;
 #if ((DEBUG_SECTION) & DEBUG_SLOTS)
-    clog << "    Region_Origin values = " << Region_Origin_X[band]->value() << "x, " << Region_Origin_Y[band]->value()
-         << 'y' << endl;
+    clog << "    Region_Origin values = " << Region_Origin_X[band]->value() << "x, "
+         << Region_Origin_Y[band]->value() << 'y' << endl;
 #endif
 
     while (band < bands)
@@ -957,14 +963,12 @@ void Navigator_Tool::move_region(const QPoint &origin, int band)
         if (Region_Origin_X[band]->value() != display_origin.rx())
         {
             Region_Origin_X[band]->setValue(display_origin.rx());
-            if (band == 0)
-                reset = true;
+            if (band == 0) reset = true;
         }
         if (Region_Origin_Y[band]->value() != display_origin.ry())
         {
             Region_Origin_Y[band]->setValue(display_origin.ry());
-            if (band == 0)
-                reset = true;
+            if (band == 0) reset = true;
         }
         ++band;
     }
@@ -979,14 +983,13 @@ void Navigator_Tool::move_region(const QPoint &origin, int band)
 
     Received_Knowledge = false;
 
-    if (!(Changes_Pending &= ~REGION_ORIGIN))
-        Apply->setEnabled(false);
+    if (!(Changes_Pending &= ~REGION_ORIGIN)) Apply->setEnabled(false);
 #if ((DEBUG_SECTION) & DEBUG_SLOTS)
     clog << "<<< Navigator_Tool::move_region" << endl;
 #endif
 }
 
-void Navigator_Tool::scale_image(const QSizeF &scaling, int band)
+void Navigator_Tool::scale_image(const QSizeF& scaling, int band)
 {
 #if ((DEBUG_SECTION) & DEBUG_SLOTS)
     clog << ">>> Navigator_Tool::scale_image: " << scaling << ", " << band << 'b' << endl;
@@ -994,10 +997,8 @@ void Navigator_Tool::scale_image(const QSizeF &scaling, int band)
     Received_Knowledge = true;
     double scale_x = scaling.width(), scale_y = scaling.height();
     int bands = 3;
-    if (band < 0)
-        band = 0;
-    else
-        bands = band + 1;
+    if (band < 0) band = 0;
+    else bands = band + 1;
     bool reset = false;
 
     while (band < bands)
@@ -1005,14 +1006,12 @@ void Navigator_Tool::scale_image(const QSizeF &scaling, int band)
         if (Scaling_X[band]->value() != scale_x)
         {
             Scaling_X[band]->setValue(scale_x);
-            if (band == 0)
-                reset = true;
+            if (band == 0) reset = true;
         }
         if (Scaling_Y[band]->value() != scale_y)
         {
             Scaling_Y[band]->setValue(scale_y);
-            if (band == 0)
-                reset = true;
+            if (band == 0) reset = true;
         }
         ++band;
     }
@@ -1023,8 +1022,7 @@ void Navigator_Tool::scale_image(const QSizeF &scaling, int band)
 
     Received_Knowledge = false;
 
-    if (!(Changes_Pending &= ~SCALING))
-        Apply->setEnabled(false);
+    if (!(Changes_Pending &= ~SCALING)) Apply->setEnabled(false);
 #if ((DEBUG_SECTION) & DEBUG_SLOTS)
     clog << "<<< Navigator_Tool::scale_image" << endl;
 #endif
@@ -1039,13 +1037,11 @@ void Navigator_Tool::region_origin_changed()
     clog << ">-< Navigator_Tool::region_origin_changed" << endl
          << "    Received_Knowledge = " << boolalpha << Received_Knowledge << endl;
 #endif
-    if (Received_Knowledge)
-        return;
+    if (Received_Knowledge) return;
 
     Changes_Pending |= REGION_ORIGIN;
     Apply->setEnabled(true);
-    if (Apply_When->currentIndex() == IMMEDIATE_MODE)
-        apply();
+    if (Apply_When->currentIndex() == IMMEDIATE_MODE) apply();
 }
 
 void Navigator_Tool::image_scaling_changed()
@@ -1054,13 +1050,11 @@ void Navigator_Tool::image_scaling_changed()
     clog << ">-< Navigator_Tool::image_scaling_changed" << endl
          << "    Received_Knowledge = " << boolalpha << Received_Knowledge << endl;
 #endif
-    if (Received_Knowledge)
-        return;
+    if (Received_Knowledge) return;
 
     Changes_Pending |= SCALING;
     Apply->setEnabled(true);
-    if (Apply_When->currentIndex() == IMMEDIATE_MODE)
-        apply();
+    if (Apply_When->currentIndex() == IMMEDIATE_MODE) apply();
 }
 
 void Navigator_Tool::band_mapping_changed()
@@ -1077,8 +1071,7 @@ void Navigator_Tool::band_mapping_changed()
     Changes_Pending |= BAND_MAPPING;
     Apply->setEnabled(true);
 
-    if (!Received_Knowledge && Apply_When->currentIndex() == IMMEDIATE_MODE)
-        apply();
+    if (!Received_Knowledge && Apply_When->currentIndex() == IMMEDIATE_MODE) apply();
 }
 
 void Navigator_Tool::band_map_reset()
@@ -1092,15 +1085,15 @@ void Navigator_Tool::band_map_reset()
         Image_Band[1]->setValue(HiView_Utilities::band_index_to_number(Initial_Band_Map[1]));
         Image_Band[2]->setValue(HiView_Utilities::band_index_to_number(Initial_Band_Map[2]));
         Received_Knowledge = false;
-        if (Apply_When->currentIndex() == IMMEDIATE_MODE)
-            apply();
+        if (Apply_When->currentIndex() == IMMEDIATE_MODE) apply();
     }
 }
 
 void Navigator_Tool::apply()
 {
 #if ((DEBUG_SECTION) & DEBUG_SLOTS)
-    clog << ">>> Navigator_Tool::apply" << endl << "    Changes_Pending = " << Changes_Pending << endl;
+    clog << ">>> Navigator_Tool::apply" << endl
+         << "    Changes_Pending = " << Changes_Pending << endl;
 #endif
     if (Changes_Pending)
     {
@@ -1146,10 +1139,8 @@ void Navigator_Tool::apply()
                 for (band = 0; band < 3; band++)
                 {
                     scaling.rwidth() = Scaling_X[band]->value();
-                    if (Scaling_X_Y_Distinct[band])
-                        scaling.rheight() = Scaling_Y[band]->value();
-                    else
-                        scaling.rheight() = scaling.rwidth();
+                    if (Scaling_X_Y_Distinct[band]) scaling.rheight() = Scaling_Y[band]->value();
+                    else scaling.rheight() = scaling.rwidth();
 
                     //	Set the center point to the middle of the displayed region.
                     center.rx() = Region_Origin_X[band]->value() + (Region_Size.rwidth() >> 1);
@@ -1168,10 +1159,8 @@ void Navigator_Tool::apply()
             else
             {
                 scaling.rwidth() = Scaling_X[0]->value();
-                if (Scaling_X_Y_Distinct[0])
-                    scaling.rheight() = Scaling_Y[0]->value();
-                else
-                    scaling.rheight() = scaling.rwidth();
+                if (Scaling_X_Y_Distinct[0]) scaling.rheight() = Scaling_Y[0]->value();
+                else scaling.rheight() = scaling.rwidth();
 
                 //	Set the center point to the middle of the displayed region.
                 center.rx() = Region_Origin_X[0]->value() + (Region_Size.rwidth() >> 1);
@@ -1197,7 +1186,8 @@ void Navigator_Tool::apply()
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & DEBUG_SIGNALS)
             clog << "^^^ Navigator_Tool::apply: emit bands_mapped" << endl
-                 << "    band_map = " << band_map[0] << ", " << band_map[1] << ", " << band_map[2] << endl;
+                 << "    band_map = " << band_map[0] << ", " << band_map[1] << ", " << band_map[2]
+                 << endl;
 #endif
             emit bands_mapped(band_map);
         }
@@ -1215,8 +1205,7 @@ void Navigator_Tool::apply_when_changed(int mode)
 #if ((DEBUG_SECTION) & DEBUG_SLOTS)
     clog << ">-< Navigator_Tool::apply_when_changed: " << mode << endl;
 #endif
-    if (mode == IMMEDIATE_MODE)
-        apply();
+    if (mode == IMMEDIATE_MODE) apply();
 }
 
 /*------------------------------------------------------------------------------
@@ -1224,17 +1213,13 @@ void Navigator_Tool::apply_when_changed(int mode)
 */
 void Navigator_Tool::overview_image_moved(
     //	Arguments unused.
-    const QPoint &, int)
-{
-    reset_region_overlay();
-}
+    const QPoint&, int)
+{ reset_region_overlay(); }
 
 void Navigator_Tool::overview_image_scaled(
     //	Arguments unused.
-    const QSizeF &, int)
-{
-    reset_region_overlay();
-}
+    const QSizeF&, int)
+{ reset_region_overlay(); }
 
 void Navigator_Tool::reset_region_overlay()
 {
@@ -1251,13 +1236,12 @@ void Navigator_Tool::reset_region_overlay()
     region_origin.ry() *= scaling.rheight();
     Region_Overlay->move(round_down(region_origin));
     Region_Overlay->resize(region_size);
-    if (!Region_Overlay->isVisible())
-        Region_Overlay->show();
+    if (!Region_Overlay->isVisible()) Region_Overlay->show();
 #if ((DEBUG_SECTION) & DEBUG_HELPERS)
     clog << "                  Region_Size = " << Region_Size << endl
          << "           Image_View scaling = " << Image_View->image_scaling() << endl
-         << "         display image origin = " << Region_Origin_X[0]->value() << "x, " << Region_Origin_Y[0]->value()
-         << 'y' << endl
+         << "         display image origin = " << Region_Origin_X[0]->value() << "x, "
+         << Region_Origin_Y[0]->value() << 'y' << endl
          << "    Image_View display origin = " << Image_View->displayed_image_origin() << endl
          << "        Region_Overlay origin = " << round_down(region_origin) << endl
          << "          Region_Overlay size = " << region_size << endl
@@ -1265,7 +1249,8 @@ void Navigator_Tool::reset_region_overlay()
 #endif
 }
 
-void Navigator_Tool::image_cursor_moved(const QPoint &display_position, const QPoint &image_position)
+void Navigator_Tool::image_cursor_moved(const QPoint& display_position,
+                                        const QPoint& image_position)
 {
     //	Location reports.
     if (display_position.x() < 0)
@@ -1291,11 +1276,12 @@ void Navigator_Tool::image_cursor_moved(const QPoint &display_position, const QP
     }
 }
 
-void Navigator_Tool::nav_image_cursor_moved(const QPoint &display_position, const QPoint &image_position)
+void Navigator_Tool::nav_image_cursor_moved(const QPoint& display_position,
+                                            const QPoint& image_position)
 {
     image_cursor_moved(display_position, image_position);
 
-    QCursor *cursor = NULL;
+    QCursor* cursor = NULL;
     if (Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE &&
         Region_Overlay->geometry().contains(display_position))
         cursor = Shift_Region_Cursor;
@@ -1305,31 +1291,36 @@ void Navigator_Tool::nav_image_cursor_moved(const QPoint &display_position, cons
 /*==============================================================================
     Event Handlers
 */
-void Navigator_Tool::mousePressEvent(QMouseEvent *event)
+void Navigator_Tool::mousePressEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
-    clog << ">>> Navigator_Tool::mousePressEvent:" << endl << "    widget position = " << event->pos() << endl;
+    clog << ">>> Navigator_Tool::mousePressEvent:" << endl
+         << "    widget position = " << event->pos() << endl;
 #endif
-    if (event->buttons() == Qt::LeftButton && Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE)
+    if (event->buttons() == Qt::LeftButton &&
+        Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE)
     {
-        QPoint display_position = (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
+        QPoint display_position =
+            (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
         clog << "     image display position = " << display_position << endl
              << "    Region_Overlay geometry = " << Region_Overlay->geometry() << endl;
 #endif
         if (Region_Overlay->geometry().contains(display_position))
         {
-            QPointF image_position(Image_View->image_display()->map_display_to_image(display_position));
+            QPointF image_position(
+                Image_View->image_display()->map_display_to_image(display_position));
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
             clog << "             image position = " << image_position << endl
                  << "              region origin = " << Region_Origin_X[0]->value() << "x, "
                  << Region_Origin_Y[0]->value() << 'y' << endl;
 #endif
-            Region_Drag_Offset.rx() = static_cast<int>(image_position.rx() - Region_Origin_X[0]->value());
-            Region_Drag_Offset.ry() = static_cast<int>(image_position.ry() - Region_Origin_Y[0]->value());
+            Region_Drag_Offset.rx() =
+                static_cast<int>(image_position.rx() - Region_Origin_X[0]->value());
+            Region_Drag_Offset.ry() =
+                static_cast<int>(image_position.ry() - Region_Origin_Y[0]->value());
 
-            if (Shift_Region_Cursor)
-                Image_View->default_cursor(Shift_Region_Cursor);
+            if (Shift_Region_Cursor) Image_View->default_cursor(Shift_Region_Cursor);
 
             event->accept();
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
@@ -1345,7 +1336,7 @@ void Navigator_Tool::mousePressEvent(QMouseEvent *event)
 #endif
 }
 
-void Navigator_Tool::mouseMoveEvent(QMouseEvent *event)
+void Navigator_Tool::mouseMoveEvent(QMouseEvent* event)
 {
     if (Region_Drag_Offset.rx() >= 0 && Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE)
     {
@@ -1374,19 +1365,19 @@ void Navigator_Tool::mouseMoveEvent(QMouseEvent *event)
         clog << "<<< Navigator_Tool::mouseMoveEvent:" << endl;
 #endif
     }
-    else
-        event->ignore();
+    else event->ignore();
 }
 
-void Navigator_Tool::mouseReleaseEvent(QMouseEvent *event)
+void Navigator_Tool::mouseReleaseEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
     clog << ">-< Navigator_Tool::mouseReleaseEvent" << endl;
 #endif
     Region_Drag_Offset.rx() = Region_Drag_Offset.ry() = -1;
 
-    QCursor *cursor = NULL;
-    QPoint display_position = (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
+    QCursor* cursor = NULL;
+    QPoint display_position =
+        (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
     if (Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE &&
         Region_Overlay->geometry().contains(display_position))
         cursor = Shift_Region_Cursor;
@@ -1395,14 +1386,17 @@ void Navigator_Tool::mouseReleaseEvent(QMouseEvent *event)
     event->ignore();
 }
 
-void Navigator_Tool::mouseDoubleClickEvent(QMouseEvent *event)
+void Navigator_Tool::mouseDoubleClickEvent(QMouseEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
-    clog << ">>> Navigator_Tool::mouseDoubleClickEvent:" << endl << "    widget position = " << event->pos() << endl;
+    clog << ">>> Navigator_Tool::mouseDoubleClickEvent:" << endl
+         << "    widget position = " << event->pos() << endl;
 #endif
-    if (event->buttons() == Qt::LeftButton && Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE)
+    if (event->buttons() == Qt::LeftButton &&
+        Image_View->control_mode() == Image_Viewer::NO_CONTROL_MODE)
     {
-        QPoint position = (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
+        QPoint position =
+            (Image_View->image_display()->mapFromGlobal(event->globalPosition())).toPoint();
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
         clog << "    image display position = " << position << endl
              << "    image display region = " << Image_View->image_display_region() << endl;
@@ -1419,8 +1413,7 @@ void Navigator_Tool::mouseDoubleClickEvent(QMouseEvent *event)
             clog << "      image display origin = " << position << endl;
 #endif
 
-            if (Shift_Region_Cursor)
-                Image_View->default_cursor(Shift_Region_Cursor);
+            if (Shift_Region_Cursor) Image_View->default_cursor(Shift_Region_Cursor);
 
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & DEBUG_SIGNALS)
@@ -1445,20 +1438,20 @@ void Navigator_Tool::mouseDoubleClickEvent(QMouseEvent *event)
 #endif
 }
 
-void Navigator_Tool::resizeEvent(QResizeEvent *event)
+void Navigator_Tool::resizeEvent(QResizeEvent* event)
 {
 #if ((DEBUG_SECTION) & DEBUG_EVENTS)
-    clog << ">-< Navigator_Tool::resizeEvent: from " << event->oldSize() << " to " << event->size() << endl;
+    clog << ">-< Navigator_Tool::resizeEvent: from " << event->oldSize() << " to " << event->size()
+         << endl;
 #endif
     Previous_Size = event->oldSize();
     QDockWidget::resizeEvent(event);
 }
 
-void Navigator_Tool::contextMenuEvent(QContextMenuEvent *event)
+void Navigator_Tool::contextMenuEvent(QContextMenuEvent* event)
 {
     //	>>> SIGNAL <<<
     emit tool_context_menu_requested(this, event);
 }
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE

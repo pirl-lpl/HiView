@@ -23,10 +23,10 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include "Image_Tile.hh"
 
+#include <iostream>
+
 #include "HiView_Utilities.hh"
 #include "Plastic_Image.hh"
-
-#include <iostream>
 
 #if defined(DEBUG_SECTION)
 /*******************************************************************************
@@ -56,23 +56,23 @@ using std::endl;
 #endif
 #endif
 
-#endif //	DEBUG_SECTION
+#endif  //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
 */
-const char *const Image_Tile::ID = "UA::HiRISE::Image_Tile ($Revision: 1.20 $ $Date: 2012/09/16 07:40:07 $)";
+const char* const Image_Tile::ID =
+    "UA::HiRISE::Image_Tile ($Revision: 1.20 $ $Date: 2012/09/16 07:40:07 $)";
 
 #ifndef DOXYGEN_PROCESSING
 namespace
 {
 //	Descriptions of the tile status values.
-static const QString Status_Description[] = {"Finished", "Low Priority", "High Priority", "Image Load"};
-} // namespace
+static const QString Status_Description[] = {"Finished", "Low Priority", "High Priority",
+                                             "Image Load"};
+}  // namespace
 #endif
 
 /*==============================================================================
@@ -81,12 +81,12 @@ static const QString Status_Description[] = {"Finished", "Low Priority", "High P
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
 namespace
 {
-QList<Image_Tile *> Tile_Accounting;
+QList<Image_Tile*> Tile_Accounting;
 }
 
 void Image_Tile::tile_accounting()
 {
-    Plastic_Image *image;
+    Plastic_Image* image;
     int list_size = Tile_Accounting.size(), index, rindex;
     clog << "    " << Tile_Accounting.size() << " extant Image_Tiles";
     if (Tile_Accounting.size())
@@ -97,42 +97,60 @@ void Image_Tile::tile_accounting()
             image = Tile_Accounting[index]->Image;
             rindex = list_size;
             while (--rindex >= 0)
-                if (rindex != index && Tile_Accounting[rindex]->Image == image)
-                    break;
-            if (rindex < 0)
-                clog << "    ";
-            else
-                clog << "+!+ ";
+                if (rindex != index && Tile_Accounting[rindex]->Image == image) break;
+            if (rindex < 0) clog << "    ";
+            else clog << "+!+ ";
             clog << index << ": " << *Tile_Accounting[index] << endl;
         }
         clog << "    -------------------------------------" << endl;
     }
-    else
-        clog << endl;
+    else clog << endl;
 }
 
 #else
-void Image_Tile::tile_accounting()
-{
-}
+void Image_Tile::tile_accounting() {}
 #endif
 
 /*==============================================================================
     Constructors
 */
-Image_Tile::Image_Tile() : Image(NULL), Cancelable(true), Delete_Image_When_Done(false)
+Image_Tile::Image_Tile() : Image(nullptr), Cancelable(true), Delete_Image_When_Done(false)
 {
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
     Tile_Accounting.append(this);
 #endif
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    clog << ">-< Image_Tile @ " << (void *)this << endl << "    default " << *this << endl;
+    clog << ">-< Image_Tile @ " << (void*)this << endl << "    default " << *this << endl;
 #endif
 }
 
-Image_Tile::Image_Tile(Plastic_Image *image, const QPoint &tile_coordinate, const QRect &tile_region, bool cancelable,
+Image_Tile::Image_Tile(Plastic_Image* image, const QPoint& tile_coordinate,
+                       const QRect& tile_region, bool cancelable, bool delete_when_done)
+    : Image(image),
+      Tile_Coordinate(tile_coordinate),
+      Tile_Region(tile_region),
+      Cancelable(cancelable),
+      Delete_Image_When_Done(delete_when_done)
+{
+#if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
+    Tile_Accounting.append(this);
+#endif
+#if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
+    LOCK_LOG;
+    clog << ">-< Image_Tile @ " << (void*)this << endl
+         << "    from Plastic_Image " << *image << endl
+         << "    " << *this << endl;
+    tile_accounting();
+    UNLOCK_LOG;
+#endif
+}
+
+Image_Tile::Image_Tile(Plastic_Image* image, const QPoint& tile_coordinate, bool cancelable,
                        bool delete_when_done)
-    : Image(image), Tile_Coordinate(tile_coordinate), Tile_Region(tile_region), Cancelable(cancelable),
+    : Image(image),
+      Tile_Coordinate(tile_coordinate),
+      Tile_Region(),
+      Cancelable(cancelable),
       Delete_Image_When_Done(delete_when_done)
 {
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
@@ -140,7 +158,7 @@ Image_Tile::Image_Tile(Plastic_Image *image, const QPoint &tile_coordinate, cons
 #endif
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     LOCK_LOG;
-    clog << ">-< Image_Tile @ " << (void *)this << endl
+    clog << ">-< Image_Tile @ " << (void*)this << endl
          << "    from Plastic_Image " << *image << endl
          << "    " << *this << endl;
     tile_accounting();
@@ -148,30 +166,13 @@ Image_Tile::Image_Tile(Plastic_Image *image, const QPoint &tile_coordinate, cons
 #endif
 }
 
-Image_Tile::Image_Tile(Plastic_Image *image, const QPoint &tile_coordinate, bool cancelable, bool delete_when_done)
-    : Image(image), Tile_Coordinate(tile_coordinate), Tile_Region(), Cancelable(cancelable),
-      Delete_Image_When_Done(delete_when_done)
+Image_Tile::Image_Tile(const Image_Tile& image_tile)
 {
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
     Tile_Accounting.append(this);
 #endif
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCK_LOG;
-    clog << ">-< Image_Tile @ " << (void *)this << endl
-         << "    from Plastic_Image " << *image << endl
-         << "    " << *this << endl;
-    tile_accounting();
-    UNLOCK_LOG;
-#endif
-}
-
-Image_Tile::Image_Tile(const Image_Tile &image_tile)
-{
-#if defined(DEBUG_SECTION) && DEBUG_SECTION != 0
-    Tile_Accounting.append(this);
-#endif
-#if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    clog << ">-< Image_Tile @ " << (void *)this << endl << "    copy " << image_tile << endl;
+    clog << ">-< Image_Tile @ " << (void*)this << endl << "    copy " << image_tile << endl;
 #endif
     *this = image_tile;
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
@@ -181,12 +182,13 @@ Image_Tile::Image_Tile(const Image_Tile &image_tile)
 #endif
 }
 
-Image_Tile &Image_Tile::operator=(const Image_Tile &image_tile)
+Image_Tile& Image_Tile::operator=(const Image_Tile& image_tile)
 {
     if (this != &image_tile)
     {
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-        clog << ">-< Image_Tile:operator= @ " << (void *)this << endl << "    assign " << image_tile << endl;
+        clog << ">-< Image_Tile:operator= @ " << (void*)this << endl
+             << "    assign " << image_tile << endl;
 #endif
         Image = image_tile.Image;
         Tile_Coordinate = image_tile.Tile_Coordinate;
@@ -203,7 +205,8 @@ Image_Tile::~Image_Tile()
     Tile_Accounting.removeAll(this);
 #endif
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
-    LOCKED_LOGGING((clog << ">>> Image_Tile::~Image_Tile @ " << (void *)this << endl << "    " << *this << endl));
+    LOCKED_LOGGING((clog << ">>> Image_Tile::~Image_Tile @ " << (void*)this << endl
+                         << "    " << *this << endl));
 #endif
     if (Delete_Image_When_Done && Image)
     {
@@ -211,7 +214,7 @@ Image_Tile::~Image_Tile()
         LOCKED_LOGGING((clog << "--- delete " << *Image << endl));
 #endif
         delete Image;
-        Image = NULL;
+        Image = nullptr;
     }
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     else
@@ -228,13 +231,13 @@ Image_Tile::~Image_Tile()
 /*==============================================================================
     Utility Functions
 */
-std::ostream &operator<<(std::ostream &stream, const Image_Tile &image_tile)
+std::ostream& operator<<(std::ostream& stream, const Image_Tile& image_tile)
 {
-    return stream << "Image_Tile @ " << (void *)&image_tile << " Image @ " << (void *)(image_tile.Image) << " at "
-                  << image_tile.Tile_Coordinate << " displays " << image_tile.Tile_Region << " is "
+    return stream << "Image_Tile @ " << (void*)&image_tile << " Image @ "
+                  << (void*)(image_tile.Image) << " at " << image_tile.Tile_Coordinate
+                  << " displays " << image_tile.Tile_Region << " is "
                   << (image_tile.Cancelable ? "" : "not ") << "cancelable"
                   << (image_tile.Delete_Image_When_Done ? "; delete image when done" : "");
 }
 
-} // namespace HiRISE
-} // namespace UA
+}  // namespace UA::HiRISE

@@ -107,8 +107,8 @@ class Image_Renderer : public QObject
     /*==============================================================================
         Types:
     */
-    typedef PIRL::Reference_Counted_Pointer<Plastic_Image> Shared_Image;
-    typedef QList<Image_Tile*> Tile_Queue;
+    using Shared_Image = PIRL::Reference_Counted_Pointer<Plastic_Image>;
+    using Tile_Queue = QList<Image_Tile*>;
 
     /*==============================================================================
         Constants
@@ -154,7 +154,7 @@ class Image_Renderer : public QObject
         Constructors
     */
  public:
-    explicit Image_Renderer(QObject* parent = NULL);
+    explicit Image_Renderer(QObject* parent = nullptr);
 
     virtual ~Image_Renderer();
 
