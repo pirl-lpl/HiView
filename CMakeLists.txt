@@ -196,11 +196,13 @@ endif()
 
 if (APPLE)
     target_include_directories(${PROJECT_NAME} PRIVATE "/usr/local/include")
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
+    #target_compile_definitions(${PROJECT_NAME} PRIVATE _DISABLE_VECTOR_ANNOTATION _DISABLE_STL_ANNOTATION)
+    # use one of -fsanitize=address or -fsanitize=thread
+    target_compile_options(${PROJECT_NAME} PRIVATE -g -Wno-deprecated-declarations)
     set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE true)
     find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
     if(COREFOUNDATION_FRAMEWORK)
-        target_link_libraries(${PROJECT_NAME} ${COREFOUNDATION_FRAMEWORK})
+        target_link_libraries(${PROJECT_NAME} PUBLIC ${COREFOUNDATION_FRAMEWORK})
     endif()
 endif()
 
