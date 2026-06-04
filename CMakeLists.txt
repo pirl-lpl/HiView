@@ -39,7 +39,8 @@ find_package(Qt6 REQUIRED COMPONENTS Gui Widgets Network Core5Compat Qml)
 qt_standard_project_setup()
 
 find_package(PIRL 3.0.0 REQUIRED)
-find_package(idaeim 2.3.4 REQUIRED)
+
+find_package(idaeim REQUIRED)
 find_package(libJP2 REQUIRED)
 find_package(Qwt REQUIRED)
 find_package(Kakadu REQUIRED)
@@ -64,8 +65,7 @@ HiView_Window.hh
 Histogram_Plot.hh
 Icon_Button.hh
 Image_Info_Panel.hh
-Image_Renderer.hh
-Image_Renderer_Thread.hh
+Image_Blaster.hh
 Image_Tile.hh
 Image_Viewer.hh
 JP2_Image.hh
@@ -108,8 +108,7 @@ set(SOURCES
  About_HiView_Dialog.cc
  Image_Tile.cc
  Synchronized_Event.cc
- Image_Renderer.cc
- Image_Renderer_Thread.cc
+ Image_Blaster.cc
  Plastic_Image.cc
  Plastic_QImage.cc
  JP2_Image.cc

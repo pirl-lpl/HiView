@@ -338,7 +338,14 @@ int main(int arg_count, char** arg_list)
     }
 
     //	Construct the main application window and display it.
-    HiView_Window const main_window(Source_Name, Scaling, Restore_Layout);
+    try
+    {
+        HiView_Window const main_window(Source_Name, Scaling, Restore_Layout);
+    }
+    catch (...)
+    {
+        cout << "Unhandled exception" << endl;
+    }
 
     //	Run the application event loop.
     return UA::HiRISE::HiView_Application::exec();

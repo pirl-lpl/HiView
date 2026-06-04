@@ -43,7 +43,7 @@ class Aggregate;
 namespace UA::HiRISE
 {
 //	Forward references.
-class Image_Renderer;
+class Image_Blaster;
 
 /**	A <i>Tiled_Image_Display</i> provides a QWidget for the display of
     a grid of image tiles rendered from a Plastic_Image.
@@ -371,7 +371,7 @@ class Tiled_Image_Display
     { Default_Source_Image_Rendering = enabled; }
     static bool default_source_image_rendering() { return Default_Source_Image_Rendering; }
     void source_image_rendering(bool enabled) { Source_Image_Rendering = enabled; }
-    bool source_image_rendering() { return Source_Image_Rendering; }
+    bool source_image_rendering() const { return Source_Image_Rendering; }
 
     /**	Set the suggested rendering increment.
 
@@ -2011,7 +2011,7 @@ class Tiled_Image_Display
     QPoint Last_Clicked_Coord;
 
     //!	Tile image rendering.
-    Image_Renderer* Renderer;
+    Image_Blaster* Renderer;
 
     /**	The source image.
 
