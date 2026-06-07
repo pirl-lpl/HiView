@@ -343,7 +343,7 @@ void Image_Blaster::queue(Plastic_Image* image, const QPoint& tile_coordinate,
 #endif
     // QMutexLocker const qLocker(&Queue_Lock);
 
-    unsigned int const index = find_tile(image, Render_Queue);
+    int const index = find_tile(image, Render_Queue);
     if (index < 0)
     {
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
@@ -485,7 +485,7 @@ bool Image_Blaster::cancel(Plastic_Image* image, int cancel_options)
         canceled = abort(cancel_options);
     }
 
-    unsigned int index = Render_Queue.size();
+    int index = Render_Queue.size();
     while (index--)
     {
         if (Render_Queue[index]->Image == image)
@@ -577,9 +577,9 @@ bool Image_Blaster::reset(int cancel_options)
     return done;
 }
 
-unsigned int Image_Blaster::find_tile(Plastic_Image* image, const Tile_Queue& queue)
+int Image_Blaster::find_tile(Plastic_Image* image, const Tile_Queue& queue)
 {
-    unsigned int index = queue.size();
+    int index = queue.size();
     while (index)
         if (queue[--index]->Image == image) return index;
     return -1;
@@ -600,7 +600,7 @@ void Image_Blaster::add_tile(Image_Tile* image_tile)
     UNLOCK_LOG;
 #endif
     //	Safety check for the image in the Delete_Queue.
-    unsigned int const index = find_tile(image_tile->Image, Delete_Queue);
+    int const index = find_tile(image_tile->Image, Delete_Queue);
     if (index >= 0)
     {
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
@@ -651,8 +651,8 @@ void Image_Blaster::add_tile(Image_Tile* image_tile)
 #if ((DEBUG_SECTION) & DEBUG_QUEUE)
         LOCKED_LOGGING((clog << "    tile_area = " << tile_area << endl));
 #endif
-        unsigned int const tiles = Render_Queue.size();
-        unsigned int index = -1;
+        int const tiles = Render_Queue.size();
+        int index = -1;
         while (++index < tiles && Render_Queue.at(index)->is_high_priority() &&
                Render_Queue.at(index)->area() > tile_area)
         {
@@ -708,7 +708,7 @@ bool Image_Blaster::clear(int cancel_options)
     //	Cancel rendering of the active tile.
     bool const done = abort(cancel_options);
 
-    unsigned int index = Render_Queue.size();
+    int index = Render_Queue.size();
     while (index--)
     {
         if (Render_Queue[index]->Cancelable || (cancel_options & FORCE_CANCEL))
@@ -812,6 +812,7 @@ bool Image_Blaster::delete_image(Plastic_Image* image)
 {
     if (!image) return false;
 
+    if (Render_Queue.isEmpty()) return true;
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
     void* thread_ID = (void*)QThread::currentThreadId();
     LOCKED_LOGGING((clog << ">>> Image_Blaster::delete_image " << thread_ID << ": image -" << endl
@@ -820,7 +821,7 @@ bool Image_Blaster::delete_image(Plastic_Image* image)
 #endif
     // QMutexLocker const qLocker(&Queue_Lock);
     bool deleted = false;
-    unsigned int const index = find_tile(image, Render_Queue);
+    int const index = find_tile(image, Render_Queue);
     if (index >= 0)
     {
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
@@ -877,7 +878,7 @@ void Image_Blaster::delete_tile(Image_Tile* image_tile)
 #endif
 
     //	Safety check for the image in the Render_Queue.
-    unsigned int index = find_tile(image_tile->Image, Render_Queue);
+    int index = find_tile(image_tile->Image, Render_Queue);
     if (index >= 0 && image_tile->Delete_Image_When_Done)
     {
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
@@ -951,6 +952,7 @@ void Image_Blaster::delete_tiles()
     LOCKED_LOGGING((clog << ">>> Image_Blaster::delete_tiles " << thread_ID << endl
                          << "    in " << pathname << endl));
 #endif
+        if (Delete_Queue.isEmpty()) return;
     bool const locked = false;  // Queue_Lock.tryLock();
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
     LOCK_LOG;
@@ -961,9 +963,12 @@ void Image_Blaster::delete_tiles()
     print_queue(Delete_Queue);
     UNLOCK_LOG;
 #endif
-    unsigned int index = Delete_Queue.size();
+    int index = Delete_Queue.size();
     while (--index >= 0)
     {
+        clog << "Deleting tile at index " << index << endl;
+        Delete_Queue.at(index);
+/*        
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
         LOCKED_LOGGING((clog << "    delete " << *Delete_Queue[index] << endl));
 #endif
@@ -973,8 +978,8 @@ void Image_Blaster::delete_tiles()
         {
             LOCKED_LOGGING((clog << "!!! image to be deleted not accounted for!" << endl));
         }
-#endif
-        /* TODO(guym) delete*/ Delete_Queue.takeAt(index);
+#endif*/
+        //delete Delete_Queue.takeAt(index);
     }
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
     LOCK_LOG;
@@ -1015,7 +1020,7 @@ void Image_Blaster::run_rendering()
         afterwards so the caller's expectation of needing to unlock it
         can be met.
     */
-    // bool const locked = Queue_Lock.tryLock();
+    bool const locked = false; //Queue_Lock.tryLock();
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
     LOCKED_LOGGING((clog << "    Image_Blaster::run_rendering " << thread_ID << ": Queue_Lock was "
                          << (locked ? "not " : "") << "locked" << endl
@@ -1128,7 +1133,8 @@ void Image_Blaster::render()
                                  << "    in " << pathname << endl));
 #endif
             // Queue_Lock.unlock();
-            continue;
+            // continue;
+            return;
         }
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_QUEUE | DEBUG_OVERVIEW))
         LOCK_LOG;
@@ -1685,7 +1691,7 @@ void Image_Blaster::load_image()
 
     if (source_image)
     {
-#if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_IMAGE_ACCOUNTING | DEBUG_OVERVIEW))
+#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
         LOCKED_LOGGING((clog << "    Image_Blaster::render " << thread_ID << ": new Source_Image -"
                              << endl
                              << "    " << *source_image << endl
@@ -1696,7 +1702,7 @@ void Image_Blaster::load_image()
         if (reference_image)
         {
 //	No Reference_Image disposition here.
-#if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
+#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
             LOCKED_LOGGING((clog << "    Image_Blaster::render " << thread_ID
                                  << ": old Reference_Image -" << endl
                                  << "    " << *Reference_Image << endl
@@ -1708,7 +1714,7 @@ void Image_Blaster::load_image()
             Reference_Image->source_band_map_reset();
             Reference_Image->source_data_map_reset();
             Reference_Image->source_transform_reset();
-#if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_IMAGE_ACCOUNTING | DEBUG_OVERVIEW))
+#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
             LOCKED_LOGGING((clog << "    Image_Blaster::render " << thread_ID
                                  << ": new Reference_Image -" << endl
                                  << "    " << *Reference_Image << endl
@@ -1716,7 +1722,7 @@ void Image_Blaster::load_image()
 #endif
 
 //	Transfer the new source_image to the Source_Image.
-#if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
+#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
             LOCKED_LOGGING((clog << "    Image_Blaster::render " << thread_ID
                                  << ": old Source_Image -" << endl
                                  << "    " << *Source_Image << endl));
@@ -1726,7 +1732,7 @@ void Image_Blaster::load_image()
         }
         else
         {
-#if ((DEBUG_SECTION) & (DEBUG_LOAD_IMAGE | DEBUG_OVERVIEW))
+#if ((DEBUG_SECTION) & DEBUG_LOAD_IMAGE)
             LOCKED_LOGGING((clog << "    Image_Blaster::load_image " << thread_ID
                                  << ": source image clone failed." << endl));
 #endif

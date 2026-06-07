@@ -653,7 +653,7 @@ class Image_Blaster : public QObject
         @return	The index in the queue where the matching Image_Tile was
             found, or -1 if no match was found.
     */
-    static unsigned int find_tile(Plastic_Image* image, const Tile_Queue& queue);
+    static int find_tile(Plastic_Image* image, const Tile_Queue& queue);
 
     /**	Add an Image_Tile to the Render_Queue.
 
