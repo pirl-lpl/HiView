@@ -94,7 +94,6 @@ Statistics_and_Bounds_Tool.hh
 Stats.hh
 Synchronized_Event.hh
 Tiled_Image_Display.hh
-URL_Checker.hh
 Value_Tree_Model.hh
 Voice_Adapter.hh
 )
@@ -139,7 +138,6 @@ set(SOURCES
  Save_Image_Dialog.cc
  Save_Image_Thread.cc
  Network_Status.cc
- URL_Checker.cc
  Help_Docs.cc
  Preferences_Dialog.cc
  Coordinate.cc

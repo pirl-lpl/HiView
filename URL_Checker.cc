@@ -24,10 +24,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 #include "URL_Checker.hh"
 
 #include <QDir>
-#include <QEventLoop>
 #include <QFileInfo>
-#include <QMutex>
-#include <QMutexLocker>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QTimer>
@@ -61,9 +58,7 @@ using std::clog;
 using std::endl;
 #endif //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
@@ -73,9 +68,10 @@ const char *const URL_Checker::ID = "UA::HiRISE::URL_Checker ($Revision: 1.8 $ $
 /*==============================================================================
     Constructor
 */
-URL_Checker::URL_Checker(QObject *parent) : QThread(parent), Network_Status(), Event_Loop(NULL), Timer(NULL)
+URL_Checker::URL_Checker(QObject *parent) : Network_Status(), Timer(new QTimer(this))
 {
     setObjectName("URL_Checker");
+    Timer->setSingleShot(true);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << ">-< URL_Checker" << endl;
 #endif
@@ -96,11 +92,9 @@ URL_Checker::~URL_Checker()
          << "    Event_Loop @ " << (void *)Event_Loop << endl
          << "    Timer @ " << (void *)Timer << endl;
 #endif
-    if (Event_Loop)
-    {
-        delete Event_Loop;
+
         delete Timer;
-    }
+
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "<<< ~URL_Checker" << endl;
 #endif
@@ -128,14 +122,11 @@ bool URL_Checker::check(const QUrl &URL, bool synchronous)
     int result = IN_PROGRESS;
     if (!isRunning() && !URL.isEmpty())
     {
-        Status_Lock->lock();
-
         if (Request_Status == IN_PROGRESS)
         {
 #if ((DEBUG_SECTION) & DEBUG_FETCH)
             clog << "    Request_Status IN_PROGRESS!" << endl << "<<< URL_Checker::check: false" << endl;
 #endif
-            Status_Lock->unlock();
             return false;
         }
         //	Reset the check state.
@@ -215,14 +206,11 @@ void URL_Checker::run()
 #if ((DEBUG_SECTION) & DEBUG_RUN)
     LOCKED_LOGGING((clog << ">>> URL_Checker::run" << endl));
 #endif
-    Status_Lock->lock();
-    if (!Event_Loop)
-        Event_Loop = new QEventLoop;
     if (!Timer)
     {
         Timer = new QTimer;
         Timer->setSingleShot(true);
-        connect(Timer, SIGNAL(timeout()), Event_Loop, SLOT(quit()));
+        connect(Timer, &QTimer::timeout, this, &URL_Checker::quit);
     }
     if (!Network_Access_Manager)
         /*
@@ -230,19 +218,22 @@ void URL_Checker::run()
             where it is used with its QNetworkReply.
         */
         Network_Access_Manager = new QNetworkAccessManager;
-    Network_Reply = Network_Access_Manager->head(QNetworkRequest(Requested_URL));
-    connect(Network_Reply, SIGNAL(finished()), Event_Loop, SLOT(quit()));
-    Status_Lock->unlock();
+
+    QNetworkRequest Network_Request(Requested_URL);
+    Network_Request.setTransferTimeout(Wait_Time);
+
+    // runs asynchronously
+    Network_Reply = Network_Access_Manager->head();
+
+    connect(Network_Reply, &QNetwork_Reply::finished, this, &URl_Checker::quit);
 
     //	Wait in a local event loop on network reply for data or finished.
     Timer->start(Wait_Time);
 #if ((DEBUG_SECTION) & DEBUG_STREAMBUF)
-    clog << "    starting event loop" << endl;
+    clog << "    starting timer" << endl;
 #endif
-    Event_Loop->exec();
-
+/*
     //	Event occured.
-    Status_Lock->lock();
     if (Timer->isActive())
     {
         Timer->stop();
@@ -257,7 +248,6 @@ void URL_Checker::run()
     delete Network_Reply;
     Network_Reply = NULL;
     int result = Request_Status;
-    Status_Lock->unlock();
 
 //	>>> SIGNAL <<<
 #if ((DEBUG_SECTION) & DEBUG_CHECK)
@@ -269,6 +259,5 @@ void URL_Checker::run()
     LOCKED_LOGGING((clog << "<<< URL_Checker::run" << endl));
 #endif
 }
-
-} // namespace HiRISE
-} // namespace UA
+*/
+}

@@ -21,8 +21,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_URL_Checker_hh
-#define HiView_URL_Checker_hh
+#pragma once
 
 #include "Network_Status.hh"
 
@@ -31,9 +30,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 class QEventLoop;
 class QTimer;
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /**	A <i>URL_Checker</i> checks if a URL refers to an accessible source.
 
@@ -54,7 +51,7 @@ namespace HiRISE
     @author		Bradford Castalia, UA/HiROC
     @version	$Revision: 1.4 $
 */
-class URL_Checker : public QThread, public Network_Status
+class URL_Checker : public Network_Status
 {
     //	Qt Object declaration.
     Q_OBJECT
@@ -174,7 +171,6 @@ class URL_Checker : public QThread, public Network_Status
         Qt signals
     */
   public:
-  signals:
 
     /**	Signals the result of a {@link check(const QUrl&, bool) URL check}.
 
@@ -183,16 +179,12 @@ class URL_Checker : public QThread, public Network_Status
         @param	exists	true if the checked URL is accessible; false otherwise.
         @see request_status()
     */
-    void checked(bool exists);
+    Q_SIGNAL void checked(bool exists);
 
     /*==============================================================================
         Data
     */
   private:
-    QEventLoop *Event_Loop;
-    QTimer *Timer;
-};
+QNetworkAccessManager* Network_Manager;
 
 } // namespace HiRISE
-} // namespace UA
-#endif

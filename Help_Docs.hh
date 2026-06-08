@@ -21,16 +21,13 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Help_Docs_hh
-#define HiView_Help_Docs_hh
+#pragma once
 
 #include <QString>
 //	Forward references.
 class QUrl;
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 //	Forward references.
 class URL_Checker;
@@ -69,7 +66,7 @@ class Help_Docs
 
         @return	A QString containing the location of the documentation files.
     */
-    inline QString location() const
+    QString location() const
     {
         return Docs_Location;
     }
@@ -99,7 +96,7 @@ class Help_Docs
             pathname; false if the location is an HTTP URL. An empty
             location is considered to be for a local file.
     */
-    inline bool location_is_File() const
+    bool location_is_File() const
     {
         return Docs_Location_is_File;
     }
@@ -203,9 +200,6 @@ class Help_Docs
     QString Docs_Location;
     bool Docs_Location_is_File;
 
-    static URL_Checker *Checker;
 };
 
 } // namespace HiRISE
-} // namespace UA
-#endif

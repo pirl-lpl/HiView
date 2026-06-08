@@ -23,8 +23,6 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include "Help_Docs.hh"
 
-#include "URL_Checker.hh"
-
 #include <QDesktopServices>
 #include <QDir>
 #include <QUrl>
@@ -58,9 +56,7 @@ using std::clog;
 using std::endl;
 #endif //	DEBUG_SECTION
 
-namespace UA
-{
-namespace HiRISE
+namespace UA::HiRISE
 {
 /*==============================================================================
     Constants
@@ -75,8 +71,6 @@ const char *const Help_Docs::ID = "UA::HiRISE::Help_Docs ($Revision: 1.10 $ $Dat
 #endif
 int Help_Docs::Max_URL_Redirection = MAX_URL_REDIRECTION;
 
-URL_Checker *Help_Docs::Checker;
-
 /*==============================================================================
     Constructor
 */
@@ -85,7 +79,6 @@ Help_Docs::Help_Docs(const QString &docs_location) : Docs_Location_is_File(true)
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << ">>> Help_Docs::Help_Docs: \"" << docs_location << '"' << endl;
 #endif
-    Checker = new URL_Checker();
     location(docs_location);
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << "<<< Help_Docs::Help_Docs" << endl;
@@ -94,7 +87,6 @@ Help_Docs::Help_Docs(const QString &docs_location) : Docs_Location_is_File(true)
 
 Help_Docs::~Help_Docs()
 {
-    delete Checker;
 }
 
 /*==============================================================================
@@ -116,7 +108,7 @@ bool Help_Docs::location(const QString &docs_location)
     }
     else
     {
-        QUrl URL(Checker->normalized_URL(docs_location));
+        QUrl URL(docs_location);
 #if ((DEBUG_SECTION) & DEBUG_ACCESSORS)
         clog << "    URL = " << URL.toString() << endl;
 #endif
@@ -155,7 +147,7 @@ bool Help_Docs::help(const QString &document)
         location += QDir::separator();
         location += document;
 
-        QUrl URL(Checker->normalized_URL(location));
+        QUrl URL(location);
 #if ((DEBUG_SECTION) & DEBUG_MANIPULATORS)
         clog << "    checking URL " << URL.toString() << endl;
 #endif
@@ -209,7 +201,7 @@ QString Help_Docs::find(const QString &document, const QStringList &locations)
         if (location.isEmpty())
             continue;
 
-        URL = Checker->normalized_URL(location);
+        URL = location;
 #if ((DEBUG_SECTION) & DEBUG_UTILITY)
         clog << "      checking " << URL.toString() << endl;
 #endif
@@ -247,24 +239,12 @@ bool Help_Docs::is_accessible(const QString &location)
         recognizing HTTP, FTP, or JPIP protocols; anything else is assumed to
         be a filesystem pathname.
     */
-    return is_accessible(Checker->normalized_URL(location));
+    return is_accessible(location);
 }
 
 bool Help_Docs::is_accessible(const QUrl &URL)
 {
-    bool accessible = false;
-    QUrl url(URL);
-    int count = Max_URL_Redirection;
-    while (count-- && !url.isEmpty())
-    {
-        accessible = Checker->check(url);
-        url = Checker->redirected_URL();
-    }
-    if (count < 0)
-        //	Too many redirects.
-        accessible = false;
-    return accessible;
+    return URL.isValid();
 }
 
 } // namespace HiRISE
-} // namespace UA
