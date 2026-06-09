@@ -78,18 +78,7 @@ const char* const HiView_Application::ID =
 */
 HiView_Application::HiView_Application(int& argc, char** argv) : QApplication(argc, argv)
 {
-#ifdef Q_OS_MACOS
-    // QApplication::setStyle(QStyleFactory::create("Fusion"));
-    QPalette p;
-    p = qApp->palette();
-    /*p.setColor(QPalette::Window, QColor(53,53,53));
-    p.setColor(QPalette::Button, QColor(53,53,53));
-    p.setColor(QPalette::Highlight, QColor(142,45,197));
-    p.setColor(QPalette::ButtonText, QColor(255,255,255));
-    p.setColor(QPalette::WindowText, QColor(255,255,255));
-    */
-    setPalette(p);
-#endif
+
     setObjectName("HiView_Application");
 // QDesktopWidget* widget = this->desktop();
 // widget->installEventFilter(new NullEventFilter());

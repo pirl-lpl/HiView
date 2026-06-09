@@ -580,7 +580,7 @@ HiView_Window::HiView_Window(const QString& source, const QSizeF& scaling,
     if (Error_Message->isVisible()) Error_Message->raise();
 
     //	Filter tooltip events.
-    qApp->installEventFilter(this);
+    //qApp->installEventFilter(this);
 
     HiView_Application* application = dynamic_cast<HiView_Application*>(qApp);
     if (application)
@@ -588,7 +588,7 @@ HiView_Window::HiView_Window(const QString& source, const QSizeF& scaling,
 #if ((DEBUG_SECTION) & (DEBUG_CONSTRUCTORS | DEBUG_INITIALIZE))
         clog << "    connect to HiView_Application file_open_request" << endl;
 #endif
-        connect(application, SIGNAL(file_open_request(const QString&)), SLOT(open(const QString&)));
+        connect(application, &HiView_Application::file_open_request, this, &HiView_Window::open);
     }
 
 #ifdef Q_OS_MACOS

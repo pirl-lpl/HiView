@@ -94,8 +94,6 @@ class JP2_Image;
     queue is cleared of all other images. An image may also be flagged
     for deletion when its encapsulating tile is destroyed.
 
-    @author		Bradford Castalia, UA/HiROC
-    @version	$Revision: 1.35 $
 */
 class Image_Blaster : public QObject
 {
@@ -1067,7 +1065,6 @@ class Image_Blaster : public QObject
     /*==============================================================================
         Qt signals
     */
- signals:
 
     /**	Signal the completion of {@link load_image() image loading}.
 
@@ -1077,7 +1074,7 @@ class Image_Blaster : public QObject
         @param	successful	true if the an image was successfully loaded;
             false otherwise.
     */
-    void image_loaded(bool successful);
+    Q_SIGNAL void image_loaded(bool successful);
 
     /**	Signal tile image rendering progress.
 
@@ -1109,7 +1106,7 @@ class Image_Blaster : public QObject
             in tile-relative coordinates, that is visible in the display
             viewport. May be empty.
     */
-    void rendered(const QPoint& tile_coordinate = QPoint(), const QRect& tile_region = QRect());
+    Q_SIGNAL void rendered(const QPoint& tile_coordinate = QPoint(), const QRect& tile_region = QRect());
 
     /**	Provide a tile image rendering progress status notice message.
 
@@ -1121,7 +1118,7 @@ class Image_Blaster : public QObject
         @param	message	A QString forwarded from the rendering progress status
             notice message.
     */
-    void status_notice(const QString& message);
+    Q_SIGNAL void status_notice(const QString& message);
 
     /**	Signal the status of the renderer.
 
@@ -1162,7 +1159,7 @@ class Image_Blaster : public QObject
         @param	An Image_Tile status value.
         @see status_description(int)
     */
-    void status(int condition);
+    Q_SIGNAL void status(int condition);
 
     /**	Signal an error condition.
 
@@ -1188,12 +1185,11 @@ class Image_Blaster : public QObject
 
         @param	message	A QString describing the error condition.
     */
-    void error(const QString& message);
+    Q_SIGNAL void error(const QString& message);
 
     /*==============================================================================
         Qt slots
     */
- public slots:
 
     /*	Cancel rendering and {@link clear(int) clear} the queue.
 
@@ -1212,7 +1208,7 @@ class Image_Blaster : public QObject
         @see	clear(int)
         @see	cancel(Plastic_Image*, int)
     */
-    bool cancel(int cancel_options = WAIT_UNTIL_DONE);
+    Q_SLOT bool cancel(int cancel_options = WAIT_UNTIL_DONE);
 
     /*==============================================================================
         Data

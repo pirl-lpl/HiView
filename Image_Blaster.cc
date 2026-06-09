@@ -966,10 +966,10 @@ void Image_Blaster::delete_tiles()
     int index = Delete_Queue.size();
     while (--index >= 0)
     {
-        clog << "Deleting tile at index " << index << endl;
         Delete_Queue.at(index);
 /*        
 #if ((DEBUG_SECTION) & (DEBUG_DELETE_TILES | DEBUG_QUEUE))
+        clog << "Deleting tile at index " << index << endl;
         LOCKED_LOGGING((clog << "    delete " << *Delete_Queue[index] << endl));
 #endif
 #if defined(DEBUG_SECTION) && DEBUG_SECTION != 0

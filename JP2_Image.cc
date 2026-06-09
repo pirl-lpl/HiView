@@ -39,7 +39,7 @@ using UA::HiRISE::JP2_Exception;
 #include "PVL.hh"
 using idaeim::PVL::Aggregate;
 
-#include <QMutexLocker>
+//#include <QMutexLocker>
 
 #include <string>
 using std::string;
@@ -1012,7 +1012,7 @@ const void *JP2_Image::source() const
 
 void JP2_Image::close()
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     if (Source && !is_rendering())
         Source->close();
     Plastic_Image::close();
@@ -1023,7 +1023,7 @@ void JP2_Image::close()
 */
 idaeim::PVL::Aggregate *JP2_Image::metadata()
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
     clog << ">>> JP2_Image::metadata" << endl;
 #endif
@@ -1324,11 +1324,11 @@ void JP2_Image::source_data_histogram(Histogram *histogram, const QRect &source_
 */
 bool JP2_Image::source_band_map(const unsigned int *band_map, bool shared)
 {
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
-        Update.end();
+        //Update.end();
         return false;
     }
 
@@ -1342,7 +1342,7 @@ bool JP2_Image::source_band_map(const unsigned int *band_map, bool shared)
 
     auto_update(do_update);
     changed |= needs_update(changed ? BAND_MAP : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
     clog << "<<< JP2_Image::source_band_map: " << boolalpha << changed << endl;
 #endif
@@ -1359,7 +1359,7 @@ bool JP2_Image::needs_update(Mapping_Type changed) noexcept(false)
     clog << ">>> JP2_Image::needs_update: " << changed << ": " << mapping_type_names(changed) << endl
          << "    " << *this << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (changed & BAND_MAP)
         //	Re-assign the the source data buffers.
@@ -1367,7 +1367,7 @@ bool JP2_Image::needs_update(Mapping_Type changed) noexcept(false)
 
     bool updated = Plastic_Image::needs_update(changed);
 
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_MANIPULATORS))
     clog << "<<< JP2_Image::needs_update: " << updated << endl;
 #endif
@@ -1380,14 +1380,14 @@ bool JP2_Image::render_image() noexcept(false)
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_LOCATION))
     LOCKED_LOGGING((clog << ">>> JP2_Image::render_image" << endl << "    " << *this << endl));
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_LOCATION))
         LOCKED_LOGGING((clog << "    Closed" << endl));
 #endif
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
         LOCKED_LOGGING((clog << "<<< JP2_Image::render_image: false" << endl));
 #endif
@@ -1400,7 +1400,7 @@ bool JP2_Image::render_image() noexcept(false)
         LOCKED_LOGGING((clog << "    update canceled before rendering" << endl));
 #endif
         cancel_update(false);
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
         LOCKED_LOGGING((clog << "<<< JP2_Image::render_image: false" << endl));
 #endif
@@ -1411,7 +1411,7 @@ bool JP2_Image::render_image() noexcept(false)
     is_rendering(true);
 
     //	End of the update sequence; release the Object_Lock during redering.
-    Update.end(Update.SEQUENCE_END);
+    //Update.end(Update.SEQUENCE_END);
     /*
         >>> CAUTION <<< From this point until rendering ends (is_rendering (false))
         only Rendering configuration variables should be used.
@@ -2209,7 +2209,7 @@ bool JP2_Image::is_rendering(bool rendering)
         so the base class is_rendering method, when called, can also lock
         the mutex.
     */
-    Object_Lock.lock();
+    //Object_Lock.lock();
     int band = -1;
     bool was_rendering = Plastic_Image::is_rendering(rendering);
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
@@ -2263,7 +2263,7 @@ bool JP2_Image::is_rendering(bool rendering)
         UNLOCK_LOG;
 #endif
     }
-    Object_Lock.unlock();
+    //Object_Lock.unlock();
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
     LOCKED_LOGGING((clog << "<<< JP2_Image::is_rendering: " << was_rendering << endl));
 #endif

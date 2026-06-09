@@ -27,7 +27,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 #include <QDebug>
 #include <QMutex>
-#include <QMutexLocker>
+//#include <QMutexLocker>
 #include <QPoint>
 #include <QPointF>
 #include <QSize>
@@ -235,8 +235,8 @@ unsigned int Plastic_Image::Default_Rendering_Increment_Lines = DEFAULT_RENDERIN
 */
 Plastic_Image::Plastic_Image(const QSize &image_size, const unsigned int *band_map, const QTransform **transforms,
                              const Data_Map **data_maps)
-    : QImage((image_size.isValid() ? image_size : QSize(0, 0)), IMAGE_FORMAT), Object_Lock(), Metadata(NULL),
-      Image_Metadata(NULL), Update(*this), Source_Name(), Auto_Update(Default_Auto_Update),
+    : QImage((image_size.isValid() ? image_size : QSize(0, 0)), IMAGE_FORMAT), Metadata(NULL),
+      Image_Metadata(NULL), Source_Name(), Auto_Update(Default_Auto_Update),
 
       //	Rendering variables:
       Band_Map(const_cast<unsigned int *>(band_map)), Geo_Transforms(const_cast<QTransform **>(transforms)),
@@ -345,7 +345,7 @@ Plastic_Image::~Plastic_Image()
 #if ((DEBUG_SECTION) & DEBUG_CONSTRUCTORS)
     clog << ">>> ~Plastic_Image @ " << (void *)this << endl;
 #endif
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
 
     if (Metadata)
     {
@@ -418,7 +418,7 @@ bool Plastic_Image::source_name(const QString &name)
     bool changed = false;
     if (!closed())
     {
-        QMutexLocker object_lock(&Object_Lock);
+        //QMutexLocker object_lock(&Object_Lock);
         if ((changed = Source_Name != name))
         {
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
@@ -442,7 +442,7 @@ bool Plastic_Image::source_name(const QString &name)
                     *parameter = String(Source_Name.toStdString(), String::TEXT);
                     Image_Metadata->poke(Metadata->begin(), parameter);
                 }
-                object_lock.unlock();
+                //object_lock.unlock();
                 //	Send change notification.
                 notify_metadata_monitors();
             }
@@ -463,7 +463,7 @@ idaeim::PVL::Aggregate *Plastic_Image::metadata()
     if (!Metadata)
     {
         QSize image_size(source_size());
-        QMutexLocker object_lock(&Object_Lock);
+        //QMutexLocker object_lock(&Object_Lock);
         Metadata = new Aggregate("Metadata");
         Image_Metadata = new Aggregate(IMAGE_METADATA_GROUP);
 #if ((DEBUG_SECTION) & DEBUG_METADATA)
@@ -492,7 +492,7 @@ bool Plastic_Image::add_metadata_monitor(Metadata_Monitor *monitor)
     bool added = false;
     if (monitor)
     {
-        QMutexLocker object_lock(&Object_Lock);
+        //QMutexLocker object_lock(&Object_Lock);
         if (!Closed && !Metadata_Monitors.contains(monitor))
         {
             Metadata_Monitors.append(monitor);
@@ -504,13 +504,13 @@ bool Plastic_Image::add_metadata_monitor(Metadata_Monitor *monitor)
 
 bool Plastic_Image::remove_metadata_monitor(Metadata_Monitor *monitor)
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     return Metadata_Monitors.removeOne(monitor);
 }
 
 void Plastic_Image::notify_metadata_monitors()
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     if (!Closed)
     {
         int entry = Metadata_Monitors.size();
@@ -524,13 +524,13 @@ void Plastic_Image::notify_metadata_monitors()
 */
 void Plastic_Image::close()
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     Closed = true;
 }
 
 bool Plastic_Image::closed() const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     return Closed;
 }
 
@@ -554,14 +554,14 @@ bool Plastic_Image::source_band_map(const unsigned int *band_map, bool shared)
          << "    shared = " << shared << endl
          << "    Band_Map" << Band_Map << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
         clog << "<<< Plastic_Image::source_band_map: false" << endl;
 #endif
@@ -599,7 +599,7 @@ bool Plastic_Image::source_band_map(const unsigned int *band_map, bool shared)
             }
         }
         changed |= needs_update(changed ? BAND_MAP : NO_MAPPINGS);
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
         clog << "    Band_Map" << Band_Map << endl << "<<< Plastic_Image::source_band_map: " << changed << endl;
 #endif
@@ -611,7 +611,7 @@ bool Plastic_Image::source_band_map(const unsigned int *band_map, bool shared)
     {
         if (band_map[band] >= bands)
         {
-            Update.end(Update.SEQUENCE_END);
+            //Update.end(Update.SEQUENCE_END);
             ostringstream message;
             message << ID << endl
                     << "Invalid source band map element " << band << " - " << band_map[band] << endl
@@ -643,7 +643,7 @@ bool Plastic_Image::source_band_map(const unsigned int *band_map, bool shared)
     }
 
     changed |= needs_update(changed ? BAND_MAP : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
     clog << "    Band_Map" << Band_Map << endl << "<<< Plastic_Image::source_band_map: " << changed << endl;
 #endif
@@ -655,13 +655,13 @@ bool Plastic_Image::source_band_map_reset()
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
     clog << ">>> Plastic_Image::source_band_map_reset" << endl;
 #endif
-    Update.start();
+    //Update.start();
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
         clog << "<<< Plastic_Image::source_band_map_reset: false" << endl;
 #endif
@@ -684,7 +684,7 @@ bool Plastic_Image::source_band_map_reset()
     bool changed = reset_band_map(Band_Map);
 
     changed |= needs_update(changed ? BAND_MAP : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_BAND_MAP)
     clog << "<<< Plastic_Image::source_band_map_reset: " << changed << endl;
 #endif
@@ -749,7 +749,7 @@ bool Plastic_Image::reset_band_map(unsigned int *band_map)
 bool Plastic_Image::different_band_map(const unsigned int *band_map) const
 {
     int band = source_bands();
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     if (!band_map)
         return Band_Map != NULL;
     if (!Band_Map)
@@ -762,7 +762,7 @@ bool Plastic_Image::different_band_map(const unsigned int *band_map) const
 
 int Plastic_Image::source_band(int band) const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     if (!Band_Map)
     {
         ostringstream message;
@@ -790,14 +790,14 @@ bool Plastic_Image::set_source_transform(const QTransform &transform, int band)
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << ">>> Plastic_Image::set_source_transform:" << endl << transform << "    band = " << band << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "<<< Plastic_Image::set_source_transform: false" << endl;
 #endif
@@ -832,7 +832,7 @@ bool Plastic_Image::set_source_transform(const QTransform &transform, int band)
 #endif
 
     changed |= needs_update(changed ? TRANSFORMS : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << "<<< Plastic_Image::set_source_transform: " << changed << endl;
 #endif
@@ -845,14 +845,14 @@ bool Plastic_Image::source_transforms(const QTransform **transforms, bool shared
     clog << ">>> Plastic_Image::source_transforms: @ " << (void *)transforms << endl
          << "    shared = " << shared << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "<<< Plastic_Image::source_transforms: false" << endl;
 #endif
@@ -919,7 +919,7 @@ bool Plastic_Image::source_transforms(const QTransform **transforms, bool shared
     }
 
     changed |= needs_update(changed ? TRANSFORMS : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << "<<< Plastic_Image::source_transforms: " << changed << endl;
 #endif
@@ -931,7 +931,7 @@ QTransform *Plastic_Image::source_transform(int band) const
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << ">>> Plastic_Image::source_transform: " << band << endl;
 #endif
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     if (band < 0 || band > 2)
     {
         ostringstream message;
@@ -997,14 +997,14 @@ bool Plastic_Image::source_transform_reset(int band)
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << ">>> Plastic_Image::source_transform_reset: " << band << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "<<< Plastic_Image::source_transform_reset: false" << endl;
 #endif
@@ -1025,7 +1025,7 @@ bool Plastic_Image::source_transform_reset(int band)
             Geo_Transforms[band] = new QTransform;
     }
 
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << "<<< Plastic_Image::source_transform_reset: " << changed << endl;
 #endif
@@ -1037,14 +1037,14 @@ bool Plastic_Image::source_origin(const QPointF &origin, int band)
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << ">>> Plastic_Image::source_origin: " << origin.x() << "x, " << origin.y() << 'y' << "; " << band << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "<<< Plastic_Image::source_origin: false" << endl;
 #endif
@@ -1053,7 +1053,7 @@ bool Plastic_Image::source_origin(const QPointF &origin, int band)
 
     if (band > 2)
     {
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
         ostringstream message;
         message << ID << endl
                 << "Can't set the source origin for band " << band << " to " << origin << endl
@@ -1081,7 +1081,7 @@ bool Plastic_Image::source_origin(const QPointF &origin, int band)
 
     auto_update(do_update);
     changed |= needs_update(changed ? TRANSFORMS : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << "<<< Plastic_Image::source_origin: " << changed << endl;
 #endif
@@ -1090,7 +1090,7 @@ bool Plastic_Image::source_origin(const QPointF &origin, int band)
 
 QPointF Plastic_Image::source_origin(int band) const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << ">>> Plastic_Image::source_origin: " << band << endl;
 #endif
@@ -1115,14 +1115,14 @@ bool Plastic_Image::source_scaling(double scale_horizontal, double scale_vertica
     clog << ">>> Plastic_Image::source_scaling: " << scale_horizontal << "x, " << scale_vertical << "y; " << band << 'b'
          << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
         clog << "<<< Plastic_Image::source_scaling: false" << endl;
 #endif
@@ -1131,7 +1131,7 @@ bool Plastic_Image::source_scaling(double scale_horizontal, double scale_vertica
 
     if (band > 2)
     {
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
         ostringstream message;
         message << ID << endl
                 << "Can't set the source scaling for band " << band << " to " << scale_horizontal << "x, "
@@ -1170,7 +1170,7 @@ bool Plastic_Image::source_scaling(double scale_horizontal, double scale_vertica
 
     auto_update(do_update);
     changed |= needs_update(changed ? TRANSFORMS : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << "<<< Plastic_Image::source_scaling: " << changed << endl;
 #endif
@@ -1179,7 +1179,7 @@ bool Plastic_Image::source_scaling(double scale_horizontal, double scale_vertica
 
 void Plastic_Image::source_scaling(double *scale_horizontal, double *scale_vertical, int band) const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << ">>> Plastic_Image::source_scaling: get x,y for band " << band << endl;
 #endif
@@ -1203,7 +1203,7 @@ void Plastic_Image::source_scaling(double *scale_horizontal, double *scale_verti
 
 QSizeF Plastic_Image::source_scaling(int band) const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
 #if ((DEBUG_SECTION) & DEBUG_TRANSFORMS)
     clog << ">>> Plastic_Image::source_scaling: get QSizeF for band " << band << endl;
 #endif
@@ -1227,7 +1227,7 @@ QRect Plastic_Image::image_region(int band) const
     QPoint origin(round_down(source_origin()));
     double scale_width, scale_height;
     source_scaling(&scale_width, &scale_height, band);
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     QSize image_size(source_size()),
         region_size(static_cast<int>(width() / scale_width), static_cast<int>(height() / scale_height));
     if ((region_size.rwidth() + origin.rx()) > image_size.rwidth())
@@ -1243,7 +1243,7 @@ QSize Plastic_Image::displayed_size(int band) const
     source_scaling(&scale_width, &scale_height, band);
     QPoint origin(round_down(source_origin()));
     QSize image_size(source_size());
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     image_size.rwidth() -= origin.rx();
     image_size.rwidth() = static_cast<int>(image_size.rwidth() * scale_width);
     if (image_size.rwidth() > width())
@@ -1263,14 +1263,14 @@ bool Plastic_Image::source_data_map(const Data_Map &data_map, int band)
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
     clog << ">>> Plastic_Image::source_data_map: @ " << (void *)&data_map << "; " << band << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
         clog << "<<< Plastic_Image::source_data_map: false" << endl;
 #endif
@@ -1279,7 +1279,7 @@ bool Plastic_Image::source_data_map(const Data_Map &data_map, int band)
 
     if (band > 2)
     {
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
         ostringstream message;
         message << ID << endl
                 << "Can't set the source data map for band " << band << endl
@@ -1320,7 +1320,7 @@ bool Plastic_Image::source_data_map(const Data_Map &data_map, int band)
     clog << "    Mapping_Differences = " << Mapping_Differences << endl;
 #endif
     changed |= needs_update(changed ? DATA_MAPS : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
     clog << "<<< Plastic_Image::source_data_map: " << changed << endl;
 #endif
@@ -1332,14 +1332,14 @@ bool Plastic_Image::source_data_maps(const Data_Map **data_maps, bool shared)
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
     clog << ">>> Plastic_Image::source_data_maps: @ " << (void *)data_maps << endl << "    shared = " << shared << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
         clog << "<<< Plastic_Image::source_data_maps: false" << endl;
 #endif
@@ -1349,7 +1349,7 @@ bool Plastic_Image::source_data_maps(const Data_Map **data_maps, bool shared)
     if (data_maps && data_maps == const_cast<const Data_Map **>(Data_Maps))
     {
         //	Identical maps.
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
         clog << "    identical maps; redundant self-assignment" << endl
              << "<<< Plastic_Image::source_data_maps: false" << endl;
@@ -1424,7 +1424,7 @@ bool Plastic_Image::source_data_maps(const Data_Map **data_maps, bool shared)
     }
 
     changed |= needs_update(changed ? DATA_MAPS : NO_MAPPINGS);
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
     clog << "<<< Plastic_Image::source_data_maps: " << changed << endl;
 #endif
@@ -1433,7 +1433,7 @@ bool Plastic_Image::source_data_maps(const Data_Map **data_maps, bool shared)
 
 Plastic_Image::Data_Map *Plastic_Image::source_data_map(int band) const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
     clog << ">>> Plastic_Image::source_data_map: " << band << endl;
 #endif
@@ -1456,14 +1456,14 @@ bool Plastic_Image::source_data_map_reset(int band)
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
     clog << ">>> Plastic_Image::source_data_map_reset: " << band << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
         clog << "    Closed" << endl;
 #endif
-        Update.end();
+        //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
         clog << "<<< Plastic_Image::source_data_map_reset: false" << endl;
 #endif
@@ -1499,7 +1499,7 @@ bool Plastic_Image::source_data_map_reset(int band)
         }
     }
 
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & DEBUG_DATA_MAPPING)
     clog << "<<< Plastic_Image::source_data_map_reset: " << changed << endl;
 #endif
@@ -1649,7 +1649,7 @@ bool Plastic_Image::different_data_maps(const Data_Map **data_maps) const
          << "    Data_Maps @ " << (void *)Data_Maps << endl
          << "    data_maps @ " << (void *)data_maps << endl;
 #endif
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     int band = 3;
     if (Data_Maps && data_maps && const_cast<const Data_Map **>(Data_Maps) != data_maps)
         while (band--)
@@ -1712,7 +1712,7 @@ unsigned long long Plastic_Image::source_histograms(QVector<Histogram *> histogr
 #if ((DEBUG_SECTION) & (DEBUG_HISTOGRAMS | DEBUG_PRINT_HISTOGRAMS))
     clog << "    image region = " << selected_region << endl;
 #endif
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     if (source_region.left() > (selected_region.left() + selected_region.width()) ||
         (source_region.left() + source_region.width()) < selected_region.left() ||
         source_region.top() > (selected_region.top() + selected_region.height()) ||
@@ -1903,7 +1903,7 @@ unsigned long long Plastic_Image::display_histograms(QVector<Histogram *> histog
     }
 
     QRect selected_region(rect()); //	Selected display region.
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
 #if ((DEBUG_SECTION) & (DEBUG_HISTOGRAMS | DEBUG_PRINT_HISTOGRAMS))
     clog << "    display region = " << selected_region << endl;
 #endif
@@ -1997,7 +1997,7 @@ bool Plastic_Image::update() noexcept(false)
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_MANIPULATORS))
     clog << ">>> Plastic_Image::update:" << endl;
 #endif
-    Update.start();
+    //Update.start();
     bool up_to_date = false;
     if (!Closed)
     {
@@ -2014,7 +2014,7 @@ bool Plastic_Image::update() noexcept(false)
     else
         clog << "    Closed" << endl;
 #endif
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_MANIPULATORS))
     clog << "<<< Plastic_Image::update: " << up_to_date << endl;
 #endif
@@ -2028,7 +2028,7 @@ bool Plastic_Image::needs_update(Mapping_Type changed) noexcept(false)
     clog << ">>> Plastic_Image::needs_update: " << mapping_type_names(changed) << " (" << changed << ')' << endl
          << "    " << *this << endl;
 #endif
-    Update.start();
+    //Update.start();
     bool updated = false;
     if (!Closed)
     {
@@ -2058,7 +2058,7 @@ bool Plastic_Image::needs_update(Mapping_Type changed) noexcept(false)
     else
         clog << "    Closed" << endl;
 #endif
-    Update.end();
+    //Update.end();
 #if ((DEBUG_SECTION) & (DEBUG_UPDATE | DEBUG_MANIPULATORS))
     clog << "<<< Plastic_Image::needs_update: " << updated << endl;
 #endif
@@ -2067,7 +2067,7 @@ bool Plastic_Image::needs_update(Mapping_Type changed) noexcept(false)
 
 Plastic_Image::Mapping_Type Plastic_Image::needs_update() const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     //	Return the cummulative value.
     return Needs_Update | Needs_Update_Shadow;
 }
@@ -2078,14 +2078,14 @@ bool Plastic_Image::render_image() noexcept(false)
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_LOCATION))
     clog << ">>> Plastic_Image::render_image" << endl << "    " << *this << endl;
 #endif
-    Update.start();
+    //Update.start();
 
     if (Closed)
     {
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
         clog << "    Closed" << endl;
 #endif
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
         clog << "<<< Plastic_Image::render_image: false" << endl;
 #endif
@@ -2099,7 +2099,7 @@ bool Plastic_Image::render_image() noexcept(false)
 #if ((DEBUG_SECTION) & (DEBUG_MANIPULATORS | DEBUG_RENDER | DEBUG_LOCATION))
         clog << message.str() << endl;
 #endif
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
         throw Render_Exception(message.str());
     }
 
@@ -2109,7 +2109,7 @@ bool Plastic_Image::render_image() noexcept(false)
         clog << "    update canceled before rendering" << endl;
 #endif
         cancel_update(false);
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
 #if ((DEBUG_SECTION) & DEBUG_RENDER)
         clog << "<<< Plastic_Image::render_image: false" << endl;
 #endif
@@ -2123,7 +2123,7 @@ bool Plastic_Image::render_image() noexcept(false)
 #endif
         Needs_Update = NO_MAPPINGS;
         fill(background_color());
-        Update.end(Update.SEQUENCE_END);
+        //Update.end(Update.SEQUENCE_END);
 #if ((DEBUG_SECTION) & (DEBUG_MANIPULATORS | DEBUG_RENDER))
         clog << "<<< Plastic_Image::render_image" << endl;
 #endif
@@ -2134,7 +2134,7 @@ bool Plastic_Image::render_image() noexcept(false)
     is_rendering(true);
 
     //	End of the update sequence; release the Object_Lock during redering.
-    Update.end(Update.SEQUENCE_END);
+    //Update.end(Update.SEQUENCE_END);
     /*
         >>> CAUTION <<< From this point until rendering ends (is_rendering (false))
         only Rendering configuration variables should be used.
@@ -2360,7 +2360,7 @@ bool Plastic_Image::render_image() noexcept(false)
 
 bool Plastic_Image::cancel_update(bool cancel)
 {
-    QMutexLocker rendering_monitors_lock(&Rendering_Monitors_Lock);
+    //QMutexLocker rendering_monitors_lock(&Rendering_Monitors_Lock);
 #if ((DEBUG_SECTION) & (DEBUG_NOTIFY | DEBUG_RENDER))
     clog << ">-< Plastic_Image::cancel_update: " << cancel << endl;
 #endif
@@ -2372,7 +2372,7 @@ bool Plastic_Image::cancel_update(bool cancel)
 
 bool Plastic_Image::update_canceled() const
 {
-    QMutexLocker rendering_monitors_lock(&Rendering_Monitors_Lock);
+    //QMutexLocker rendering_monitors_lock(&Rendering_Monitors_Lock);
     return Cancel_Update;
 }
 
@@ -2381,7 +2381,7 @@ bool Plastic_Image::add_rendering_monitor(Rendering_Monitor *monitor)
     bool added = false;
     if (monitor)
     {
-        QMutexLocker object_lock(&Object_Lock);
+        //QMutexLocker object_lock(&Object_Lock);
         if (!Closed && !Rendering_Monitors.contains(monitor))
         {
             Rendering_Monitors.append(monitor);
@@ -2393,13 +2393,15 @@ bool Plastic_Image::add_rendering_monitor(Rendering_Monitor *monitor)
 
 bool Plastic_Image::remove_rendering_monitor(Rendering_Monitor *monitor)
 {
-    QMutexLocker rendering_monitors_lock(&Rendering_Monitors_Lock);
+    //QMutexLocker rendering_monitors_lock(&Rendering_Monitors_Lock);
     return Rendering_Monitors.removeOne(monitor);
 }
 
 bool Plastic_Image::notify_rendering_monitors(Rendering_Monitor::Status status, const QString &message,
                                               const QRect &region)
 {
+    return false;
+    /* TODO 
     QMutexLocker rendering_monitors_lock(&Rendering_Monitors_Lock);
 #if ((DEBUG_SECTION) & (DEBUG_NOTIFY | DEBUG_RENDER | DEBUG_LOCATION))
     clog << ">>> Plastic_Image::notify_rendering_monitors:" << endl
@@ -2438,19 +2440,19 @@ bool Plastic_Image::notify_rendering_monitors(Rendering_Monitor::Status status, 
 #if ((DEBUG_SECTION) & (DEBUG_NOTIFY | DEBUG_RENDER | DEBUG_LOCATION))
     clog << "<<< Plastic_Image::notify_rendering_monitors: " << (!cancel) << endl;
 #endif
-    return !cancel;
+    return !cancel;*/
 }
 
 void Plastic_Image::rendering_increment_lines(unsigned int rendering_increment)
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     if (!Closed)
         Rendering_Increment_Lines = rendering_increment;
 }
 
 unsigned int Plastic_Image::rendering_increment_lines() const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     return Rendering_Increment_Lines;
 }
 
@@ -2541,7 +2543,7 @@ bool Plastic_Image::is_rendering(bool rendering)
 #if ((DEBUG_SECTION) & (DEBUG_RENDER | DEBUG_LOCATION))
     LOCKED_LOGGING((clog << ">>> Plastic_Image::is_rendering: " << rendering << endl));
 #endif
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     bool was_rendering = false;
     if (rendering)
     {
@@ -2593,7 +2595,7 @@ bool Plastic_Image::is_rendering(bool rendering)
 
 bool Plastic_Image::is_rendering() const
 {
-    QMutexLocker object_lock(&Object_Lock);
+    //QMutexLocker object_lock(&Object_Lock);
     return (Rendering != NULL);
 }
 
@@ -2606,12 +2608,12 @@ QRgb *Plastic_Image::image_data() const
     Update sequence locker
 */
 Plastic_Image::Update_Locker::Update_Locker(const Plastic_Image &image)
-    : Object_Lock(&(image.Object_Lock)), // TODO possible bug!
+    :
       Updating(false), Initiator_Thread(NULL)
 {
 }
 
-Plastic_Image::Update_Locker::Update_Locker() : Object_Lock(NULL), Updating(false), Initiator_Thread(NULL)
+Plastic_Image::Update_Locker::Update_Locker() : Updating(false), Initiator_Thread(NULL)
 {
 }
 
@@ -2622,7 +2624,7 @@ Plastic_Image::Update_Locker::~Update_Locker()
 
 void Plastic_Image::Update_Locker::start()
 {
-    QMutexLocker update_lock(&Update_Lock);
+    //QMutexLocker update_lock(&Update_Lock);
     void *current_thread = (void *)QThread::currentThreadId();
 #if ((DEBUG_SECTION) & DEBUG_UPDATE)
     LOCKED_LOGGING((clog << ">>> Plastic_Image::Update_Locker::start " << current_thread << endl
@@ -2656,13 +2658,13 @@ void Plastic_Image::Update_Locker::start()
                 the Update_Lock must be released by the current thread that
                 will block when acquiring the Object_Lock.
             */
-            update_lock.unlock();
+            //update_lock.unlock();
         }
 
 #if ((DEBUG_SECTION) & DEBUG_UPDATE)
         LOCKED_LOGGING((clog << "    Object_Lock.lock" << endl));
 #endif
-        bool locked = Object_Lock->tryLock();
+        //bool locked = Object_Lock->tryLock();
         //	The current thread now has exclusive control of the update sequence.
 
         /*
@@ -2674,8 +2676,7 @@ void Plastic_Image::Update_Locker::start()
             change - because the QMutexLocker will only call the lock method
             on the lock if it had been unlocked here.
         */
-        if (Updating)
-            update_lock.relock(); // TODO possible bug
+        //if (Updating) update_lock.relock(); // TODO possible bug
         Initiator_Thread = current_thread;
 #if ((DEBUG_SECTION) & DEBUG_UPDATE)
         LOCKED_LOGGING((clog << "    Initiator_Thread " << Initiator_Thread << endl));
@@ -2690,7 +2691,7 @@ void Plastic_Image::Update_Locker::start()
 
 void Plastic_Image::Update_Locker::end(Update_End_Condition condition)
 {
-    QMutexLocker update_lock(&Update_Lock);
+    //QMutexLocker update_lock(&Update_Lock);
 #if ((DEBUG_SECTION) & DEBUG_UPDATE)
     void *thread_ID = (void *)QThread::currentThreadId();
     LOCKED_LOGGING((clog << ">>> Plastic_Image::Update_Locker::end " << thread_ID << ": " << condition << endl
@@ -2712,7 +2713,7 @@ void Plastic_Image::Update_Locker::end(Update_End_Condition condition)
             LOCKED_LOGGING((clog << "    Object_Lock.unlock" << endl));
 #endif
             //	Unlock the object last; another thread might be waiting to pounce.
-            Object_Lock->unlock();
+            //Object_Lock->unlock();
         }
 #if ((DEBUG_SECTION) & DEBUG_UPDATE)
         else

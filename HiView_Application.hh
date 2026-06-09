@@ -96,7 +96,7 @@ class HiView_Application : public QApplication
         whatever the base QApplication::event method returns.
 */
 #ifdef DEBUG_SECTION
-    bool notify(QObject* receiver, QEvent* event);
+    bool notify(QObject* receiver, QEvent* event)  override;
 #endif
 
     /*==============================================================================

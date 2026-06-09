@@ -21,12 +21,10 @@ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 *******************************************************************************/
 
-#ifndef HiView_Plastic_Image_hh
-#define HiView_Plastic_Image_hh
+#pragma once
 
 #include <QColor>
 #include <QImage>
-#include <QRecursiveMutex>
 
 //	Forward references.
 // template<typename T> class QVector;
@@ -45,16 +43,6 @@ class Aggregate;
 
 #include <iosfwd>
 #include <string>
-
-#ifdef _WIN32
-/*
-    The MSVC compiler, as of this writing, does not support throw
-    specifications for method/function declarations. This pragma disables
-    the warning messages (4290) that would otherwise be produced at compile
-    time as a result of the ignored throw specifications.
-*/
-#pragma warning(disable : 4290)
-#endif
 
 namespace UA::HiRISE
 {
@@ -1802,7 +1790,7 @@ class Plastic_Image : public QImage
     */
   protected:
     //!	Lock for all object data. Constructed as a recursive mutex.
-    mutable QRecursiveMutex Object_Lock;
+    //mutable QRecursiveMutex Object_Lock;
 
     //!	The image metadata parameters.
     mutable idaeim::PVL::Aggregate *Metadata;
@@ -1840,10 +1828,10 @@ class Plastic_Image : public QImage
         /*	Guard lock for the Update_Locker settings.
             Not to be confused with locking the update sequence.
         */
-        QMutex Update_Lock;
+        //QMutex Update_Lock;
 
         //!	Pointer to the Plastic_Image Object_Lock to be managed.
-        QRecursiveMutex *Object_Lock;
+        //QRecursiveMutex *Object_Lock;
 
         /**	Flag that an update sequence is in progress.
 
@@ -1868,7 +1856,7 @@ class Plastic_Image : public QImage
         void *Initiator_Thread;
     }; //	class Update_Locker
 
-    Update_Locker Update;
+    //Update_Locker Update;
 
     //!	The name (typically a pathname or URL) of the source file.
     QString Source_Name;
@@ -1936,7 +1924,7 @@ class Plastic_Image : public QImage
   private:
     //!	Registered Rendering_Monitors.
     QList<Rendering_Monitor *> Rendering_Monitors;
-    mutable QMutex Rendering_Monitors_Lock;
+    //mutable QMutex Rendering_Monitors_Lock;
     bool Cancel_Update;
 
 }; //	Class Plastic_Image
@@ -1961,4 +1949,3 @@ void mark_image(Plastic_Image *image, const QString &label, int top, const QColo
                 const QColor &field_color = QColor());
 
 } // namespace UA::HiRISE
-#endif
