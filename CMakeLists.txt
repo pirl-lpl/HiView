@@ -194,7 +194,8 @@ if (APPLE)
     #target_compile_definitions(${PROJECT_NAME} PRIVATE _DISABLE_VECTOR_ANNOTATION _DISABLE_STL_ANNOTATION)
     # use one of -fsanitize=address or -fsanitize=thread
     target_compile_options(${PROJECT_NAME} PRIVATE -g -Wno-deprecated-declarations)
-    set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE true)
+    # https://cmake.org/cmake/help/latest/prop_tgt/MACOSX_BUNDLE_INFO_PLIST.html
+    set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE true MACOSX_BUNDLE_INFO_PLIST Info.plist.template)
     find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
     if(COREFOUNDATION_FRAMEWORK)
         target_link_libraries(${PROJECT_NAME} PUBLIC ${COREFOUNDATION_FRAMEWORK})
