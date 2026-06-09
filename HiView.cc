@@ -35,14 +35,7 @@ using std::string;
 #include <iostream>
 using std::cout;
 using std::endl;
-#include <fstream>
-using std::ifstream;
-#include <vector>
-using std::vector;
-#include <cstring>
-using std::memmove;
-using std::strcpy;
-using std::strlen;
+
 
 namespace
 {
@@ -348,5 +341,5 @@ int main(int arg_count, char** arg_list)
     }
 
     //	Run the application event loop.
-    return UA::HiRISE::HiView_Application::exec();
+    return application.exec();
 }
