@@ -92,7 +92,6 @@ Statistics_Tool.hh
 Statistics_Tools.hh
 Statistics_and_Bounds_Tool.hh
 Stats.hh
-Synchronized_Event.hh
 Tiled_Image_Display.hh
 Value_Tree_Model.hh
 Voice_Adapter.hh
@@ -106,7 +105,6 @@ set(SOURCES
  HiView_Window.cc
  About_HiView_Dialog.cc
  Image_Tile.cc
- Synchronized_Event.cc
  Image_Blaster.cc
  Plastic_Image.cc
  Plastic_QImage.cc
