@@ -135,7 +135,7 @@ inline std::ostream& operator<<(std::ostream& stream, const QString& qstring)
     to 0.0000001) is added to the floating point value before truncation.
 */
 #ifndef TO_INTEGER_EPSILON
-#define TO_INTEGER_EPSILON 0.0000001
+constexpr double TO_INTEGER_EPSILON = 0.0000001;
 #endif
 
 inline int round_down(double value)
