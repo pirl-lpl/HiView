@@ -1,27 +1,7 @@
 CompileFlags:
   Add:
     # Target Windows x64 with MSVC-compatible flags
-    - --target=x86_64-pc-windows-msvc
-
-    # Qt6 include paths
-    - -IC:/Qt/6.8.2/msvc2022_64/include
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtCore
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtGui
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtWidgets
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtNetwork
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtQml
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtQuick
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtSql
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtTest
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtXml
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtConcurrent
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtMultimedia
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtOpenGL
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtPrintSupport
-    - -IC:/Qt/6.8.2/msvc2022_64/include/QtSvg
-    - -IC:/Users/deser/Qwt-6.3.0/include/qwt.h
-    - -IC:/Users/deser/Qwt-6.3.0/include/qwt_series_data.h
-    - -IC:/Users/deser/include
+  
 
     # Qt defines required for correct header parsing
     - -DQT_CORE_LIB
@@ -71,6 +51,7 @@ Diagnostics:
       - bugprone-*
       - misc-*
       - clang-analyzer-*
+      - cppcoreguidelines-*
     Remove:
       - bugprone-easily-swappable-parameters
       - bugprone-inc-dec-in-conditions      # allow ++/-- in conditions
