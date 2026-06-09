@@ -62,25 +62,20 @@ using std::clog;
 #define AS_STRING(string) #string
 
 #ifndef APP_NAME
-#define APP_NAME "HiView"
+constexpr const char* APP_NAME = "HiView";
 #endif
 
 #ifndef APP_ORGNAME
-#define APP_ORGNAME "University of Arizona Lunar and Planetary Lab"
+constexpr const char* APP_ORGNAME = "University of Arizona Lunar and Planetary Lab";
 #endif
 
 #ifndef APP_VERSION
-#define APP_VERSION ""
+constexpr const char* APP_VERSION  = "0.0.0";
 #endif
 
 #ifndef APP_INFO
-#define APP_INFO ""
+constexpr const char* APP_INFO = "";
 #endif
-
-constexpr const char* NAME = APP_NAME;
-constexpr const char* ORGNAME = APP_ORGNAME;
-constexpr const char* VERSION = APP_VERSION;
-constexpr const char* INFO = APP_INFO;
 
 //!	The runtime command name.
 char* Command_Name;
